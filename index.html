@@ -13,6 +13,10 @@
     <!-- jsQR library (قراءة QR من الكاميرا) -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
+    <!-- Google Identity Services & Drive API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+
     <!-- Google Fonts (Cairo) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,6 +206,191 @@
             color: #fff;
         }
         
+        /* ===== نافذة المزامنة السحابية ===== */
+        #cloud-sync-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            animation: fadeInModal 0.2s ease;
+        }
+        #cloud-sync-modal.active { display: flex; }
+        #cloud-sync-box {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 92vw;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUpModal 0.25s ease;
+        }
+        #cloud-sync-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 2px solid #e6f4f7;
+            background: linear-gradient(135deg, #f0fafc 0%, #fff 100%);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        #cloud-sync-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0790AC;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cloud-sync-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .cloud-sync-section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        .cloud-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .cloud-status-badge.connected {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        .cloud-status-badge.disconnected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .cloud-status-badge.syncing {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .cloud-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s;
+            border: 2px solid transparent;
+        }
+        .cloud-btn-primary {
+            background: #0790AC;
+            color: #fff;
+            border-color: #0790AC;
+        }
+        .cloud-btn-primary:hover { background: #056a80; border-color: #056a80; }
+        .cloud-btn-secondary {
+            background: #fff;
+            color: #0790AC;
+            border-color: #0790AC;
+        }
+        .cloud-btn-secondary:hover { background: #e6f4f7; }
+        .cloud-btn-danger {
+            background: #fff;
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+        .cloud-btn-danger:hover { background: #fee2e2; }
+        .cloud-btn-success {
+            background: #16a34a;
+            color: #fff;
+            border-color: #16a34a;
+        }
+        .cloud-btn-success:hover { background: #15803d; }
+        .cloud-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .cloud-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.18s;
+            direction: ltr;
+        }
+        .cloud-input:focus { border-color: #0790AC; }
+        .cloud-sync-log {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            color: #6b7280;
+            max-height: 120px;
+            overflow-y: auto;
+            direction: rtl;
+            line-height: 1.8;
+        }
+        /* أيقونة المزامنة في شريط الأدوات */
+        #cloud-sync-btn .sync-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #cloud-sync-btn.syncing svg { animation: spin 1s linear infinite; }
+        .auto-sync-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #d1d5db;
+            border-radius: 26px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            top: 3px;
+            right: 3px;
+            transition: 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #0790AC; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(-22px); }
+
         /* تصميم QR Code في القائمة والعرض */
         .qr-btn-list:hover { opacity: 0.7; }
         #qr-scan-modal .top-bar-icon-btn { 
@@ -1103,6 +1292,18 @@
             </div>
 
             <!-- (تعديل 10) تم نقل زر إدارة الحدود الطبيعية إلى القائمة الجانبية -->
+
+            <!-- زر المزامنة السحابية (Google Drive) -->
+            <div class="group relative">
+                <button id="cloud-sync-btn" class="top-bar-icon-btn" style="color:#0790AC" onclick="openCloudSyncModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6" />
+                    </svg>
+                </button>
+                <span id="cloud-sync-indicator" class="hidden absolute -top-1 -left-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white"></span>
+                <span class="tooltip tooltip-bottom">المزامنة السحابية (Google Drive)</span>
+            </div>
 
             <!-- زر الإعدادات -->
             <div class="group relative">
@@ -9474,10 +9675,489 @@ function printQRCard(patient, qrData) {
     pw.document.write('<script>window.onload=function(){');
     pw.document.write('new QRCode(document.getElementById("qrp"),{text:"' + qrData.replace(/\\/g,'\\\\').replace(/"/g,'\\"') + '",width:200,height:200,colorDark:"#0790AC",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});');
     pw.document.write('setTimeout(function(){window.print();window.close();},700);};');
-    pw.document.write('<\/script></body></html>');
+    pw.document.write('<\/script><\/body><\/html>');
     pw.document.close();
 }
+</script>
 
+<!-- ===== نافذة المزامنة السحابية (Google Drive) ===== -->
+<div id="cloud-sync-modal" dir="rtl">
+    <div id="cloud-sync-box">
+        <div id="cloud-sync-header">
+            <div id="cloud-sync-title">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                </svg>
+                المزامنة السحابية – Google Drive
+            </div>
+            <button onclick="closeCloudSyncModal()" style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:1.5rem;line-height:1;">✕</button>
+        </div>
+
+        <!-- حالة الاتصال -->
+        <div class="cloud-sync-section">
+            <div class="cloud-sync-section-title">حالة الاتصال</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                <span id="cloud-connection-status" class="cloud-status-badge disconnected">
+                    <span>●</span> غير متصل
+                </span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button id="cloud-connect-btn" class="cloud-btn cloud-btn-primary" onclick="connectGoogleDrive()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+                        تسجيل الدخول بـ Google
+                    </button>
+                    <button id="cloud-disconnect-btn" class="cloud-btn cloud-btn-danger hidden" onclick="disconnectGoogleDrive()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.181 8.68a4.503 4.503 0 011.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 006.364 6.365l3-3.001m5.66-5.655l-1.799 1.8m-2.253-3.604l2.253 3.604M21 3L3 21"/></svg>
+                        قطع الاتصال
+                    </button>
+                </div>
+            </div>
+            <div id="cloud-user-info" class="hidden" style="margin-top:10px;padding:10px;background:#f0fafc;border-radius:10px;font-size:0.85rem;color:#374151;">
+                <span id="cloud-user-name"></span>
+            </div>
+        </div>
+
+        <!-- إعداد Client ID -->
+        <div class="cloud-sync-section">
+            <div class="cloud-sync-section-title">إعداد Google OAuth</div>
+            <div style="margin-bottom:8px;font-size:0.82rem;color:#6b7280;line-height:1.6;">
+                أدخل <strong>Client ID</strong> من <a href="https://console.cloud.google.com/" target="_blank" style="color:#0790AC;">Google Cloud Console</a>.<br>
+                تأكد من تفعيل <strong>Google Drive API</strong> وإضافة هذا المتصفح كـ Authorized Origin.
+            </div>
+            <input type="text" id="google-client-id-input" class="cloud-input" placeholder="XXXXXXXX.apps.googleusercontent.com" />
+            <button onclick="saveClientId()" class="cloud-btn cloud-btn-secondary" style="margin-top:8px;width:100%;">
+                حفظ Client ID
+            </button>
+        </div>
+
+        <!-- رفع وتحميل يدوي -->
+        <div class="cloud-sync-section">
+            <div class="cloud-sync-section-title">مزامنة يدوية</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="cloud-upload-btn" class="cloud-btn cloud-btn-success" onclick="uploadToGoogleDrive()" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                    رفع إلى Drive
+                </button>
+                <button id="cloud-download-btn" class="cloud-btn cloud-btn-secondary" onclick="downloadFromGoogleDrive()" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                    تحميل من Drive
+                </button>
+            </div>
+        </div>
+
+        <!-- المزامنة التلقائية -->
+        <div class="cloud-sync-section">
+            <div class="cloud-sync-section-title">المزامنة التلقائية</div>
+            <div class="auto-sync-toggle">
+                <div>
+                    <div style="font-weight:600;font-size:0.9rem;color:#374151;">مزامنة تلقائية كل 5 دقائق</div>
+                    <div id="auto-sync-next" style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">غير مفعّل</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-sync-toggle" onchange="toggleAutoSync(this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- سجل المزامنة -->
+        <div class="cloud-sync-section">
+            <div class="cloud-sync-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>سجل المزامنة</span>
+                <button onclick="clearSyncLog()" style="font-size:0.75rem;color:#9ca3af;background:none;border:none;cursor:pointer;">مسح</button>
+            </div>
+            <div id="cloud-sync-log" class="cloud-sync-log">لا توجد عمليات مزامنة حتى الآن</div>
+        </div>
+
+        <!-- النسخ الاحتياطي المحلي -->
+        <div class="cloud-sync-section" style="border-bottom:none;">
+            <div class="cloud-sync-section-title">النسخ الاحتياطي المحلي</div>
+            <div style="font-size:0.82rem;color:#6b7280;margin-bottom:10px;">البيانات محفوظة دائماً على الجهاز (IndexedDB) كنسخة احتياطية.</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="cloud-btn cloud-btn-secondary" onclick="saveDataAsJson();closeCloudSyncModal();">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/></svg>
+                    تصدير JSON محلي
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// ===== المزامنة السحابية - Google Drive API =====
+
+// --- الثوابت والحالة ---
+const CLOUD_DRIVE_FILENAME = 'medbox_pedia_cloud_backup.json';
+const CLOUD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
+const AUTO_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 دقائق
+
+let _cloudAccessToken = null;
+let _cloudTokenExpiry = 0;
+let _cloudDriveFileId = null;
+let _autoSyncTimer = null;
+let _autoSyncCountdownTimer = null;
+let _autoSyncNextTime = null;
+let _googleClientId = localStorage.getItem('medbox_google_client_id') || '';
+let _cloudUserEmail = '';
+
+// --- مساعدات UI ---
+function openCloudSyncModal() {
+    const modal = document.getElementById('cloud-sync-modal');
+    modal.classList.add('active');
+    // تحميل Client ID المحفوظ
+    const inp = document.getElementById('google-client-id-input');
+    if (inp && _googleClientId) inp.value = _googleClientId;
+    updateCloudUI();
+}
+function closeCloudSyncModal() {
+    document.getElementById('cloud-sync-modal').classList.remove('active');
+}
+
+function addSyncLog(msg, type) {
+    const log = document.getElementById('cloud-sync-log');
+    if (!log) return;
+    const now = new Date().toLocaleTimeString('ar-SA');
+    const color = type === 'error' ? '#ef4444' : type === 'success' ? '#16a34a' : '#0790AC';
+    const entry = document.createElement('div');
+    entry.style.cssText = `color:${color};border-bottom:1px solid #f3f4f6;padding:3px 0;`;
+    entry.textContent = `[${now}] ${msg}`;
+    if (log.textContent === 'لا توجد عمليات مزامنة حتى الآن') log.textContent = '';
+    log.insertBefore(entry, log.firstChild);
+}
+function clearSyncLog() {
+    const log = document.getElementById('cloud-sync-log');
+    if (log) log.innerHTML = 'لا توجد عمليات مزامنة حتى الآن';
+}
+
+function updateCloudUI() {
+    const isConnected = !!_cloudAccessToken && Date.now() < _cloudTokenExpiry;
+    const statusBadge = document.getElementById('cloud-connection-status');
+    const connectBtn = document.getElementById('cloud-connect-btn');
+    const disconnectBtn = document.getElementById('cloud-disconnect-btn');
+    const uploadBtn = document.getElementById('cloud-upload-btn');
+    const downloadBtn = document.getElementById('cloud-download-btn');
+    const userInfo = document.getElementById('cloud-user-info');
+    const userName = document.getElementById('cloud-user-name');
+    const indicator = document.getElementById('cloud-sync-indicator');
+
+    if (isConnected) {
+        if (statusBadge) { statusBadge.className = 'cloud-status-badge connected'; statusBadge.innerHTML = '<span>●</span> متصل'; }
+        if (connectBtn) connectBtn.classList.add('hidden');
+        if (disconnectBtn) disconnectBtn.classList.remove('hidden');
+        if (uploadBtn) uploadBtn.disabled = false;
+        if (downloadBtn) downloadBtn.disabled = false;
+        if (userInfo) userInfo.classList.remove('hidden');
+        if (userName) userName.textContent = '👤 ' + (_cloudUserEmail || 'مستخدم Google');
+        if (indicator) indicator.classList.remove('hidden');
+    } else {
+        if (statusBadge) { statusBadge.className = 'cloud-status-badge disconnected'; statusBadge.innerHTML = '<span>●</span> غير متصل'; }
+        if (connectBtn) connectBtn.classList.remove('hidden');
+        if (disconnectBtn) disconnectBtn.classList.add('hidden');
+        if (uploadBtn) uploadBtn.disabled = true;
+        if (downloadBtn) downloadBtn.disabled = true;
+        if (userInfo) userInfo.classList.add('hidden');
+        if (indicator) indicator.classList.add('hidden');
+    }
+}
+
+function saveClientId() {
+    const inp = document.getElementById('google-client-id-input');
+    if (!inp || !inp.value.trim()) {
+        if (typeof showToast === 'function') showToast('يرجى إدخال Client ID', 'error');
+        return;
+    }
+    _googleClientId = inp.value.trim();
+    localStorage.setItem('medbox_google_client_id', _googleClientId);
+    if (typeof showToast === 'function') showToast('تم حفظ Client ID بنجاح', 'success');
+    addSyncLog('تم حفظ Client ID', 'success');
+}
+
+// --- OAuth 2.0 بـ Google Identity Services ---
+function connectGoogleDrive() {
+    if (!_googleClientId) {
+        if (typeof showToast === 'function') showToast('يرجى إدخال Client ID أولاً', 'error');
+        document.getElementById('google-client-id-input').focus();
+        return;
+    }
+
+    if (typeof google === 'undefined' || !google.accounts) {
+        if (typeof showToast === 'function') showToast('جاري تحميل مكتبة Google، حاول مجدداً...', 'error');
+        addSyncLog('مكتبة Google لم تُحمّل بعد، أعد المحاولة', 'error');
+        return;
+    }
+
+    addSyncLog('جاري تسجيل الدخول إلى Google...', 'info');
+    const client = google.accounts.oauth2.initTokenClient({
+        client_id: _googleClientId,
+        scope: CLOUD_SCOPE,
+        callback: (response) => {
+            if (response.error) {
+                addSyncLog('فشل تسجيل الدخول: ' + response.error, 'error');
+                if (typeof showToast === 'function') showToast('فشل تسجيل الدخول: ' + response.error, 'error');
+                return;
+            }
+            _cloudAccessToken = response.access_token;
+            _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
+            _cloudDriveFileId = null;
+            // جلب معلومات المستخدم
+            fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: { 'Authorization': 'Bearer ' + _cloudAccessToken }
+            }).then(r => r.json()).then(info => {
+                _cloudUserEmail = info.email || info.name || 'مستخدم Google';
+                updateCloudUI();
+                addSyncLog('تم الاتصال بـ ' + _cloudUserEmail, 'success');
+                if (typeof showToast === 'function') showToast('تم الاتصال بـ Google Drive', 'success');
+            }).catch(() => {
+                _cloudUserEmail = 'مستخدم Google';
+                updateCloudUI();
+                addSyncLog('تم الاتصال بنجاح', 'success');
+            });
+        }
+    });
+    client.requestAccessToken({ prompt: 'consent' });
+}
+
+function disconnectGoogleDrive() {
+    if (_cloudAccessToken && typeof google !== 'undefined') {
+        google.accounts.oauth2.revoke(_cloudAccessToken, () => {});
+    }
+    _cloudAccessToken = null;
+    _cloudTokenExpiry = 0;
+    _cloudDriveFileId = null;
+    _cloudUserEmail = '';
+    // إيقاف المزامنة التلقائية
+    if (_autoSyncTimer) { clearInterval(_autoSyncTimer); _autoSyncTimer = null; }
+    if (_autoSyncCountdownTimer) { clearInterval(_autoSyncCountdownTimer); _autoSyncCountdownTimer = null; }
+    const toggle = document.getElementById('auto-sync-toggle');
+    if (toggle) toggle.checked = false;
+    const nextEl = document.getElementById('auto-sync-next');
+    if (nextEl) nextEl.textContent = 'غير مفعّل';
+    updateCloudUI();
+    addSyncLog('تم قطع الاتصال', 'info');
+    if (typeof showToast === 'function') showToast('تم قطع الاتصال بـ Google Drive', 'success');
+}
+
+// --- البحث عن الملف في Drive أو إنشاؤه ---
+async function findOrCreateDriveFile() {
+    if (!_cloudAccessToken) return null;
+
+    // البحث أولاً
+    if (_cloudDriveFileId) return _cloudDriveFileId;
+
+    const searchRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=name='${CLOUD_DRIVE_FILENAME}' and trashed=false&spaces=drive&fields=files(id,name)`,
+        { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
+    );
+    const searchData = await searchRes.json();
+    if (searchData.files && searchData.files.length > 0) {
+        _cloudDriveFileId = searchData.files[0].id;
+        return _cloudDriveFileId;
+    }
+    // الملف غير موجود - سيُنشأ عند الرفع
+    return null;
+}
+
+// --- رفع البيانات إلى Google Drive ---
+async function uploadToGoogleDrive() {
+    if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+        if (typeof showToast === 'function') showToast('انتهت صلاحية الاتصال، يرجى تسجيل الدخول مجدداً', 'error');
+        disconnectGoogleDrive();
+        return;
+    }
+
+    const uploadBtn = document.getElementById('cloud-upload-btn');
+    if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.innerHTML = '<svg class="w-4 h-4 sync-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="animation:spin 1s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg> جاري الرفع...'; }
+
+    try {
+        addSyncLog('جاري رفع البيانات إلى Google Drive...', 'info');
+
+        // تجهيز البيانات
+        const dataToSave = { ...appData };
+        delete dataToSave.currentUser;
+        delete dataToSave.currentAccountId;
+        const jsonStr = JSON.stringify(dataToSave, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+
+        // البحث عن الملف الموجود
+        const existingFileId = await findOrCreateDriveFile();
+
+        let url, method;
+        if (existingFileId) {
+            // تحديث ملف موجود
+            url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=media`;
+            method = 'PATCH';
+        } else {
+            // إنشاء ملف جديد - multipart
+            const metadata = { name: CLOUD_DRIVE_FILENAME, mimeType: 'application/json' };
+            const metaStr = JSON.stringify(metadata);
+            const boundary = '-------MedBoxBoundary';
+            const bodyParts = [
+                `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaStr}\r\n`,
+                `--${boundary}\r\nContent-Type: application/json\r\n\r\n${jsonStr}\r\n`,
+                `--${boundary}--`
+            ];
+            const multipartBody = bodyParts.join('');
+            const res = await fetch(
+                'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + _cloudAccessToken,
+                        'Content-Type': `multipart/related; boundary=${boundary}`
+                    },
+                    body: multipartBody
+                }
+            );
+            const created = await res.json();
+            if (!res.ok) throw new Error(created.error?.message || 'فشل إنشاء الملف');
+            _cloudDriveFileId = created.id;
+            addSyncLog('تم رفع البيانات بنجاح ✓', 'success');
+            if (typeof showToast === 'function') showToast('تم رفع البيانات إلى Google Drive ✓', 'success');
+            return;
+        }
+
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Authorization': 'Bearer ' + _cloudAccessToken,
+                'Content-Type': 'application/json'
+            },
+            body: blob
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error?.message || 'فشل الرفع');
+        }
+        addSyncLog('تم رفع البيانات بنجاح ✓', 'success');
+        if (typeof showToast === 'function') showToast('تم رفع البيانات إلى Google Drive ✓', 'success');
+
+    } catch (e) {
+        addSyncLog('فشل الرفع: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast('فشل الرفع: ' + e.message, 'error');
+    } finally {
+        if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg> رفع إلى Drive'; }
+    }
+}
+
+// --- تحميل البيانات من Google Drive ---
+async function downloadFromGoogleDrive() {
+    if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+        if (typeof showToast === 'function') showToast('انتهت صلاحية الاتصال، يرجى تسجيل الدخول مجدداً', 'error');
+        disconnectGoogleDrive();
+        return;
+    }
+
+    const downloadBtn = document.getElementById('cloud-download-btn');
+    if (downloadBtn) { downloadBtn.disabled = true; downloadBtn.innerHTML = '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="animation:spin 1s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg> جاري التحميل...'; }
+
+    try {
+        addSyncLog('جاري تحميل البيانات من Google Drive...', 'info');
+        const fileId = await findOrCreateDriveFile();
+        if (!fileId) {
+            addSyncLog('لا يوجد ملف احتياطي في Drive حتى الآن', 'info');
+            if (typeof showToast === 'function') showToast('لا يوجد ملف احتياطي في Drive', 'error');
+            return;
+        }
+
+        const res = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
+        );
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error?.message || 'فشل التحميل');
+        }
+        const data = await res.json();
+        if (data && data.patients !== undefined) {
+            if (confirm('سيتم استبدال البيانات المحلية بالبيانات من Google Drive. هل أنت متأكد؟')) {
+                appData = data;
+                window._appData = appData;
+                if (!Array.isArray(appData.appointments)) appData.appointments = [];
+                if (typeof getAccounts === 'function') getAccounts();
+                if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
+                if (typeof updateUI === 'function') updateUI();
+                addSyncLog('تم تحميل البيانات وتطبيقها بنجاح ✓', 'success');
+                if (typeof showToast === 'function') showToast('تم تحميل البيانات من Google Drive ✓', 'success');
+                closeCloudSyncModal();
+            } else {
+                addSyncLog('تم إلغاء التحميل من المستخدم', 'info');
+            }
+        } else {
+            throw new Error('بنية البيانات غير صحيحة');
+        }
+    } catch (e) {
+        addSyncLog('فشل التحميل: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast('فشل التحميل: ' + e.message, 'error');
+    } finally {
+        if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> تحميل من Drive'; }
+    }
+}
+
+// --- المزامنة التلقائية كل 5 دقائق ---
+function toggleAutoSync(enabled) {
+    if (enabled) {
+        if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+            if (typeof showToast === 'function') showToast('يجب تسجيل الدخول إلى Google أولاً', 'error');
+            const toggle = document.getElementById('auto-sync-toggle');
+            if (toggle) toggle.checked = false;
+            return;
+        }
+        startAutoSync();
+        localStorage.setItem('medbox_auto_sync', '1');
+    } else {
+        stopAutoSync();
+        localStorage.removeItem('medbox_auto_sync');
+    }
+}
+
+function startAutoSync() {
+    stopAutoSync(); // إيقاف أي مزامنة سابقة
+    _autoSyncNextTime = Date.now() + AUTO_SYNC_INTERVAL_MS;
+
+    // عداد تنازلي لعرض الوقت المتبقي
+    _autoSyncCountdownTimer = setInterval(() => {
+        const remaining = Math.max(0, _autoSyncNextTime - Date.now());
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        const el = document.getElementById('auto-sync-next');
+        if (el) el.textContent = `التالية خلال: ${mins}:${secs.toString().padStart(2, '0')}`;
+    }, 1000);
+
+    // المزامنة الفعلية كل 5 دقائق
+    _autoSyncTimer = setInterval(async () => {
+        _autoSyncNextTime = Date.now() + AUTO_SYNC_INTERVAL_MS;
+        if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+            addSyncLog('انتهت صلاحية الاتصال - توقفت المزامنة التلقائية', 'error');
+            stopAutoSync();
+            const toggle = document.getElementById('auto-sync-toggle');
+            if (toggle) toggle.checked = false;
+            updateCloudUI();
+            return;
+        }
+        addSyncLog('مزامنة تلقائية...', 'info');
+        await uploadToGoogleDrive();
+    }, AUTO_SYNC_INTERVAL_MS);
+
+    addSyncLog('بدأت المزامنة التلقائية كل 5 دقائق', 'success');
+    if (typeof showToast === 'function') showToast('تم تفعيل المزامنة التلقائية كل 5 دقائق ✓', 'success');
+}
+
+function stopAutoSync() {
+    if (_autoSyncTimer) { clearInterval(_autoSyncTimer); _autoSyncTimer = null; }
+    if (_autoSyncCountdownTimer) { clearInterval(_autoSyncCountdownTimer); _autoSyncCountdownTimer = null; }
+    _autoSyncNextTime = null;
+    const el = document.getElementById('auto-sync-next');
+    if (el) el.textContent = 'غير مفعّل';
+    addSyncLog('توقفت المزامنة التلقائية', 'info');
+}
+
+// إغلاق النافذة بالنقر على الخلفية
+document.getElementById('cloud-sync-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeCloudSyncModal();
+});
+</script>
+
+<script>
 /**
  * فتح نافذة مسح QR
  */
