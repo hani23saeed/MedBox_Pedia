@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedBox-Pedia</title>
+    <title>MedBox-Pedia v17</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2977,6 +2977,8 @@
                         <div>
                             <div class="font-bold text-gray-800 text-base">${acc.displayName || acc.username}</div>
                             <div class="text-xs text-gray-400">@${acc.username}</div>
+                            ${acc.phone ? `<div class="text-xs text-gray-500">📞 ${acc.phone}</div>` : ''}
+                            ${acc.whatsapp ? `<div class="text-xs text-green-600 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 inline" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> واتساب: +${acc.whatsapp}</div>` : ''}
                         </div>
                         ${badge}
                         ${isCurrentUser ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">أنت</span>' : ''}
@@ -3030,6 +3032,15 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">رقم الهاتف</label>
                     <input id="new-acc-phone" type="text" placeholder="مثل: 0912345678" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0790AC]/30 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">رقم الواتساب <span class="text-gray-400">(مع رمز الدولة، مثال: 963912345678)</span></label>
+                    <div class="relative">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        </span>
+                        <input id="new-acc-whatsapp" type="text" placeholder="مثل: 963912345678" class="w-full pr-9 pl-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400/30 focus:border-green-400 focus:outline-none">
+                    </div>
                 </div>
             </div>
             <div class="mb-4">
@@ -3096,6 +3107,15 @@
                     <input id="edit-cred-phone" type="text" placeholder="مثل: 0912345678" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0790AC]/30 focus:outline-none">
                 </div>
                 <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">رقم الواتساب <span class="text-gray-400">(مع رمز الدولة، مثال: 963912345678)</span></label>
+                    <div class="relative">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        </span>
+                        <input id="edit-cred-whatsapp" type="text" placeholder="مثل: 963912345678" class="w-full pr-9 pl-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400/30 focus:border-green-400 focus:outline-none">
+                    </div>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">كلمة المرور الجديدة <span class="text-gray-400">(اتركها فارغة إذا لا تريد تغييرها)</span></label>
                     <input id="edit-cred-password" type="password" placeholder="••••••" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#0790AC]/30 focus:outline-none">
                 </div>
@@ -3143,6 +3163,7 @@
         document.getElementById('edit-cred-clinic').value = acc.clinic || '';
         document.getElementById('edit-cred-address').value = acc.address || '';
         document.getElementById('edit-cred-phone').value = acc.phone || '';
+        document.getElementById('edit-cred-whatsapp').value = acc.whatsapp || '';
         document.getElementById('edit-cred-password').value = '';
         document.getElementById('edit-cred-password2').value = '';
         document.getElementById('edit-credentials-modal').classList.remove('hidden');
@@ -3170,6 +3191,7 @@
         const newClinic = document.getElementById('edit-cred-clinic').value.trim();
         const newAddress = document.getElementById('edit-cred-address').value.trim();
         const newPhone = document.getElementById('edit-cred-phone').value.trim();
+        const newWhatsapp = document.getElementById('edit-cred-whatsapp').value.trim();
         const newPassword = document.getElementById('edit-cred-password').value;
         const newPassword2 = document.getElementById('edit-cred-password2').value;
 
@@ -3190,6 +3212,7 @@
         acc.clinic = newClinic;
         acc.address = newAddress;
         acc.phone = newPhone;
+        acc.whatsapp = newWhatsapp;
         if (newPassword) acc.password = newPassword;
 
         saveDataToLocalStorage();
@@ -3240,6 +3263,7 @@
         const clinic = document.getElementById('new-acc-clinic')?.value.trim() || '';
         const address = document.getElementById('new-acc-address')?.value.trim() || '';
         const phone = document.getElementById('new-acc-phone')?.value.trim() || '';
+        const whatsapp = document.getElementById('new-acc-whatsapp')?.value.trim() || '';
 
         const newAcc = {
             id: 'acc_' + Date.now(),
@@ -3251,6 +3275,7 @@
             clinic,
             address,
             phone,
+            whatsapp,
             permissions
         };
 
@@ -4645,18 +4670,13 @@
     }
 
 
-    function renderPatientList(filter = '') {
-        patientListContainer.innerHTML = '';
-        const filteredPatients = appData.patients.filter(p => 
-            p.name_ar.includes(filter) || p.national_id.includes(filter) || (p.phone && p.phone.includes(filter))
-        );
+    // ===== Lazy Loading state =====
+    let _lazyPatients = [];      // القائمة المفلترة الكاملة
+    let _lazyPage = 0;           // الصفحة الحالية المحملة
+    const LAZY_PAGE_SIZE = 20;   // عدد المرضى في كل دفعة
+    let _lazyObserver = null;    // Intersection Observer
 
-        if (filteredPatients.length === 0) {
-            patientListContainer.innerHTML = `<p class="text-gray-500 text-center">لا يوجد مرضى</p>`;
-            return;
-        }
-
-        filteredPatients.forEach(patient => {
+    function buildPatientElement(patient) {
             // استخراج رقم الهاتف من أحدث زيارة إذا لم يكن محفوظاً في كائن المريض
             if (!patient.phone && patient.visits && patient.visits.length > 0) {
                 const lastVisit = patient.visits[patient.visits.length - 1];
@@ -4666,7 +4686,7 @@
             }
             const patientEl = document.createElement('div');
             patientEl.className = 'bg-gray-50 rounded-lg border border-gray-200';
-            
+
             let devButtons = '';
             const canAdd    = hasPermission('addPatient');
             const canDelPat = hasPermission('deletePatient');
@@ -4708,7 +4728,7 @@
                             visitDevBtns = `
                                 ${canEdit ? `<button data-id="${patient.id}" data-vindex="${index}" class="edit-visit-btn text-xs text-blue-600 hover:text-blue-800" title="تعديل">
                                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l .8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                     </svg>
                                 </button>` : ''}
                                 ${canDelVis ? `<button data-id="${patient.id}" data-vindex="${index}" class="delete-visit-btn text-xs text-red-600 hover:text-red-800" title="حذف مراجعة">
@@ -4731,12 +4751,58 @@
                     }).join('')}
                 </div>
             `;
-            patientListContainer.appendChild(patientEl);
-        });
-
-        addDynamicEventListeners();
+            return patientEl;
     }
-    
+
+    function loadMorePatients() {
+        const start = _lazyPage * LAZY_PAGE_SIZE;
+        const end   = start + LAZY_PAGE_SIZE;
+        const batch = _lazyPatients.slice(start, end);
+        if (batch.length === 0) return;
+
+        // إزالة sentinel المؤقت إن وجد
+        const oldSentinel = document.getElementById('lazy-sentinel');
+        if (oldSentinel) oldSentinel.remove();
+
+        const fragment = document.createDocumentFragment();
+        batch.forEach(patient => fragment.appendChild(buildPatientElement(patient)));
+        patientListContainer.appendChild(fragment);
+        _lazyPage++;
+        addDynamicEventListeners();
+
+        // إضافة sentinel جديد إذا بقي المزيد
+        if (_lazyPage * LAZY_PAGE_SIZE < _lazyPatients.length) {
+            const sentinel = document.createElement('div');
+            sentinel.id = 'lazy-sentinel';
+            sentinel.style.height = '1px';
+            patientListContainer.appendChild(sentinel);
+            if (_lazyObserver) _lazyObserver.observe(sentinel);
+        }
+    }
+
+    function renderPatientList(filter = '') {
+        patientListContainer.innerHTML = '';
+        _lazyPage = 0;
+        if (_lazyObserver) { _lazyObserver.disconnect(); _lazyObserver = null; }
+
+        _lazyPatients = appData.patients.filter(p =>
+            p.name_ar.includes(filter) || p.national_id.includes(filter) || (p.phone && p.phone.includes(filter))
+        );
+
+        if (_lazyPatients.length === 0) {
+            patientListContainer.innerHTML = `<p class="text-gray-500 text-center">لا يوجد مرضى</p>`;
+            return;
+        }
+
+        // إنشاء Observer للتمرير التلقائي
+        _lazyObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) loadMorePatients();
+        }, { threshold: 0.1 });
+
+        // تحميل الدفعة الأولى فوراً
+        loadMorePatients();
+    }
+
     // ========== دالة عرض ملخص المريض مع الخطوط البيانية ==========
     function displayPatientSummary(patientId) {
         const patient = appData.patients.find(p => p.id === patientId);
@@ -5144,11 +5210,13 @@
                     <button data-tab="4" class="patient-view-tab flex-shrink-0 px-3 py-2 font-semibold text-gray-500 border-b-2 border-transparent">الإجراءات المخبرية والتشخصية</button>
                     <button data-tab="5" class="patient-view-tab flex-shrink-0 px-3 py-2 font-semibold text-gray-500 border-b-2 border-transparent">الحالة التغذوية</button>
                     <button data-tab="6" class="patient-view-tab flex-shrink-0 px-3 py-2 font-semibold text-gray-500 border-b-2 border-transparent" style="color:#0790AC;opacity:0.75">📈 متابعة التحاليل</button>
+                    <button data-tab="7" class="patient-view-tab flex-shrink-0 px-3 py-2 font-semibold text-gray-500 border-b-2 border-transparent" style="color:#16a34a;font-weight:700;">🥗 البرنامج الغذائي</button>
                 </nav>
                 
                 <div class="p-6">
                     ${createViewTabContent(visit, patientIdFrontImg, patientIdBackImg)}
                     ${createComparisonTab(patient)}
+                    ${createDietProgramTab()}
                 </div>
             </div>
         `;
@@ -5220,6 +5288,631 @@
                 printDietProgram(currentViewPatient, currentViewVisit);
             }
         });
+
+        // ===== ربط منطق قائمة البدائل الغذائية =====
+        (function() {
+            let selectedParts = null;
+
+            const mealColors = {
+                breakfast: { bg: 'bg-amber-50', border: 'border-amber-300', icon: '🌅', title: 'text-amber-800' },
+                snack1:    { bg: 'bg-green-50',  border: 'border-green-300',  icon: '🍎', title: 'text-green-800' },
+                lunch:     { bg: 'bg-blue-50',   border: 'border-blue-300',   icon: '☀️', title: 'text-blue-800' },
+                snack2:    { bg: 'bg-purple-50', border: 'border-purple-300', icon: '🥜', title: 'text-purple-800' },
+                dinner:    { bg: 'bg-indigo-50', border: 'border-indigo-300', icon: '🌙', title: 'text-indigo-800' },
+                snack3:    { bg: 'bg-pink-50',   border: 'border-pink-300',   icon: '🍵', title: 'text-pink-800' },
+            };
+
+            // دالة لتحديث حقول الإدخال اليدوية
+            function updateManualInputs() {
+                const inputsDiv = document.getElementById('manual-parts-inputs');
+                const sumIndicator = document.getElementById('parts-sum-indicator');
+                const showBtn = document.getElementById('show-manual-dist-btn');
+                if (!inputsDiv) return;
+
+                const selectedMeals = [];
+                document.querySelectorAll('.meal-checkbox:checked').forEach(cb => {
+                    selectedMeals.push({ key: cb.value, label: cb.dataset.label });
+                });
+
+                if (!selectedParts || selectedMeals.length === 0) {
+                    inputsDiv.innerHTML = '<div class="text-xs text-gray-400 italic">اختر عدد الأجزاء والوجبات أولاً</div>';
+                    if (sumIndicator) sumIndicator.classList.add('hidden');
+                    if (showBtn) showBtn.classList.add('hidden');
+                    return;
+                }
+
+                // أنشئ حقول الإدخال فقط إذا تغيرت الوجبات أو الأجزاء
+                const existingKeys = Array.from(inputsDiv.querySelectorAll('input[data-meal-key]')).map(i => i.dataset.mealKey);
+                const newKeys = selectedMeals.map(m => m.key);
+                const changed = JSON.stringify(existingKeys) !== JSON.stringify(newKeys);
+
+                if (changed) {
+                    inputsDiv.innerHTML = selectedMeals.map(m => {
+                        const c = mealColors[m.key] || { icon: '🍽️' };
+                        return `
+                        <div class="flex items-center gap-2">
+                            <span class="text-base w-5 text-center">${c.icon}</span>
+                            <label class="text-xs font-bold text-gray-700 w-14 shrink-0">${m.label}</label>
+                            <input type="number" min="0" max="${selectedParts}"
+                                data-meal-key="${m.key}" data-meal-label="${m.label}"
+                                class="manual-parts-input w-16 border-2 border-gray-300 rounded-lg px-2 py-1 text-sm font-bold text-center focus:border-[#0790AC] focus:outline-none"
+                                placeholder="0">
+                            <span class="text-xs text-gray-400">/ ${selectedParts}</span>
+                        </div>`;
+                    }).join('');
+
+                    // ربط أحداث الإدخال
+                    inputsDiv.querySelectorAll('.manual-parts-input').forEach(inp => {
+                        inp.addEventListener('input', checkPartsSum);
+                    });
+                } else {
+                    // فقط حدّث الـ max
+                    inputsDiv.querySelectorAll('.manual-parts-input').forEach(inp => {
+                        inp.max = selectedParts;
+                        inp.nextElementSibling.textContent = `/ ${selectedParts}`;
+                    });
+                }
+
+                checkPartsSum();
+            }
+
+            // دالة للتحقق من مجموع الأجزاء
+            function checkPartsSum() {
+                const sumIndicator = document.getElementById('parts-sum-indicator');
+                const showBtn = document.getElementById('show-manual-dist-btn');
+                if (!sumIndicator || !selectedParts) return;
+
+                const inputs = document.querySelectorAll('.manual-parts-input');
+                let total = 0;
+                inputs.forEach(inp => { total += parseInt(inp.value) || 0; });
+
+                sumIndicator.classList.remove('hidden');
+                if (total === selectedParts) {
+                    sumIndicator.textContent = `✓ المجموع صحيح: ${total} / ${selectedParts} جزء`;
+                    sumIndicator.className = 'mt-1 text-xs font-bold rounded-lg px-3 py-2 text-center transition-all bg-green-50 border border-green-300 text-green-700';
+                    if (showBtn) showBtn.classList.remove('hidden');
+                } else if (total > selectedParts) {
+                    sumIndicator.textContent = `⚠️ المجموع ${total} يتجاوز ${selectedParts} جزء`;
+                    sumIndicator.className = 'mt-1 text-xs font-bold rounded-lg px-3 py-2 text-center transition-all bg-red-50 border border-red-300 text-red-700';
+                    if (showBtn) showBtn.classList.add('hidden');
+                } else {
+                    const remaining = selectedParts - total;
+                    sumIndicator.textContent = `المجموع: ${total} / ${selectedParts} — تبقى ${remaining} جزء`;
+                    sumIndicator.className = 'mt-1 text-xs font-bold rounded-lg px-3 py-2 text-center transition-all bg-amber-50 border border-amber-300 text-amber-700';
+                    if (showBtn) showBtn.classList.add('hidden');
+                }
+            }
+
+            // حقل الإدخال اليدوي لعدد الأجزاء الإجمالي
+            function applyTotalParts() {
+                const inp = document.getElementById('manual-total-parts-input');
+                const val = parseInt(inp ? inp.value : 0);
+                const lbl = document.getElementById('selected-parts-label');
+                if (!val || val < 1) {
+                    if (lbl) lbl.textContent = 'يرجى إدخال عدد صحيح أكبر من صفر';
+                    return;
+                }
+                selectedParts = val;
+                if (inp) {
+                    inp.classList.add('border-[#0790AC]', 'bg-[#e6f7fa]');
+                    inp.classList.remove('border-gray-300');
+                }
+                if (lbl) lbl.textContent = 'تم اختيار: ' + selectedParts + ' جزء';
+                updateManualInputs();
+            }
+
+            const confirmPartsBtn = document.getElementById('confirm-total-parts-btn');
+            if (confirmPartsBtn) {
+                confirmPartsBtn.addEventListener('click', applyTotalParts);
+            }
+            const totalPartsInput = document.getElementById('manual-total-parts-input');
+            if (totalPartsInput) {
+                totalPartsInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') applyTotalParts();
+                });
+            }
+
+            // ربط أحداث الـ checkboxes
+            document.querySelectorAll('.meal-checkbox').forEach(cb => {
+                cb.addEventListener('change', updateManualInputs);
+            });
+
+            // زر عرض التوزيع اليدوي
+            const showBtn = document.getElementById('show-manual-dist-btn');
+            if (showBtn) {
+                showBtn.addEventListener('click', function() {
+                    const errDiv = document.getElementById('meal-dist-error');
+                    const resDiv = document.getElementById('meal-distribution-result');
+
+                    // جمع القيم اليدوية
+                    const distributed = [];
+                    document.querySelectorAll('.manual-parts-input').forEach(inp => {
+                        const parts = parseInt(inp.value) || 0;
+                        distributed.push({ key: inp.dataset.mealKey, label: inp.dataset.mealLabel, parts });
+                    });
+
+                    // التحقق من المجموع
+                    const total = distributed.reduce((s, m) => s + m.parts, 0);
+                    if (total !== selectedParts) {
+                        errDiv.textContent = `مجموع الأجزاء (${total}) لا يساوي إجمالي الأجزاء المختارة (${selectedParts}).`;
+                        errDiv.classList.remove('hidden');
+                        resDiv.classList.add('hidden');
+                        return;
+                    }
+
+                    errDiv.classList.add('hidden');
+
+                    // حساب السعرات الهدف
+                    let targetKcal = 0;
+                    const sourceEl = document.getElementById('calorie-source-select');
+                    const source = sourceEl ? sourceEl.value : 'tdee';
+                    if (source === 'target') {
+                        const targetInput = document.getElementById('calorie-target');
+                        targetKcal = parseFloat(targetInput ? targetInput.value : 0) || 0;
+                    } else {
+                        const tdeeEl = document.getElementById('calc-tdee');
+                        targetKcal = parseFloat(tdeeEl ? tdeeEl.textContent : 0) || 0;
+                    }
+
+                    // تحديث ملخص التوزيع
+                    document.getElementById('dist-total-parts').textContent = selectedParts;
+                    document.getElementById('dist-target-kcal').textContent = targetKcal > 0 ? Math.round(targetKcal) : '—';
+                    document.getElementById('dist-meal-count').textContent = distributed.length;
+
+                    // إنشاء بطاقات الوجبات
+                    const container = document.getElementById('meal-cards-container');
+                    container.innerHTML = distributed.map(m => {
+                        const c = mealColors[m.key] || { bg:'bg-gray-50', border:'border-gray-300', icon:'🍽️', title:'text-gray-800' };
+                        const mealKcal = targetKcal > 0 ? Math.round((m.parts / selectedParts) * targetKcal) : null;
+                        const fraction = `${m.parts}/${selectedParts}`;
+                        const perc = Math.round((m.parts / selectedParts) * 100);
+                        return `
+                        <div class="${c.bg} border-2 ${c.border} rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">${c.icon}</span>
+                                <span class="text-base font-bold ${c.title}">${m.label}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-center">
+                                    <div class="text-2xl font-extrabold ${c.title}">${fraction}</div>
+                                    <div class="text-xs text-gray-500">من الأجزاء</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-lg font-bold text-gray-700">${perc}%</div>
+                                    <div class="text-xs text-gray-500">من اليوم</div>
+                                </div>
+                                ${mealKcal !== null ? `
+                                <div class="text-center">
+                                    <div class="text-xl font-extrabold text-[--color-primary]">${mealKcal}</div>
+                                    <div class="text-xs text-gray-500">سعرة</div>
+                                </div>` : ''}
+                            </div>
+                            <!-- شريط التقدم -->
+                            <div class="w-full bg-white/60 rounded-full h-2 mt-1">
+                                <div class="${c.border.replace('border-','bg-')} h-2 rounded-full transition-all" style="width:${perc}%"></div>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    resDiv.classList.remove('hidden');
+                });
+            }
+        })();
+
+        // ===== ربط منطق إدراج البدائل الغذائية (v20) =====
+        (function() {
+            let altItems = [];
+            let listVisible = true;
+
+            const categoryIcons = {
+                'starch':      '🍞',
+                'fruit':       '🍎',
+                'vegetable':   '🥦',
+                'meat_low':    '🥩',
+                'meat_medium': '🍗',
+                'meat_high':   '🥓',
+                'milk_skim':   '🥛',
+                'milk_low':    '🧀',
+                'milk_full':   '🫙',
+                'fat':         '🫒',
+            };
+
+            const categoryLabels = {
+                'starch':      'قائمة النشويات',
+                'fruit':       'قائمة الفواكه',
+                'vegetable':   'قائمة الخضار',
+                'meat_low':    'قائمة اللحوم قليلة الدهون',
+                'meat_medium': 'قائمة اللحوم متوسطة الدهون',
+                'meat_high':   'قائمة اللحوم عالية الدهون',
+                'milk_skim':   'قائمة حليب خالي الدسم',
+                'milk_low':    'قائمة حليب قليل الدسم',
+                'milk_full':   'قائمة حليب كامل الدسم',
+                'fat':         'قائمة الدهون',
+            };
+
+            const categoryColors = {
+                'starch':      { bg: 'bg-amber-50',   border: 'border-amber-200',  badge: 'bg-amber-100 text-amber-800',    row: 'hover:bg-amber-50/60' },
+                'fruit':       { bg: 'bg-red-50',     border: 'border-red-200',    badge: 'bg-red-100 text-red-800',        row: 'hover:bg-red-50/60' },
+                'vegetable':   { bg: 'bg-green-50',   border: 'border-green-200',  badge: 'bg-green-100 text-green-800',    row: 'hover:bg-green-50/60' },
+                'meat_low':    { bg: 'bg-orange-50',  border: 'border-orange-200', badge: 'bg-orange-100 text-orange-800',  row: 'hover:bg-orange-50/60' },
+                'meat_medium': { bg: 'bg-rose-50',    border: 'border-rose-200',   badge: 'bg-rose-100 text-rose-800',      row: 'hover:bg-rose-50/60' },
+                'meat_high':   { bg: 'bg-red-100',    border: 'border-red-300',    badge: 'bg-red-200 text-red-900',        row: 'hover:bg-red-100/60' },
+                'milk_skim':   { bg: 'bg-blue-50',    border: 'border-blue-200',   badge: 'bg-blue-100 text-blue-800',      row: 'hover:bg-blue-50/60' },
+                'milk_low':    { bg: 'bg-sky-50',     border: 'border-sky-200',    badge: 'bg-sky-100 text-sky-800',        row: 'hover:bg-sky-50/60' },
+                'milk_full':   { bg: 'bg-indigo-50',  border: 'border-indigo-200', badge: 'bg-indigo-100 text-indigo-800',  row: 'hover:bg-indigo-50/60' },
+                'fat':         { bg: 'bg-yellow-50',  border: 'border-yellow-200', badge: 'bg-yellow-100 text-yellow-800',  row: 'hover:bg-yellow-50/60' },
+            };
+
+            function renderAltList() {
+                const container   = document.getElementById('alt-items-container');
+                const listSection = document.getElementById('alt-list-section');
+                const badge       = document.getElementById('alt-count-badge');
+                if (!container) return;
+
+                if (altItems.length === 0) {
+                    listSection.classList.add('hidden');
+                    resetViewSelects();
+                    return;
+                }
+
+                listSection.classList.remove('hidden');
+                if (badge) badge.textContent = altItems.length;
+
+                // ===== قائمة الإدارة (حذف) مُجمَّعة حسب الفئة =====
+                const grouped = {};
+                altItems.forEach(function(item, idx) {
+                    if (!grouped[item.category]) grouped[item.category] = [];
+                    grouped[item.category].push({ category: item.category, type: item.type, quantity: item.quantity, idx: idx });
+                });
+
+                container.innerHTML = Object.entries(grouped).map(function(entry) {
+                    const cat    = entry[0];
+                    const items  = entry[1];
+                    const icon   = categoryIcons[cat]  || '🍽️';
+                    const colors = categoryColors[cat] || { bg:'bg-gray-50', border:'border-gray-200', badge:'bg-gray-100 text-gray-700', row:'hover:bg-gray-50/60' };
+                    const label  = categoryLabels[cat] || cat;
+                    return '<div class="' + colors.bg + '">'
+                        + '<div class="flex items-center gap-2 px-4 pt-3 pb-2">'
+                        +   '<span class="text-base">' + icon + '</span>'
+                        +   '<span class="font-bold text-sm text-gray-800">' + label + '</span>'
+                        +   '<span class="text-xs ' + colors.badge + ' px-2 py-0.5 rounded-full font-semibold">'
+                        +     items.length + ' ' + (items.length === 1 ? 'بديل' : 'بدائل')
+                        +   '</span>'
+                        + '</div>'
+                        + '<div class="flex flex-col gap-1.5 px-4 pb-3 pr-8">'
+                        + items.map(function(item) {
+                            return '<div class="flex items-center justify-between bg-white/90 rounded-xl px-4 py-2 border ' + colors.border + ' shadow-sm ' + colors.row + ' transition-colors">'
+                                + '<div class="flex items-center gap-3 flex-1 min-w-0">'
+                                +   '<span class="font-bold text-sm text-gray-800 shrink-0">' + item.type + '</span>'
+                                +   '<span class="text-gray-300 text-xs shrink-0">|</span>'
+                                +   '<span class="text-xs text-gray-500 shrink-0">حصة واحدة:</span>'
+                                +   '<span class="text-sm font-semibold text-[--color-primary] truncate">' + item.quantity + '</span>'
+                                + '</div>'
+                                + '<button onclick="window._removeAltItem(' + item.idx + ')" '
+                                +   'class="shrink-0 mr-2 text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="حذف البديل">'
+                                +   '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">'
+                                +     '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>'
+                                +   '</svg>'
+                                + '</button>'
+                                + '</div>';
+                        }).join('')
+                        + '</div>'
+                        + '</div>';
+                }).join('');
+
+                // ===== تحديث القائمة المتتالية بعد أي تغيير =====
+                refreshViewTypeDropdown();
+            }
+
+            // ===== إعادة تعيين القوائم المتتالية =====
+            function resetViewSelects() {
+                var catSel   = document.getElementById('alt-view-category');
+                var typeSel  = document.getElementById('alt-view-type');
+                var qtyWrap  = document.getElementById('alt-view-qty-wrap');
+                var emptyCat = document.getElementById('alt-view-empty-cat');
+                if (catSel)   catSel.value = '';
+                if (typeSel)  { typeSel.innerHTML = '<option value="">-- اختر الفئة أولاً --</option>'; typeSel.disabled = true; }
+                if (qtyWrap)  qtyWrap.classList.add('hidden');
+                if (emptyCat) emptyCat.classList.add('hidden');
+            }
+
+            // ===== تحديث قائمة "نوع البديل" بناءً على الفئة المختارة =====
+            function refreshViewTypeDropdown() {
+                var catSel   = document.getElementById('alt-view-category');
+                var typeSel  = document.getElementById('alt-view-type');
+                var qtyWrap  = document.getElementById('alt-view-qty-wrap');
+                var emptyCat = document.getElementById('alt-view-empty-cat');
+                if (!catSel || !typeSel) return;
+
+                var selectedCat = catSel.value;
+                if (qtyWrap)  qtyWrap.classList.add('hidden');
+                if (emptyCat) emptyCat.classList.add('hidden');
+
+                if (!selectedCat) {
+                    typeSel.innerHTML = '<option value="">-- اختر الفئة أولاً --</option>';
+                    typeSel.disabled = true;
+                    return;
+                }
+
+                var filtered = altItems.filter(function(i) { return i.category === selectedCat; });
+
+                if (filtered.length === 0) {
+                    typeSel.innerHTML = '<option value="">لا توجد بدائل لهذه الفئة</option>';
+                    typeSel.disabled = true;
+                    if (emptyCat) emptyCat.classList.remove('hidden');
+                    return;
+                }
+
+                typeSel.disabled = false;
+                typeSel.innerHTML = '<option value="">-- اختر نوع البديل --</option>'
+                    + filtered.map(function(item, i) {
+                        return '<option value="' + i + '">' + item.type + '</option>';
+                    }).join('');
+
+                // إعادة تعيين الكمية عند تغيير الفئة
+                if (qtyWrap) qtyWrap.classList.add('hidden');
+            }
+
+            // ===== إظهار الكمية تلقائياً عند اختيار النوع =====
+            function showViewQty() {
+                var catSel  = document.getElementById('alt-view-category');
+                var typeSel = document.getElementById('alt-view-type');
+                var qtyWrap = document.getElementById('alt-view-qty-wrap');
+                var qtyVal  = document.getElementById('alt-view-qty-val');
+                if (!catSel || !typeSel || !qtyWrap || !qtyVal) return;
+
+                var selectedCat = catSel.value;
+                var idx = parseInt(typeSel.value);
+
+                if (!selectedCat || isNaN(idx)) {
+                    qtyWrap.classList.add('hidden');
+                    return;
+                }
+
+                var filtered = altItems.filter(function(i) { return i.category === selectedCat; });
+                if (!filtered[idx]) { qtyWrap.classList.add('hidden'); return; }
+
+                qtyVal.textContent = filtered[idx].quantity;
+                qtyWrap.classList.remove('hidden');
+                // تأثير ظهور لطيف
+                qtyWrap.style.opacity = '0';
+                qtyWrap.style.transform = 'translateY(5px)';
+                qtyWrap.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        qtyWrap.style.opacity = '1';
+                        qtyWrap.style.transform = 'translateY(0)';
+                    });
+                });
+            }
+
+            // ===== ربط أحداث القوائم المتتالية =====
+            var altViewCat  = document.getElementById('alt-view-category');
+            var altViewType = document.getElementById('alt-view-type');
+            if (altViewCat) {
+                altViewCat.addEventListener('change', function() {
+                    refreshViewTypeDropdown();
+                });
+            }
+            if (altViewType) {
+                altViewType.addEventListener('change', function() {
+                    showViewQty();
+                });
+            }
+
+            // زر الإدراج من منطقة البحث
+            var altViewInsertBtn = document.getElementById('alt-view-insert-btn');
+            if (altViewInsertBtn) {
+                altViewInsertBtn.addEventListener('click', function() {
+                    var catSel   = document.getElementById('alt-view-category');
+                    var typeSel  = document.getElementById('alt-view-type');
+                    var qtyVal   = document.getElementById('alt-view-qty-val');
+                    var category = catSel  ? catSel.value  : '';
+                    var type     = typeSel ? typeSel.options[typeSel.selectedIndex]?.text.trim() : '';
+                    var quantity = qtyVal  ? qtyVal.textContent.trim() : '';
+                    if (!category || !type || !quantity) return;
+                    altItems.push({ category: category, type: type, quantity: quantity });
+                    renderAltList();
+                    listVisible = true;
+                    var dropdown = document.getElementById('alt-list-dropdown');
+                    var icon = document.getElementById('alt-list-toggle-icon');
+                    if (dropdown) dropdown.classList.remove('hidden');
+                    if (icon) icon.textContent = '▼';
+                    // تأثير بصري
+                    altViewInsertBtn.textContent = '✓ تم';
+                    altViewInsertBtn.classList.add('bg-green-600');
+                    altViewInsertBtn.classList.remove('bg-[#0790AC]');
+                    setTimeout(function() {
+                        altViewInsertBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg> إدراج';
+                        altViewInsertBtn.classList.remove('bg-green-600');
+                        altViewInsertBtn.classList.add('bg-[#0790AC]');
+                    }, 1200);
+                });
+            }
+
+            // دالة الحذف (عامة على window)
+            window._removeAltItem = function(idx) {
+                altItems.splice(idx, 1);
+                renderAltList();
+            };
+
+            // زر الإدراج
+            const addBtn = document.getElementById('add-alt-btn');
+            if (addBtn) {
+                addBtn.addEventListener('click', function() {
+                    const catSel = document.getElementById('alt-category-select');
+                    const typeInp = document.getElementById('alt-type-input');
+                    const qtyInp = document.getElementById('alt-quantity-input');
+                    const errMsg = document.getElementById('alt-error-msg');
+
+                    const category = catSel ? catSel.value : '';
+                    const type = typeInp ? typeInp.value.trim() : '';
+                    const quantity = qtyInp ? qtyInp.value.trim() : '';
+
+                    if (!category) {
+                        if (errMsg) { errMsg.textContent = '⚠️ يرجى اختيار قائمة البدائل.'; errMsg.classList.remove('hidden'); }
+                        if (catSel) catSel.focus();
+                        return;
+                    }
+                    if (!type) {
+                        if (errMsg) { errMsg.textContent = '⚠️ يرجى إدخال نوع البديل.'; errMsg.classList.remove('hidden'); }
+                        if (typeInp) typeInp.focus();
+                        return;
+                    }
+                    if (!quantity) {
+                        if (errMsg) { errMsg.textContent = '⚠️ يرجى إدخال كمية الحصة الواحدة.'; errMsg.classList.remove('hidden'); }
+                        if (qtyInp) qtyInp.focus();
+                        return;
+                    }
+
+                    if (errMsg) errMsg.classList.add('hidden');
+
+                    altItems.push({ category: category, type: type, quantity: quantity });
+
+                    // مسح الحقول بعد الإدراج
+                    if (catSel) catSel.value = '';
+                    if (typeInp) typeInp.value = '';
+                    if (qtyInp) qtyInp.value = '';
+                    if (catSel) catSel.focus();
+
+                    // تأثير بصري على الزر
+                    addBtn.textContent = '✓ تم الإدراج';
+                    addBtn.classList.add('bg-green-600');
+                    addBtn.classList.remove('bg-[--color-primary]');
+                    setTimeout(function() {
+                        addBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg> إدراج';
+                        addBtn.classList.remove('bg-green-600');
+                        addBtn.classList.add('bg-[--color-primary]');
+                    }, 1200);
+
+                    renderAltList();
+
+                    // ضمان ظهور القائمة بعد الإدراج
+                    listVisible = true;
+                    const dropdown = document.getElementById('alt-list-dropdown');
+                    const icon = document.getElementById('alt-list-toggle-icon');
+                    if (dropdown) dropdown.classList.remove('hidden');
+                    if (icon) icon.textContent = '▼';
+                });
+            }
+
+            // إدراج بضغط Enter في حقل الكمية
+            const qtyInp2 = document.getElementById('alt-quantity-input');
+            if (qtyInp2) {
+                qtyInp2.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); if (addBtn) addBtn.click(); }
+                });
+            }
+
+            // زر إخفاء/إظهار القائمة
+            const toggleBtn = document.getElementById('alt-list-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const dropdown = document.getElementById('alt-list-dropdown');
+                    const icon = document.getElementById('alt-list-toggle-icon');
+                    listVisible = !listVisible;
+                    if (dropdown) {
+                        if (listVisible) {
+                            dropdown.classList.remove('hidden');
+                            if (icon) icon.textContent = '▼';
+                        } else {
+                            dropdown.classList.add('hidden');
+                            if (icon) icon.textContent = '◀';
+                        }
+                    }
+                });
+            }
+
+        })();
+
+        // ===== ربط منطق تصميم برنامج ليوم واحد =====
+        (function() {
+            var createBtn = document.getElementById('create-daily-plan-btn');
+            if (!createBtn) return;
+
+            createBtn.addEventListener('click', function() {
+                var msgEl   = document.getElementById('daily-plan-msg');
+                var result  = document.getElementById('daily-plan-result');
+
+                // جمع الوجبات المختارة من قسم البدائل
+                var mealCheckboxes = document.querySelectorAll('.meal-checkbox:checked');
+                if (mealCheckboxes.length === 0) {
+                    if (msgEl) {
+                        msgEl.textContent = '⚠️ يرجى اختيار الوجبات في قسم قائمة البدائل الغذائية أولاً.';
+                        msgEl.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                // جمع توزيع الأجزاء من الحقول اليدوية
+                var manualInputs = document.querySelectorAll('.manual-parts-input');
+                var selectedParts = parseInt(document.getElementById('manual-total-parts-input')?.value) || 0;
+                var partsMap = {};
+                manualInputs.forEach(function(inp) {
+                    var key = inp.dataset.mealKey;
+                    var val = parseInt(inp.value) || 0;
+                    if (key) partsMap[key] = val;
+                });
+
+                var hasParts = Object.keys(partsMap).length > 0;
+
+                // اسماء وأيقونات الوجبات
+                var mealMeta = {
+                    breakfast: { label: 'الفطور',   icon: '🌅' },
+                    snack1:    { label: 'سناك 1',    icon: '🍎' },
+                    lunch:     { label: 'الغداء',    icon: '☀️' },
+                    snack2:    { label: 'سناك 2',    icon: '🥜' },
+                    dinner:    { label: 'العشاء',    icon: '🌙' },
+                    snack3:    { label: 'سناك 3',    icon: '🍵' },
+                };
+
+                var mealKeys = Array.from(mealCheckboxes).map(function(cb) { return cb.value; });
+
+                if (msgEl) msgEl.classList.add('hidden');
+
+                // تاريخ اليوم
+                var today = new Date();
+                var dateStr = today.toLocaleDateString('ar-SA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+                // بناء الجدول
+                // عدد الأعمدة = خانة التاريخ + عدد الوجبات
+                var colCount = mealKeys.length + 1;
+                var colWidth = Math.round(100 / colCount);
+
+                // رأس الجدول
+                var headerCells = '<th style="min-width:120px;background:#0790AC;color:#fff;padding:10px 12px;font-size:13px;border:1px solid #056e87;border-radius:8px 0 0 0;">📅 التاريخ</th>';
+                mealKeys.forEach(function(key) {
+                    var m = mealMeta[key] || { label: key, icon: '🍽️' };
+                    var parts = partsMap[key] || 0;
+                    var fraction = (hasParts && selectedParts > 0) ? parts + '/' + selectedParts : '';
+                    var perc = (hasParts && selectedParts > 0 && parts > 0)
+                        ? '(' + Math.round((parts / selectedParts) * 100) + '%)' : '';
+                    headerCells += '<th style="background:#0790AC;color:#fff;padding:10px 12px;font-size:13px;border:1px solid #056e87;text-align:center;">' +
+                        m.icon + ' ' + m.label +
+                        (fraction ? '<br><span style="font-size:11px;opacity:0.9;font-weight:600;">' + fraction + ' ' + perc + '</span>' : '') +
+                        '</th>';
+                });
+
+                // صف المحتوى (فارغ للكتابة)
+                var dateCells = '<td style="background:#f0fafb;padding:10px 12px;font-size:12px;font-weight:700;color:#0790AC;border:1px solid #d1d5db;vertical-align:top;">' + dateStr + '</td>';
+                mealKeys.forEach(function(key) {
+                    dateCells += '<td style="min-height:80px;height:80px;background:#fff;border:1px solid #e5e7eb;padding:8px;vertical-align:top;"></td>';
+                });
+
+                result.innerHTML =
+                    '<div style="overflow-x:auto;border-radius:12px;box-shadow:0 2px 8px rgba(7,144,172,0.10);margin-bottom:8px;">' +
+                    '<table style="width:100%;border-collapse:collapse;direction:rtl;font-family:inherit;">' +
+                    '<thead><tr>' + headerCells + '</tr></thead>' +
+                    '<tbody><tr>' + dateCells + '</tr></tbody>' +
+                    '</table></div>' +
+                    '<p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:4px;">يمكنك إضافة تفاصيل الوجبات يدوياً في الخانات</p>';
+
+                result.classList.remove('hidden');
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        })();
+        // ===== نهاية ربط منطق برنامج اليوم الواحد =====
+        // ===== نهاية ربط منطق إدراج البدائل الغذائية =====
 
         // ربط زر طباعة الوصفة الطبية في عرض الزيارة
         const viewPrintPrescBtn = document.getElementById('view-print-prescription-btn');
@@ -5412,6 +6105,20 @@
                     ${renderField('الوضع المادي', p.financial_status)}
                     ${renderField('الهاتف', p.phone)}
                     ${renderField('الواتساب', p.whatsapp)}
+                    ${(p.whatsapp || p.phone) ? `
+                    <div class="md:col-span-3 flex flex-wrap gap-2 mt-1 mb-2">
+                        ${(p.whatsapp || p.phone) ? `
+                        <button onclick="window._waReminder(${JSON.stringify(currentViewPatient?.name_ar||'').replace(/"/g,'&quot;')}, '${(p.whatsapp||p.phone||'').replace(/'/g,'')}')"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-xl transition shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            تذكير بالموعد (واتساب)
+                        </button>
+                        <button onclick="window._waReport(${JSON.stringify(currentViewPatient?.name_ar||'').replace(/"/g,'&quot;')}, '${(p.whatsapp||p.phone||'').replace(/'/g,'')}', ${JSON.stringify(currentViewVisit||{}).replace(/"/g,'&quot;')})"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-bold rounded-xl transition shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            إرسال تقرير الحالة (واتساب)
+                        </button>` : ''}
+                    </div>` : ''}
                     ${renderField('العنوان', p.address)}
                 </div>
                 ${renderTextarea('معتقدات دينية/ثقافية', p.beliefs_notes)}
@@ -5715,9 +6422,18 @@
                     </div>
                 </div>
 
-                <!-- ===== قسم البرنامج الغذائي بقوائم التبادل ===== -->
+
+            </div>
+        `;
+    }
+
+    // ========== تبويب البرنامج الغذائي (Tab 7) ==========
+    function createDietProgramTab() {
+        return `
+            <div id="view-tab-7" class="patient-view-content hidden space-y-4">
+                <!-- ===== قسم جدول الحصص الغذائية ===== -->
                 <div class="pt-6 border-t border-gray-300 mt-6">
-                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">3. البرنامج الغذائي (قوائم التبادل)</h3>
+                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">1. جدول الحصص الغذائية</h3>
 
                     <!-- صف الإدخال -->
                     <div class="flex flex-wrap gap-3 items-end mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
@@ -5791,7 +6507,7 @@
 
                     <!-- مقارنة بالهدف -->
                     <div id="exchange-comparison" class="hidden mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                        <h4 class="font-semibold text-blue-800 mb-3 text-sm">مقارنة البرنامج الغذائي بالهدف المحسوب</h4>
+                        <h4 class="font-semibold text-blue-800 mb-3 text-sm">مقارنة جدول الحصص الغذائية بالهدف المحسوب</h4>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
                             <div class="bg-white rounded-lg p-2 border">
                                 <div class="text-gray-500">كربوهيدرات (غ)</div>
@@ -5816,8 +6532,284 @@
                         </div>
                     </div>
                 </div>
-                <!-- ===== نهاية قسم البرنامج الغذائي ===== -->
+                <!-- ===== نهاية قسم جدول الحصص الغذائية ===== -->
 
+                <!-- ===== قسم قائمة البدائل الغذائية (جديد) ===== -->
+                <div class="pt-6 border-t border-gray-300 mt-6">
+                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">2. قائمة البدائل الغذائية</h3>
+
+                    <!-- الخطوة 1: اختيار توزيع الأجزاء -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">1. توزيع الأجزاء</label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" id="manual-total-parts-input" min="1" max="100" placeholder="أدخل العدد"
+                                    class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm font-bold text-center text-gray-700 focus:border-[#0790AC] focus:outline-none focus:ring-2 focus:ring-[#0790AC]/20 transition-all"
+                                    style="font-size:1rem;">
+                                <button id="confirm-total-parts-btn"
+                                    class="shrink-0 bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors">
+                                    تأكيد
+                                </button>
+                            </div>
+                            <div class="mt-2 text-xs text-[--color-primary] font-semibold" id="selected-parts-label">لم يتم الاختيار بعد</div>
+                        </div>
+
+                        <!-- الخطوة 2: اختيار الوجبات -->
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">2. اختر الوجبات</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" class="meal-checkbox accent-[#0790AC]" value="breakfast" data-label="فطور"> فطور
+                                </label>
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" class="meal-checkbox accent-[#0790AC]" value="snack1" data-label="سناك 1"> سناك 1
+                                </label>
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" class="meal-checkbox accent-[#0790AC]" value="lunch" data-label="غداء"> غداء
+                                </label>
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" class="meal-checkbox accent-[#0790AC]" value="snack2" data-label="سناك 2"> سناك 2
+                                </label>
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" class="meal-checkbox accent-[#0790AC]" value="dinner" data-label="عشاء"> عشاء
+                                </label>
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" class="meal-checkbox accent-[#0790AC]" value="snack3" data-label="سناك 3"> سناك 3
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- الخطوة 3: الإدخال اليدوي للأجزاء -->
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col gap-2">
+                            <div class="text-sm font-bold text-gray-700 mb-1">3. وزّع الأجزاء يدوياً</div>
+                            <div id="manual-parts-inputs" class="flex flex-col gap-2">
+                                <div class="text-xs text-gray-400 italic">اختر الوجبات أولاً لتظهر حقول الإدخال</div>
+                            </div>
+                            <!-- مؤشر المجموع -->
+                            <div id="parts-sum-indicator" class="hidden mt-1 text-xs font-bold rounded-lg px-3 py-2 text-center transition-all"></div>
+                            <!-- زر العرض -->
+                            <button id="show-manual-dist-btn"
+                                class="hidden w-full bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-bold py-2 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 mt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                عرض التوزيع
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- نتائج التوزيع -->
+                    <div id="meal-distribution-result" class="hidden mt-4">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="h-1 flex-1 bg-gradient-to-l from-[--color-primary] to-[--color-primary-dark] rounded-full"></div>
+                            <span class="text-sm font-bold text-[--color-primary] whitespace-nowrap">نتائج توزيع الوجبات</span>
+                            <div class="h-1 flex-1 bg-gradient-to-r from-[--color-primary] to-[--color-primary-dark] rounded-full"></div>
+                        </div>
+
+                        <!-- ملخص التوزيع -->
+                        <div class="mb-4 p-3 bg-[--color-primary-light] rounded-xl border border-[--color-primary]/20">
+                            <div class="flex flex-wrap gap-4 text-sm text-gray-700">
+                                <span>إجمالي الأجزاء: <strong id="dist-total-parts" class="text-[--color-primary]">—</strong></span>
+                                <span>السعرات الهدف: <strong id="dist-target-kcal" class="text-green-700">—</strong> سعرة</span>
+                                <span>عدد الوجبات: <strong id="dist-meal-count" class="text-[--color-primary]">—</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- بطاقات الوجبات -->
+                        <div id="meal-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- سيتم إنشاؤها بـ JS -->
+                        </div>
+                    </div>
+
+                    <!-- رسالة خطأ -->
+                    <div id="meal-dist-error" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-semibold"></div>
+                </div>
+                <!-- ===== نهاية قسم قائمة البدائل الغذائية ===== -->
+
+                <!-- ===== قسم إدراج البدائل الغذائية (جديد v20) ===== -->
+                <div class="pt-6 border-t border-gray-300 mt-6">
+                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">3. إدراج البدائل الغذائية</h3>
+
+                    <!-- نموذج الإدراج -->
+                    <div class="bg-gray-50 rounded-2xl border border-gray-200 p-4 mb-4 shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+
+                            <!-- قائمة الفئات -->
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">قائمة البدائل</label>
+                                <select id="alt-category-select"
+                                    class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm font-semibold focus:border-[#0790AC] focus:outline-none bg-white transition-colors">
+                                    <option value="">-- اختر الفئة --</option>
+                                    <option value="starch">🍞 قائمة النشويات</option>
+                                    <option value="fruit">🍎 قائمة الفواكه</option>
+                                    <option value="vegetable">🥦 قائمة الخضار</option>
+                                    <option value="meat_low">🥩 قائمة اللحوم قليلة الدهون</option>
+                                    <option value="meat_medium">🍗 قائمة اللحوم متوسطة الدهون</option>
+                                    <option value="meat_high">🥓 قائمة اللحوم عالية الدهون</option>
+                                    <option value="milk_skim">🥛 قائمة حليب خالي الدسم</option>
+                                    <option value="milk_low">🧀 قائمة حليب قليل الدسم</option>
+                                    <option value="milk_full">🫙 قائمة حليب كامل الدسم</option>
+                                    <option value="fat">🫒 قائمة الدهون</option>
+                                </select>
+                            </div>
+
+                            <!-- نوع البديل -->
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">نوع البديل</label>
+                                <input type="text" id="alt-type-input"
+                                    class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm focus:border-[#0790AC] focus:outline-none transition-colors"
+                                    placeholder="مثال: تفاح، أرز، خيار...">
+                            </div>
+
+                            <!-- الكمية -->
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">الكمية (حصة واحدة)</label>
+                                <input type="text" id="alt-quantity-input"
+                                    class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm focus:border-[#0790AC] focus:outline-none transition-colors"
+                                    placeholder="مثال: حبة صغيرة، 30 غ، كوب...">
+                            </div>
+
+                            <!-- زر الإدراج -->
+                            <div>
+                                <button id="add-alt-btn"
+                                    class="w-full bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-bold py-2 px-4 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                                    </svg>
+                                    إدراج
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- رسالة خطأ الإدراج -->
+                        <div id="alt-error-msg" class="hidden mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-semibold"></div>
+                    </div>
+
+                    <!-- قائمة البدائل المدرجة -->
+                    <div id="alt-list-section" class="hidden">
+
+                        <!-- رأس القائمة مع زر الطي -->
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="h-1 flex-1 bg-gradient-to-l from-[--color-primary] to-[--color-primary-dark] rounded-full"></div>
+                            <button id="alt-list-toggle-btn"
+                                class="flex items-center gap-2 text-sm font-bold text-[--color-primary] bg-[--color-primary-light] px-4 py-1.5 rounded-full border border-[--color-primary]/30 hover:bg-[--color-primary]/10 transition-colors whitespace-nowrap">
+                                <span id="alt-list-toggle-icon" class="text-xs">▼</span>
+                                <span>البدائل المدرجة</span>
+                                <span id="alt-count-badge"
+                                    class="bg-[--color-primary] text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+                            </button>
+                            <div class="h-1 flex-1 bg-gradient-to-r from-[--color-primary] to-[--color-primary-dark] rounded-full"></div>
+                        </div>
+
+                        <!-- المحتوى القابل للطي -->
+                        <div id="alt-list-dropdown" class="rounded-2xl border-2 border-[--color-primary]/20 bg-white overflow-hidden shadow-sm">
+
+                            <!-- ===== منطقة البحث بالقوائم المتتالية ===== -->
+                            <div class="p-4 bg-gradient-to-l from-[--color-primary-light]/60 to-white border-b-2 border-[--color-primary]/10">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+
+                                    <!-- 1. قائمة البدائل -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1.5 flex items-center gap-1">
+                                            <span class="w-4 h-4 rounded-full bg-[--color-primary] text-white flex items-center justify-center text-[10px] font-black">١</span>
+                                            قائمة البدائل
+                                        </label>
+                                        <select id="alt-view-category"
+                                            class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:border-[#0790AC] focus:outline-none bg-white transition-colors">
+                                            <option value="">-- اختر الفئة --</option>
+                                            <option value="starch">🍞 قائمة النشويات</option>
+                                            <option value="fruit">🍎 قائمة الفواكه</option>
+                                            <option value="vegetable">🥦 قائمة الخضار</option>
+                                            <option value="meat_low">🥩 قائمة اللحوم قليلة الدهون</option>
+                                            <option value="meat_medium">🍗 قائمة اللحوم متوسطة الدهون</option>
+                                            <option value="meat_high">🥓 قائمة اللحوم عالية الدهون</option>
+                                            <option value="milk_skim">🥛 قائمة حليب خالي الدسم</option>
+                                            <option value="milk_low">🧀 قائمة حليب قليل الدسم</option>
+                                            <option value="milk_full">🫙 قائمة حليب كامل الدسم</option>
+                                            <option value="fat">🫒 قائمة الدهون</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 2. نوع البديل -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1.5 flex items-center gap-1">
+                                            <span class="w-4 h-4 rounded-full bg-[--color-primary] text-white flex items-center justify-center text-[10px] font-black">٢</span>
+                                            نوع البديل
+                                        </label>
+                                        <select id="alt-view-type"
+                                            class="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:border-[#0790AC] focus:outline-none bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled>
+                                            <option value="">-- اختر الفئة أولاً --</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 3. الكمية — تظهر تلقائياً -->
+                                    <div id="alt-view-qty-wrap" class="hidden">
+                                        <label class="block text-xs font-bold text-gray-600 mb-1.5 flex items-center gap-1">
+                                            <span class="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[10px] font-black">٣</span>
+                                            الكمية (حصة واحدة)
+                                        </label>
+                                        <div class="flex items-center gap-2 px-4 py-2.5 bg-green-50 border-2 border-green-300 rounded-xl shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/>
+                                            </svg>
+                                            <span id="alt-view-qty-val" class="text-sm font-bold text-green-800 leading-snug flex-1"></span>
+                                            <button id="alt-view-insert-btn"
+                                                class="shrink-0 flex items-center gap-1 bg-[#0790AC] hover:bg-[#056e87] text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                                                </svg>
+                                                إدراج
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- رسالة "لا يوجد" للفئة الفارغة -->
+                                    <div id="alt-view-empty-cat" class="hidden md:col-span-1">
+                                        <div class="flex items-center gap-2 px-3 py-2.5 bg-amber-50 border-2 border-amber-200 rounded-xl text-xs text-amber-700 font-semibold">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+                                            </svg>
+                                            لا توجد بدائل لهذه الفئة
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- ===== نهاية منطقة البحث ===== -->
+
+                            <!-- قائمة كل البدائل للإدارة (حذف) -->
+                            <div id="alt-items-container" class="divide-y divide-gray-100">
+                                <!-- ستُعبأ بواسطة JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ===== نهاية قسم إدراج البدائل الغذائية ===== -->
+
+
+                <!-- ===== قسم تصميم برنامج ليوم واحد ===== -->
+                <div class="pt-6 border-t border-gray-300 mt-6">
+                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">4. تصميم برنامج ليوم واحد</h3>
+
+                    <!-- زر الإنشاء -->
+                    <div class="flex items-center gap-4 mb-5">
+                        <button id="create-daily-plan-btn"
+                            class="flex items-center gap-2 bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+                            </svg>
+                            إنشاء البرنامج
+                        </button>
+                        <div id="daily-plan-msg" class="hidden text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2"></div>
+                    </div>
+
+                    <!-- الجدول اليومي -->
+                    <div id="daily-plan-result" class="hidden">
+                        <!-- سيُنشأ بالـ JS -->
+                    </div>
+                </div>
+                <!-- ===== نهاية قسم تصميم برنامج ليوم واحد ===== -->
                 <!-- زر طباعة البرنامج الغذائي -->
                 <div class="mt-6 flex justify-end">
                     <button id="print-diet-btn"
@@ -5825,7 +6817,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z"/>
                         </svg>
-                        طباعة البرنامج الغذائي
+                        طباعة جدول الحصص الغذائية
                     </button>
                 </div>
 
@@ -6246,38 +7238,94 @@
         }
     }
 
-    // --- دوال حفظ وتحميل البيانات ---
-    
-    function saveDataToLocalStorage() {
-        try {
-            const dataToSave = { ...appData };
-            delete dataToSave.currentUser;
-            delete dataToSave.currentAccountId;
-            // الحسابات تُحفظ دائماً
-            if (!dataToSave.accounts) dataToSave.accounts = getAccounts();
+    // --- دوال حفظ وتحميل البيانات (IndexedDB) ---
 
-            localStorage.setItem('medboxPediaData', JSON.stringify(dataToSave));
-            isDataDirty = false;
-        } catch (e) {
-            console.error("Failed to save to localStorage", e);
-            showToast('فشل حفظ البيانات في المتصفح (قد تكون ممتلئة)', 'error');
-        }
+    // ===== IndexedDB Setup =====
+    const DB_NAME = 'MedBoxPediaDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'appStore';
+    let _db = null;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            if (_db) { resolve(_db); return; }
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                }
+            };
+            req.onsuccess = (e) => { _db = e.target.result; resolve(_db); };
+            req.onerror = (e) => { reject(e.target.error); };
+        });
     }
-    
+
+    function idbSet(key, value) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            tx.objectStore(STORE_NAME).put(value, key);
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e.target.error);
+        }));
+    }
+
+    function idbGet(key) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const req = tx.objectStore(STORE_NAME).get(key);
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error);
+        }));
+    }
+
+    // حفظ البيانات (غير متزامن) - يحل محل saveDataToLocalStorage
+    function saveDataToLocalStorage() {
+        const dataToSave = { ...appData };
+        delete dataToSave.currentUser;
+        delete dataToSave.currentAccountId;
+        if (!dataToSave.accounts) dataToSave.accounts = getAccounts();
+
+        idbSet('medboxPediaData', dataToSave)
+            .then(() => { isDataDirty = false; })
+            .catch(e => {
+                console.error("Failed to save to IndexedDB", e);
+                showToast('فشل حفظ البيانات في قاعدة البيانات المحلية', 'error');
+            });
+    }
+
+    // تحميل البيانات (غير متزامن) - يحل محل loadDataFromLocalStorage
     function loadDataFromLocalStorage() {
-        const data = localStorage.getItem('medboxPediaData');
-        if (data) {
-            appData = JSON.parse(data);
-            window._appData = appData;
-            if (!Array.isArray(appData.appointments)) appData.appointments = [];
-            // ضمان وجود مصفوفة الحسابات
-            getAccounts();
-            isDataDirty = false;
-            showToast('تم تحميل البيانات بنجاح من الذاكرة المحلية', 'success');
-        } else {
-            // تهيئة الحسابات الافتراضية عند أول تشغيل
-            getAccounts();
+        // محاولة ترحيل بيانات localStorage القديمة أولاً
+        const oldData = localStorage.getItem('medboxPediaData');
+        if (oldData) {
+            try {
+                const parsed = JSON.parse(oldData);
+                idbSet('medboxPediaData', parsed).then(() => {
+                    localStorage.removeItem('medboxPediaData');
+                    console.log('تم ترحيل البيانات من localStorage إلى IndexedDB');
+                });
+            } catch(e) { /* تجاهل أخطاء الترحيل */ }
         }
+
+        idbGet('medboxPediaData').then(data => {
+            if (data) {
+                appData = data;
+                window._appData = appData;
+                if (!Array.isArray(appData.appointments)) appData.appointments = [];
+                getAccounts();
+                isDataDirty = false;
+                updateUI();
+                showToast('تم تحميل البيانات بنجاح', 'success');
+            } else {
+                getAccounts();
+                updateUI();
+            }
+        }).catch(e => {
+            console.error("Failed to load from IndexedDB", e);
+            getAccounts();
+            updateUI();
+        });
     }
     
     function saveDataAsJson() {
@@ -6668,7 +7716,7 @@
                     <td>${r.fat.toFixed(1)}</td>
                     <td>${r.kcal.toFixed(1)}</td>
                 </tr>`).join('')
-            : `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:16px">لا توجد عناصر في البرنامج الغذائي</td></tr>`;
+            : `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:16px">لا توجد عناصر في جدول الحصص الغذائية</td></tr>`;
 
         // مجاميع
         const totCarb = exchangeRows.reduce((s,r)=>s+r.carb,0).toFixed(1);
@@ -6693,7 +7741,7 @@
             <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #0790AC;padding-bottom:12px;margin-bottom:16px">
                 <div>
                     <div style="font-size:22px;font-weight:700;color:#0790AC">MedBox-Pedia</div>
-                    <div style="font-size:11px;color:#6b7280">البرنامج الغذائي التبادلي</div>
+                    <div style="font-size:11px;color:#6b7280">جدول الحصص الغذائية</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
                     ${dietQrHtml}
@@ -6764,7 +7812,7 @@
 
             <!-- جدول البرنامج الغذائي -->
             <div style="margin-bottom:8px">
-                <div style="font-size:13px;font-weight:700;color:#374151;border-right:4px solid #0790AC;padding-right:8px;margin-bottom:6px">جدول البرنامج الغذائي (قوائم التبادل)</div>
+                <div style="font-size:13px;font-weight:700;color:#374151;border-right:4px solid #0790AC;padding-right:8px;margin-bottom:6px">جدول الحصص الغذائية</div>
                 <table class="print-table" style="width:100%;border-collapse:collapse">
                     <thead>
                         <tr style="background:#0790AC;color:white">
@@ -7893,12 +8941,20 @@
                         <div class="reminder-meta">${lbl} · ${appt.date}${appt.time ? ' ' + appt.time : ''}${appt.note ? ' · ' + appt.note : ''}</div>
                     </div>
                     <div class="reminder-actions">
+                        ${appt.patientId ? `<button class="reminder-btn wa-remind" title="إرسال تذكير واتساب" data-id="${appt.id}" data-pid="${appt.patientId}" data-date="${appt.date}" data-time="${appt.time||''}" data-note="${(appt.note||'').replace(/"/g,'&quot;')}" style="background:#25d366;color:#fff;border-radius:6px;font-size:0.75rem;padding:3px 7px;" data-testid="wa-remind-${appt.id}">📲 واتساب</button>` : ''}
                         <button class="reminder-btn snooze" title="إسكات اليوم" data-id="${appt.id}" data-testid="snooze-${appt.id}">🔕</button>
                         <button class="reminder-btn del" title="حذف" data-id="${appt.id}" data-testid="del-rem-${appt.id}">🗑</button>
                     </div>
                 </div>`;
             }).join('');
 
+            list.querySelectorAll('.wa-remind').forEach(b => b.addEventListener('click', () => {
+                const pid = b.getAttribute('data-pid');
+                const date = b.getAttribute('data-date');
+                const time = b.getAttribute('data-time');
+                const note = b.getAttribute('data-note');
+                window._waSendApptReminder(pid, date, time, note);
+            }));
             list.querySelectorAll('.snooze').forEach(b => b.addEventListener('click', () => {
                 const id = b.getAttribute('data-id');
                 const a = appData.appointments.find(x => x.id === id);
@@ -8022,6 +9078,191 @@
 
 let qrVideoStream = null;
 let qrScanInterval = null;
+
+/**
+ * ======================================================
+ * نظام إرسال رسائل الواتساب للمرضى
+ * ======================================================
+ */
+
+/**
+ * تنظيف رقم الهاتف ليكون صالحاً لرابط wa.me
+ */
+function cleanWhatsappNumber(raw) {
+    if (!raw) return null;
+    var num = String(raw).replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+    if (num.startsWith('00')) num = num.slice(2);
+    if (num.startsWith('+'))  num = num.slice(1);
+    if (num.startsWith('0') && num.length >= 9) num = '963' + num.slice(1);
+    return num.length >= 7 ? num : null;
+}
+
+/**
+ * فتح واتساب برسالة جاهزة
+ */
+function openWhatsapp(rawNumber, text) {
+    var num = cleanWhatsappNumber(rawNumber);
+    if (!num) {
+        showToast('رقم الواتساب غير صالح أو غير مسجّل للمريض', 'error');
+        return;
+    }
+    var encoded = encodeURIComponent(text);
+    window.open('https://wa.me/' + num + '?text=' + encoded, '_blank');
+}
+
+/**
+ * فتح نافذة تخصيص رسالة الواتساب
+ */
+function openWaModal(opts) {
+    var title = opts.title || 'إرسال واتساب';
+    var defaultText = opts.defaultText || '';
+    var rawNumber = opts.rawNumber || '';
+
+    var old = document.getElementById('wa-send-modal');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'wa-send-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:16px;';
+    overlay.dir = 'rtl';
+
+    var waIconSVG = '<svg xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+
+    overlay.innerHTML = '<div style="background:#fff;border-radius:20px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column;overflow:hidden;">' +
+        '<div style="padding:16px 20px;background:linear-gradient(135deg,#25d366 0%,#128c7e 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;">' +
+            '<div style="display:flex;align-items:center;gap:10px;">' + waIconSVG + '<span style="font-family:Cairo,sans-serif;font-size:1rem;font-weight:700;">' + title + '</span></div>' +
+            '<button id="wa-modal-close" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>' +
+        '</div>' +
+        '<div style="padding:20px;display:flex;flex-direction:column;gap:14px;">' +
+            '<div><label style="font-family:Cairo,sans-serif;font-size:0.82rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">📱 رقم الواتساب (مع رمز الدولة)</label>' +
+            '<input id="wa-number-input" type="text" value="' + (rawNumber || '') + '" style="font-family:Cairo,sans-serif;width:100%;border:1.5px solid #d1d5db;border-radius:10px;padding:8px 12px;font-size:0.9rem;outline:none;box-sizing:border-box;direction:ltr;text-align:left;" placeholder="مثال: 963912345678"></div>' +
+            '<div><label style="font-family:Cairo,sans-serif;font-size:0.82rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">✉️ نص الرسالة</label>' +
+            '<textarea id="wa-message-input" rows="10" style="font-family:Cairo,sans-serif;width:100%;border:1.5px solid #d1d5db;border-radius:10px;padding:10px 12px;font-size:0.85rem;outline:none;box-sizing:border-box;resize:vertical;line-height:1.6;">' + defaultText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea></div>' +
+            '<div style="font-family:Cairo,sans-serif;font-size:0.75rem;color:#6b7280;background:#f9fafb;border-radius:8px;padding:8px 12px;">ℹ️ سيتم فتح واتساب تلقائياً مع الرسالة الجاهزة. يجب أن يكون واتساب مثبتاً على جهازك أو استخدام واتساب الويب.</div>' +
+        '</div>' +
+        '<div style="padding:14px 20px;border-top:1px solid #e5e7eb;display:flex;gap:10px;background:#fafafa;">' +
+            '<button id="wa-send-btn" style="font-family:Cairo,sans-serif;flex:1;background:linear-gradient(135deg,#25d366 0%,#128c7e 100%);color:#fff;border:none;padding:11px 0;border-radius:12px;font-weight:700;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">' + waIconSVG + ' إرسال عبر واتساب</button>' +
+            '<button id="wa-cancel-btn" style="font-family:Cairo,sans-serif;padding:11px 20px;border-radius:12px;border:2px solid #e5e7eb;background:#fff;color:#6b7280;font-weight:700;font-size:0.9rem;cursor:pointer;">إلغاء</button>' +
+        '</div>' +
+    '</div>';
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#wa-send-btn').addEventListener('click', function() {
+        var num = overlay.querySelector('#wa-number-input').value.trim();
+        var msg = overlay.querySelector('#wa-message-input').value.trim();
+        if (!msg) { showToast('الرجاء كتابة نص الرسالة', 'error'); return; }
+        openWhatsapp(num, msg);
+    });
+    overlay.querySelector('#wa-modal-close').addEventListener('click', function() { overlay.remove(); });
+    overlay.querySelector('#wa-cancel-btn').addEventListener('click', function() { overlay.remove(); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+}
+
+/**
+ * تذكير واتساب من صفحة المريض
+ */
+window._waReminder = function(patientName, rawNumber) {
+    var now = new Date();
+    var todayISO = now.toISOString().slice(0, 10);
+    var upcoming = (appData.appointments || []).filter(function(a) {
+        var nameMatch = a.patientName === patientName ||
+            (currentViewPatient && (a.patientId === currentViewPatient.id || a.patientName === currentViewPatient.name_ar));
+        return nameMatch && a.date >= todayISO && !a.dismissed;
+    }).sort(function(a, b) { return a.date.localeCompare(b.date); });
+
+    var acc = getCurrentAccount();
+    var doctorName = acc ? (acc.displayName || acc.username) : (appData.currentUser === 'developer' ? 'هاني بكر سعيد' : 'الطبيب');
+    var clinicName = acc ? (acc.clinic || '') : '';
+    var clinicPhone = acc ? (acc.phone || '') : '';
+
+    var apptLine = '';
+    if (upcoming.length > 0) {
+        var appt = upcoming[0];
+        var timeStr = appt.time ? ' الساعة ' + appt.time : '';
+        var noteStr = appt.note ? ' - ' + appt.note : '';
+        apptLine = '\n📅 موعدك القادم: ' + appt.date + timeStr + noteStr;
+    } else {
+        apptLine = '\n📅 يرجى التواصل لتحديد موعد المراجعة القادمة.';
+    }
+
+    openWaModal({
+        title: '📅 إرسال تذكير بالموعد',
+        defaultText: 'السلام عليكم ' + (patientName || '') + ',' + apptLine + '\n\nنتمنى لكم الصحة والعافية.\n' + (clinicName ? '🏥 ' + clinicName + '\n' : '') + (clinicPhone ? '📞 ' + clinicPhone + '\n' : '') + (doctorName ? '👨‍⚕️ ' + doctorName : ''),
+        rawNumber: rawNumber
+    });
+};
+
+/**
+ * تقرير الحالة عبر واتساب من صفحة المريض
+ */
+window._waReport = function(patientName, rawNumber) {
+    var visit = currentViewVisit;
+    var acc = getCurrentAccount();
+    var doctorName = acc ? (acc.displayName || acc.username) : (appData.currentUser === 'developer' ? 'هاني بكر سعيد' : 'الطبيب');
+    var clinicName = acc ? (acc.clinic || '') : '';
+    var clinicPhone = acc ? (acc.phone || '') : '';
+
+    var reportLines = [];
+    if (visit) {
+        if (visit.physical) {
+            var ph = visit.physical;
+            var h = parseFloat(ph.height), w = parseFloat(ph.weight);
+            var bmiLine = (h > 0 && w > 0) ? ' | BMI: ' + (w / ((h/100)*(h/100))).toFixed(1) : '';
+            reportLines.push('⚖️ الوزن: ' + (ph.weight || '—') + ' كغ | الطول: ' + (ph.height || '—') + ' سم' + bmiLine);
+        }
+        if (visit.health) {
+            if (visit.health.chronic_diseases) reportLines.push('🏥 الأمراض المزمنة: ' + visit.health.chronic_diseases);
+            if (visit.health.current_complaint) reportLines.push('📋 الشكوى: ' + visit.health.current_complaint);
+        }
+        if (visit.vitals) {
+            var v = visit.vitals;
+            var vitParts = [];
+            if (v.bp_sys && v.bp_dias) vitParts.push('الضغط: ' + v.bp_sys + '/' + v.bp_dias);
+            if (v.pulse) vitParts.push('النبض: ' + v.pulse);
+            if (v.spo2) vitParts.push('SpO2: ' + v.spo2 + '%');
+            if (vitParts.length) reportLines.push('💓 العلامات الحيوية: ' + vitParts.join(' | '));
+        }
+    }
+
+    var reportBody = reportLines.length ? reportLines.join('\n') : '(لا توجد بيانات في هذه الزيارة)';
+
+    openWaModal({
+        title: '📊 إرسال تقرير الحالة',
+        defaultText: 'السلام عليكم ' + (patientName || '') + ',\nنفيدكم بملخص حالتكم الصحية:\n\n' + reportBody + '\n\n' + (clinicName ? '🏥 ' + clinicName + '\n' : '') + (clinicPhone ? '📞 ' + clinicPhone + '\n' : '') + (doctorName ? '👨‍⚕️ ' + doctorName : ''),
+        rawNumber: rawNumber
+    });
+};
+
+/**
+ * إرسال تذكير واتساب من قائمة المواعيد
+ */
+window._waSendApptReminder = function(patientId, apptDate, apptTime, apptNote) {
+    var patient = (appData.patients || []).find(function(p) { return p.id === patientId; });
+    if (!patient) { showToast('لم يتم العثور على المريض', 'error'); return; }
+
+    var waNumber = '';
+    if (patient.visits && patient.visits.length > 0) {
+        var lv = patient.visits[patient.visits.length - 1];
+        waNumber = (lv.personal && (lv.personal.whatsapp || lv.personal.phone)) || '';
+    }
+
+    var acc = getCurrentAccount();
+    var doctorName = acc ? (acc.displayName || acc.username) : 'الطبيب';
+    var clinicName = acc ? (acc.clinic || '') : '';
+    var clinicPhone = acc ? (acc.phone || '') : '';
+
+    var timeStr = apptTime ? ' الساعة ' + apptTime : '';
+    var noteStr = apptNote ? '\n📌 ملاحظة: ' + apptNote : '';
+
+    openWaModal({
+        title: '📅 تذكير بالموعد',
+        defaultText: 'السلام عليكم ' + (patient.name_ar || '') + ',\nيسعدنا تذكيركم بموعدكم القادم:\n📅 التاريخ: ' + apptDate + timeStr + noteStr + '\n\nنتمنى لكم الصحة والعافية.\n' + (clinicName ? '🏥 ' + clinicName + '\n' : '') + (clinicPhone ? '📞 ' + clinicPhone + '\n' : '') + (doctorName ? '👨‍⚕️ ' + doctorName : ''),
+        rawNumber: waNumber
+    });
+};
+
+
 
 /**
  * توليد QR Code data للمريض
