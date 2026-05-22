@@ -13,9 +13,8 @@
     <!-- jsQR library (قراءة QR من الكاميرا) -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     
-    <!-- Google Identity Services & Drive API -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client"></script>
 
     <!-- Google Fonts (Cairo) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9716,17 +9715,9 @@ function printQRCard(patient, qrData) {
             </div>
         </div>
 
-        <!-- إعداد Client ID -->
-        <div class="cloud-sync-section">
-            <div class="cloud-sync-section-title">إعداد Google OAuth</div>
-            <div style="margin-bottom:8px;font-size:0.82rem;color:#6b7280;line-height:1.6;">
-                أدخل <strong>Client ID</strong> من <a href="https://console.cloud.google.com/" target="_blank" style="color:#0790AC;">Google Cloud Console</a>.<br>
-                تأكد من تفعيل <strong>Google Drive API</strong> وإضافة هذا المتصفح كـ Authorized Origin.
-            </div>
-            <input type="text" id="google-client-id-input" class="cloud-input" placeholder="XXXXXXXX.apps.googleusercontent.com" />
-            <button onclick="saveClientId()" class="cloud-btn cloud-btn-secondary" style="margin-top:8px;width:100%;">
-                حفظ Client ID
-            </button>
+        <!-- إعداد Client ID - مخفي، Client ID مدمج في الكود -->
+        <div class="cloud-sync-section" style="display:none;">
+            <input type="text" id="google-client-id-input" />
         </div>
 
         <!-- رفع وتحميل يدوي -->
@@ -9797,16 +9788,15 @@ let _cloudDriveFileId = null;
 let _autoSyncTimer = null;
 let _autoSyncCountdownTimer = null;
 let _autoSyncNextTime = null;
-let _googleClientId = localStorage.getItem('medbox_google_client_id') || '';
+// Client ID مدمج مباشرة - لا يحتاج المستخدم لإدخاله
+const GOOGLE_CLIENT_ID = '821846802885-42uri2u1ej32e4lqo76evhr0pu60ks6k.apps.googleusercontent.com';
+let _googleClientId = GOOGLE_CLIENT_ID;
 let _cloudUserEmail = '';
 
 // --- مساعدات UI ---
 function openCloudSyncModal() {
     const modal = document.getElementById('cloud-sync-modal');
     modal.classList.add('active');
-    // تحميل Client ID المحفوظ
-    const inp = document.getElementById('google-client-id-input');
-    if (inp && _googleClientId) inp.value = _googleClientId;
     updateCloudUI();
 }
 function closeCloudSyncModal() {
@@ -9861,25 +9851,11 @@ function updateCloudUI() {
 }
 
 function saveClientId() {
-    const inp = document.getElementById('google-client-id-input');
-    if (!inp || !inp.value.trim()) {
-        if (typeof showToast === 'function') showToast('يرجى إدخال Client ID', 'error');
-        return;
-    }
-    _googleClientId = inp.value.trim();
-    localStorage.setItem('medbox_google_client_id', _googleClientId);
-    if (typeof showToast === 'function') showToast('تم حفظ Client ID بنجاح', 'success');
-    addSyncLog('تم حفظ Client ID', 'success');
+    // Client ID مدمج في الكود، لا حاجة للحفظ
 }
 
 // --- OAuth 2.0 بـ Google Identity Services ---
 function connectGoogleDrive() {
-    if (!_googleClientId) {
-        if (typeof showToast === 'function') showToast('يرجى إدخال Client ID أولاً', 'error');
-        document.getElementById('google-client-id-input').focus();
-        return;
-    }
-
     if (typeof google === 'undefined' || !google.accounts) {
         if (typeof showToast === 'function') showToast('جاري تحميل مكتبة Google، حاول مجدداً...', 'error');
         addSyncLog('مكتبة Google لم تُحمّل بعد، أعد المحاولة', 'error');
