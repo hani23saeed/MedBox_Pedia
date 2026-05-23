@@ -1292,18 +1292,6 @@
 
             <!-- (تعديل 10) تم نقل زر إدارة الحدود الطبيعية إلى القائمة الجانبية -->
 
-            <!-- زر المزامنة السحابية (Google Drive) -->
-            <div class="group relative">
-                <button id="cloud-sync-btn" class="top-bar-icon-btn" style="color:#0790AC" onclick="openCloudSyncModal()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6" />
-                    </svg>
-                </button>
-                <span id="cloud-sync-indicator" class="hidden absolute -top-1 -left-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white"></span>
-                <span class="tooltip tooltip-bottom">المزامنة السحابية (Google Drive)</span>
-            </div>
-
             <!-- زر الإعدادات -->
             <div class="group relative">
                 <button id="settings-btn" class="top-bar-icon-btn" style="color:#0790AC">
@@ -1318,7 +1306,12 @@
             <!-- (تعديل 3 و 4) زر تسجيل الدخول والقائمة المنسدلة -->
             <div class="relative">
                 <!-- الزر الذي يظهر دائما (أيقونة المستخدم أو اسم المستخدم) -->
-                <button id="login-toggle-btn" class="group top-bar-icon-btn" style="color:#0790AC">
+                <button id="login-toggle-btn" class="group top-bar-icon-btn flex-col gap-0" style="color:#0790AC; height:auto; min-height:40px; padding: 4px 8px;">
+                    <!-- شارة حالة المزامنة السحابية -->
+                    <span id="cloud-topbar-badge" style="display:none; align-items:center; gap:3px; font-size:0.6rem; font-weight:700; line-height:1; padding:1px 5px; border-radius:20px; background:#fee2e2; color:#dc2626; white-space:nowrap; margin-bottom:2px;">
+                        <span id="cloud-topbar-dot" style="width:5px;height:5px;border-radius:50%;background:#dc2626;display:inline-block;flex-shrink:0;"></span>
+                        <span id="cloud-topbar-label">غير متصل</span>
+                    </span>
                     <svg id="login-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                     </svg>
@@ -1353,6 +1346,8 @@
             </div>
 
         </div>
+    <!-- مؤشر المزامنة (مخفي، للحفاظ على وظيفة JS) -->
+    <span id="cloud-sync-indicator" class="hidden" style="display:none!important;"></span>
     </header>
 
     <div class="flex flex-1 overflow-hidden relative"> <!-- (إصلاح 2: إضافة relative) -->
@@ -1385,6 +1380,14 @@
                 <h3 class="font-bold text-lg text-[--color-primary] mb-2">الإعدادات</h3>
                 <div class="space-y-2">
                     <button id="settings-about-btn" class="w-full text-right p-3 rounded-lg hover:bg-gray-100 transition-colors">حول البرنامج</button>
+                    <button id="settings-cloud-sync-btn" class="w-full text-right p-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#0790AC]" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6" />
+                        </svg>
+                        <span>المزامنة السحابية</span>
+                        <span id="cloud-sync-status-dot" class="mr-auto w-2.5 h-2.5 rounded-full bg-red-400 inline-block" title="غير متصل"></span>
+                    </button>
                     <button id="settings-accounts-btn" class="w-full text-right p-3 rounded-lg hover:bg-gray-100 transition-colors">إدارة الحسابات</button>
                     <!-- (تعديل 10) تم نقل زر إدارة القيم إلى هنا وإخفاؤه افتراضياً -->
                     <button id="manage-limits-btn" class="w-full text-right p-3 rounded-lg hover:bg-gray-100 transition-colors hidden">
@@ -3620,6 +3623,12 @@
         
         document.getElementById('settings-accounts-btn').addEventListener('click', () => {
             renderAccountsManagementPage();
+            patientDisplayArea.classList.remove('hidden');
+            welcomeMessage.classList.add('hidden');
+        });
+
+        document.getElementById('settings-cloud-sync-btn').addEventListener('click', () => {
+            renderCloudSyncPage();
             patientDisplayArea.classList.remove('hidden');
             welcomeMessage.classList.add('hidden');
         });
@@ -7628,6 +7637,9 @@
 
     // --- تشغيل البرنامج ---
     document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof updateCloudUI === 'function') updateCloudUI();
+    });
 
     // ===== دالة مساعدة: استخراج بيانات الطبيب/الأخصائي للطباعة =====
     function getSpecialistInfoForPrint() {
@@ -9830,6 +9842,32 @@ function updateCloudUI() {
     const userName = document.getElementById('cloud-user-name');
     const indicator = document.getElementById('cloud-sync-indicator');
 
+    // تحديث نقطة الحالة في قائمة الإعدادات
+    const statusDot = document.getElementById('cloud-sync-status-dot');
+    if (statusDot) {
+        statusDot.className = `mr-auto w-2.5 h-2.5 rounded-full inline-block ${isConnected ? 'bg-green-500' : 'bg-red-400'}`;
+        statusDot.title = isConnected ? 'متصل' : 'غير متصل';
+    }
+
+    // تحديث شارة الشريط العلوي
+    const topbarBadge = document.getElementById('cloud-topbar-badge');
+    const topbarDot = document.getElementById('cloud-topbar-dot');
+    const topbarLabel = document.getElementById('cloud-topbar-label');
+    if (topbarBadge) {
+        topbarBadge.style.display = 'flex';
+        if (isConnected) {
+            topbarBadge.style.background = '#dcfce7';
+            topbarBadge.style.color = '#16a34a';
+            if (topbarDot) topbarDot.style.background = '#16a34a';
+            if (topbarLabel) topbarLabel.textContent = 'متصل';
+        } else {
+            topbarBadge.style.background = '#fee2e2';
+            topbarBadge.style.color = '#dc2626';
+            if (topbarDot) topbarDot.style.background = '#dc2626';
+            if (topbarLabel) topbarLabel.textContent = 'غير متصل';
+        }
+    }
+
     if (isConnected) {
         if (statusBadge) { statusBadge.className = 'cloud-status-badge connected'; statusBadge.innerHTML = '<span>●</span> متصل'; }
         if (connectBtn) connectBtn.classList.add('hidden');
@@ -10131,6 +10169,126 @@ function stopAutoSync() {
 document.getElementById('cloud-sync-modal').addEventListener('click', function(e) {
     if (e.target === this) closeCloudSyncModal();
 });
+
+// ===== عرض صفحة المزامنة السحابية في منطقة العرض الرئيسية =====
+function renderCloudSyncPage() {
+    const patientDisplayArea = document.getElementById('patient-display-area');
+    if (!patientDisplayArea) return;
+
+    const isConnected = !!_cloudAccessToken && Date.now() < _cloudTokenExpiry;
+
+    patientDisplayArea.innerHTML = `
+    <div class="max-w-3xl mx-auto space-y-4 pb-10" dir="rtl">
+        <!-- رأس الصفحة -->
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="text-2xl font-bold text-[#0790AC] flex items-center gap-3">
+                <span style="width:40px;height:40px;background:linear-gradient(135deg,#0790AC,#056a80);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6" />
+                    </svg>
+                </span>
+                المزامنة السحابية
+            </h2>
+            <span class="text-xs text-gray-400">Google Drive</span>
+        </div>
+
+        <!-- قسم حالة الاتصال -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;">
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">حالة الاتصال</span>
+            </div>
+            <div class="p-5">
+                <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+                    <span id="cloud-connection-status" class="cloud-status-badge ${isConnected ? 'connected' : 'disconnected'}">
+                        <span>●</span> ${isConnected ? 'متصل' : 'غير متصل'}
+                    </span>
+                    <div class="flex gap-2 flex-wrap">
+                        <button id="cloud-connect-btn" class="cloud-btn cloud-btn-primary ${isConnected ? 'hidden' : ''}" onclick="connectGoogleDrive()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+                            تسجيل الدخول بـ Google
+                        </button>
+                        <button id="cloud-disconnect-btn" class="cloud-btn cloud-btn-danger ${!isConnected ? 'hidden' : ''}" onclick="disconnectGoogleDrive()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.181 8.68a4.503 4.503 0 011.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 006.364 6.365l3-3.001m5.66-5.655l-1.799 1.8m-2.253-3.604l2.253 3.604M21 3L3 21"/></svg>
+                            قطع الاتصال
+                        </button>
+                    </div>
+                </div>
+                <div id="cloud-user-info" class="${isConnected ? '' : 'hidden'}" style="padding:10px;background:#f0fafc;border-radius:10px;font-size:0.85rem;color:#374151;">
+                    <span id="cloud-user-name">👤 ${_cloudUserEmail || 'مستخدم Google'}</span>
+                </div>
+                <!-- مخفي مطلوب للـ JS -->
+                <input type="text" id="google-client-id-input" style="display:none;" />
+            </div>
+        </div>
+
+        <!-- قسم المزامنة اليدوية -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;">
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">مزامنة يدوية</span>
+            </div>
+            <div class="p-5">
+                <div class="flex gap-3 flex-wrap">
+                    <button id="cloud-upload-btn" class="cloud-btn cloud-btn-success" onclick="uploadToGoogleDrive()" ${isConnected ? '' : 'disabled'}>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                        رفع إلى Drive
+                    </button>
+                    <button id="cloud-download-btn" class="cloud-btn cloud-btn-secondary" onclick="downloadFromGoogleDrive()" ${isConnected ? '' : 'disabled'}>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                        تحميل من Drive
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم المزامنة التلقائية -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;">
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">المزامنة التلقائية</span>
+            </div>
+            <div class="p-5">
+                <div class="auto-sync-toggle">
+                    <div>
+                        <div style="font-weight:600;font-size:0.9rem;color:#374151;">مزامنة تلقائية كل 5 دقائق</div>
+                        <div id="auto-sync-next" style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">${_autoSyncTimer ? 'مفعّل' : 'غير مفعّل'}</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-sync-toggle" onchange="toggleAutoSync(this.checked)" ${_autoSyncTimer ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم سجل المزامنة -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">سجل المزامنة</span>
+                <button onclick="clearSyncLog()" style="font-size:0.75rem;color:#9ca3af;background:none;border:none;cursor:pointer;font-family:Cairo,sans-serif;">مسح</button>
+            </div>
+            <div class="p-5">
+                <div id="cloud-sync-log" class="cloud-sync-log">لا توجد عمليات مزامنة حتى الآن</div>
+            </div>
+        </div>
+
+        <!-- قسم النسخ الاحتياطي المحلي -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;">
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">النسخ الاحتياطي المحلي</span>
+            </div>
+            <div class="p-5">
+                <p style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">البيانات محفوظة دائماً على الجهاز (IndexedDB) كنسخة احتياطية.</p>
+                <button class="cloud-btn cloud-btn-secondary" onclick="saveDataAsJson()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/></svg>
+                    تصدير JSON محلي
+                </button>
+            </div>
+        </div>
+    </div>`;
+
+    patientDisplayArea.classList.remove('hidden');
+    document.getElementById('welcome-message')?.classList.add('hidden');
+}
 </script>
 
 <script>
