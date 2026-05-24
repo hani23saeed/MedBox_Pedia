@@ -1186,6 +1186,91 @@
             border: none;
         }
 
+        /* ===== جدول خطة الوجبات التفاعلي ===== */
+        #meal-plan-table { border-collapse: collapse; min-width: 600px; }
+        #meal-plan-table th, #meal-plan-table td {
+            border: 1px solid #e5e7eb;
+            padding: 6px 10px;
+            text-align: center;
+            vertical-align: top;
+        }
+        #meal-plan-table thead th {
+            background: linear-gradient(135deg, #0790AC 0%, #056a80 100%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        #meal-plan-table thead th .meal-kcal-sub {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+        #meal-plan-table td.date-cell, #meal-plan-table td.day-cell {
+            background: #f0fafc;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #056a80;
+            white-space: nowrap;
+            min-width: 90px;
+        }
+        #meal-plan-table td.meal-cell {
+            min-width: 140px;
+            background: #fff;
+            text-align: right;
+            vertical-align: top;
+        }
+        .meal-cell-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            padding: 3px 4px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-bottom: 2px;
+            background: #f0fafc;
+            border: 1px solid #bee3f8;
+        }
+        .meal-cell-item-text { flex: 1; color: #374151; font-weight: 600; line-height: 1.4; }
+        .meal-cell-item-del {
+            color: #f87171;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .meal-cell-item-del:hover { color: #dc2626; }
+        .meal-cell-empty { font-size: 0.72rem; color: #d1d5db; font-style: italic; padding: 4px; }
+        .meal-kcal-bar { display: block; text-align: right; margin-top: 3px; padding: 2px 4px; border-radius: 4px; background: #f8fafc; }
+        #meal-plan-table tfoot td { border-top: 2px solid #bae6fd; }
+        #meal-plan-remaining-panel .remaining-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1.5px solid;
+        }
+        #meal-plan-remaining-panel .remaining-chip.ok {
+            background: #dcfce7; border-color: #86efac; color: #15803d;
+        }
+        #meal-plan-remaining-panel .remaining-chip.warn {
+            background: #fef9c3; border-color: #fde047; color: #a16207;
+        }
+        #meal-plan-remaining-panel .remaining-chip.over {
+            background: #fee2e2; border-color: #fca5a5; color: #dc2626;
+        }
+        #meal-plan-remaining-panel .remaining-chip.zero {
+            background: #f9fafb; border-color: #e5e7eb; color: #9ca3af;
+        }
+
     </style>
 </head>
 <body class="text-gray-800 flex flex-col h-screen overflow-hidden" style="background:linear-gradient(135deg,#eaf6f9 0%,#f3f4f6 100%);">
@@ -5704,8 +5789,23 @@
                     }).join('');
 
                     resDiv.classList.remove('hidden');
-                });
-            }
+
+                    // تعريض توزيع الوجبات للاستخدام في جدول خطة الوجبات
+                    window._mealDistribution = {
+                        distributed: distributed,
+                        totalParts: selectedParts,
+                        targetKcal: targetKcal
+                    };
+                    // تحديث رأس جدول خطة الوجبات
+                    var mpThead = document.getElementById('meal-plan-thead');
+                    if (mpThead) {
+                        setTimeout(function() {
+                            // إعادة رسم رأس جدول الوجبات مع بيانات السعرات المحدّثة
+                            var evt = new Event('meal-distribution-updated');
+                            document.dispatchEvent(evt);
+                        }, 50);
+                    }
+                });            }
         })();
 
         // ===== ربط منطق إدراج البدائل الغذائية (v20) =====
@@ -5753,10 +5853,13 @@
             };
 
             function renderAltList() {
+                window._renderAltList = renderAltList; // تعريض الدالة للاستخدام الخارجي
                 const container   = document.getElementById('alt-items-container');
                 const listSection = document.getElementById('alt-list-section');
                 const badge       = document.getElementById('alt-count-badge');
                 if (!container) return;
+
+                window._altItems = altItems;
 
                 if (altItems.length === 0) {
                     listSection.classList.add('hidden');
@@ -5766,6 +5869,17 @@
 
                 listSection.classList.remove('hidden');
                 if (badge) badge.textContent = altItems.length;
+
+                // بناء خيارات الوجبات من مربعات الاختيار
+                function getMealOptionsHTML(selectedMeal) {
+                    var mealMap = { breakfast:'🌅 فطور', snack1:'🍎 سناك 1', lunch:'☀️ غداء', snack2:'🥜 سناك 2', dinner:'🌙 عشاء', snack3:'🍵 سناك 3' };
+                    var html = '<option value="">-- اختر الوجبة --</option>';
+                    document.querySelectorAll('.meal-checkbox:checked').forEach(function(cb) {
+                        var sel = cb.value === selectedMeal ? ' selected' : '';
+                        html += '<option value="' + cb.value + '"' + sel + '>' + (mealMap[cb.value] || cb.dataset.label) + '</option>';
+                    });
+                    return html;
+                }
 
                 // ===== قائمة الإدارة (حذف) مُجمَّعة حسب الفئة =====
                 const grouped = {};
@@ -5788,21 +5902,40 @@
                         +     items.length + ' ' + (items.length === 1 ? 'بديل' : 'بدائل')
                         +   '</span>'
                         + '</div>'
-                        + '<div class="flex flex-col gap-1.5 px-4 pb-3 pr-8">'
+                        + '<div class="flex flex-col gap-2 px-4 pb-3 pr-8">'
                         + items.map(function(item) {
-                            return '<div class="flex items-center justify-between bg-white/90 rounded-xl px-4 py-2 border ' + colors.border + ' shadow-sm ' + colors.row + ' transition-colors">'
-                                + '<div class="flex items-center gap-3 flex-1 min-w-0">'
-                                +   '<span class="font-bold text-sm text-gray-800 shrink-0">' + item.type + '</span>'
-                                +   '<span class="text-gray-300 text-xs shrink-0">|</span>'
-                                +   '<span class="text-xs text-gray-500 shrink-0">حصة واحدة:</span>'
-                                +   '<span class="text-sm font-semibold text-[--color-primary] truncate">' + item.quantity + '</span>'
+                            return '<div class="flex flex-col bg-white/90 rounded-xl px-4 py-2.5 border ' + colors.border + ' shadow-sm transition-colors">'
+                                + '<div class="flex items-center justify-between">'
+                                +   '<div class="flex items-center gap-3 flex-1 min-w-0">'
+                                +     '<span class="font-bold text-sm text-gray-800 shrink-0">' + item.type + '</span>'
+                                +     '<span class="text-gray-300 text-xs shrink-0">|</span>'
+                                +     '<span class="text-xs text-gray-500 shrink-0">حصة واحدة:</span>'
+                                +     '<span class="text-sm font-semibold text-[--color-primary] truncate">' + item.quantity + '</span>'
+                                +   '</div>'
+                                +   '<button onclick="window._removeAltItem(' + item.idx + ')" '
+                                +     'class="shrink-0 mr-2 text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="حذف البديل">'
+                                +     '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">'
+                                +       '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>'
+                                +     '</svg>'
+                                +   '</button>'
                                 + '</div>'
-                                + '<button onclick="window._removeAltItem(' + item.idx + ')" '
-                                +   'class="shrink-0 mr-2 text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="حذف البديل">'
-                                +   '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">'
-                                +     '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>'
-                                +   '</svg>'
-                                + '</button>'
+                                + '<div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">'
+                                +   '<span class="text-xs text-gray-500 shrink-0 font-semibold">📋 إدراج في الجدول:</span>'
+                                +   '<input type="number" min="0.5" step="0.5" value="1" id="alt-item-srv-' + item.idx + '" '
+                                +     'class="w-16 border border-gray-200 rounded-lg px-2 py-1 text-xs text-center focus:outline-none focus:border-[#0790AC]" title="عدد الحصص">'
+                                +   (mealPlanRows.length > 1
+                                        ? '<select id="alt-item-day-' + item.idx + '" class="flex-1 border-2 border-amber-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-amber-500 bg-amber-50 font-semibold">'
+                                          + getDayOptionsHTML(null) + '</select>'
+                                        : '')
+                                +   '<select id="alt-item-meal-' + item.idx + '" '
+                                +     'class="flex-1 border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#0790AC] bg-white">'
+                                +     getMealOptionsHTML('')
+                                +   '</select>'
+                                +   '<button onclick="window._insertAltToTable(' + item.idx + ')" '
+                                +     'class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded-lg text-xs transition-colors">'
+                                +     '➕ إدراج'
+                                +   '</button>'
+                                + '</div>'
                                 + '</div>';
                         }).join('')
                         + '</div>'
@@ -5840,6 +5973,8 @@
                 if (!selectedCat) {
                     typeSel.innerHTML = '<option value="">-- اختر الفئة أولاً --</option>';
                     typeSel.disabled = true;
+                    var tblSec2 = document.getElementById('alt-view-table-insert-section');
+                    if (tblSec2) tblSec2.classList.add('hidden');
                     return;
                 }
 
@@ -5868,6 +6003,7 @@
                 var typeSel = document.getElementById('alt-view-type');
                 var qtyWrap = document.getElementById('alt-view-qty-wrap');
                 var qtyVal  = document.getElementById('alt-view-qty-val');
+                var tblSec  = document.getElementById('alt-view-table-insert-section');
                 if (!catSel || !typeSel || !qtyWrap || !qtyVal) return;
 
                 var selectedCat = catSel.value;
@@ -5875,11 +6011,16 @@
 
                 if (!selectedCat || isNaN(idx)) {
                     qtyWrap.classList.add('hidden');
+                    if (tblSec) tblSec.classList.add('hidden');
                     return;
                 }
 
                 var filtered = altItems.filter(function(i) { return i.category === selectedCat; });
-                if (!filtered[idx]) { qtyWrap.classList.add('hidden'); return; }
+                if (!filtered[idx]) {
+                    qtyWrap.classList.add('hidden');
+                    if (tblSec) tblSec.classList.add('hidden');
+                    return;
+                }
 
                 qtyVal.textContent = filtered[idx].quantity;
                 qtyWrap.classList.remove('hidden');
@@ -5893,6 +6034,29 @@
                         qtyWrap.style.transform = 'translateY(0)';
                     });
                 });
+
+                // إظهار قسم الإدراج في الجدول
+                if (tblSec) {
+                    var mealMap = { breakfast:'🌅 فطور', snack1:'🍎 سناك 1', lunch:'☀️ غداء', snack2:'🥜 سناك 2', dinner:'🌙 عشاء', snack3:'🍵 سناك 3' };
+                    var sumEl = document.getElementById('alt-view-selected-summary');
+                    var catIcons = { starch:'🍞', fruit:'🍎', vegetable:'🥦', meat_low:'🥩', meat_medium:'🍗', meat_high:'🥓', milk_skim:'🥛', milk_low:'🧀', milk_full:'🫙', fat:'🫒' };
+                    if (sumEl) sumEl.textContent = (catIcons[selectedCat]||'🍽️') + ' ' + filtered[idx].type + ' — ' + filtered[idx].quantity;
+                    // تحديث قائمة الوجبات
+                    var mealSel = document.getElementById('alt-view-table-meal');
+                    if (mealSel) {
+                        mealSel.innerHTML = '<option value="">-- اختر الوجبة --</option>';
+                        document.querySelectorAll('.meal-checkbox:checked').forEach(function(cb) {
+                            var opt = document.createElement('option');
+                            opt.value = cb.value;
+                            opt.textContent = mealMap[cb.value] || cb.dataset.label;
+                            mealSel.appendChild(opt);
+                        });
+                    }
+                    // حفظ معلومات العنصر المحدد حالياً
+                    tblSec.dataset.catKey = selectedCat;
+                    tblSec.dataset.typeIdx = idx;
+                    tblSec.classList.remove('hidden');
+                }
             }
 
             // ===== ربط أحداث القوائم المتتالية =====
@@ -5930,11 +6094,11 @@
                     // تأثير بصري
                     altViewInsertBtn.textContent = '✓ تم';
                     altViewInsertBtn.classList.add('bg-green-600');
-                    altViewInsertBtn.classList.remove('bg-[#0790AC]');
+                    altViewInsertBtn.classList.remove('bg-orange-500');
                     setTimeout(function() {
                         altViewInsertBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg> إدراج';
                         altViewInsertBtn.classList.remove('bg-green-600');
-                        altViewInsertBtn.classList.add('bg-[#0790AC]');
+                        altViewInsertBtn.classList.add('bg-orange-500');
                     }, 1200);
                 });
             }
@@ -5987,11 +6151,11 @@
                     // تأثير بصري على الزر
                     addBtn.textContent = '✓ تم الإدراج';
                     addBtn.classList.add('bg-green-600');
-                    addBtn.classList.remove('bg-[--color-primary]');
+                    addBtn.classList.remove('bg-orange-500');
                     setTimeout(function() {
                         addBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg> إدراج';
                         addBtn.classList.remove('bg-green-600');
-                        addBtn.classList.add('bg-[--color-primary]');
+                        addBtn.classList.add('bg-orange-500');
                     }, 1200);
 
                     renderAltList();
@@ -6034,93 +6198,440 @@
 
         })();
 
-        // ===== ربط منطق تصميم برنامج ليوم واحد =====
+        // ===== حاسبة الحصص الغذائية الذكية — خطوات تفاعلية =====
         (function() {
-            var createBtn = document.getElementById('create-daily-plan-btn');
-            if (!createBtn) return;
 
-            createBtn.addEventListener('click', function() {
-                var msgEl   = document.getElementById('daily-plan-msg');
-                var result  = document.getElementById('daily-plan-result');
+            /* ── ثوابت القوائم ── */
+            var LISTS = {
+                starch:      { name: 'النشويات',             emoji:'🍞', carb:15, prot:3,   fat:0.5 },
+                fruit:       { name: 'الفواكه',               emoji:'🍎', carb:15, prot:0,   fat:0   },
+                vegetable:   { name: 'الخضار',                emoji:'🥦', carb:5,  prot:2,   fat:0   },
+                meat_low:    { name: 'لحوم قليلة الدهون',    emoji:'🥩', carb:0,  prot:7,   fat:2   },
+                meat_medium: { name: 'لحوم متوسطة الدهون',   emoji:'🍗', carb:0,  prot:7,   fat:5   },
+                meat_high:   { name: 'لحوم عالية الدهون',    emoji:'🥓', carb:0,  prot:7,   fat:8   },
+                milk_skim:   { name: 'حليب خالي الدسم',      emoji:'🥛', carb:12, prot:8,   fat:1.5 },
+                milk_low:    { name: 'حليب قليل الدسم',      emoji:'🥛', carb:12, prot:8,   fat:5   },
+                milk_full:   { name: 'حليب كامل الدسم',      emoji:'🥛', carb:12, prot:8,   fat:8   },
+                fat:         { name: 'الدهون',                emoji:'🫒', carb:0,  prot:0,   fat:5   },
+            };
 
-                // جمع الوجبات المختارة من قسم البدائل
-                var mealCheckboxes = document.querySelectorAll('.meal-checkbox:checked');
-                if (mealCheckboxes.length === 0) {
-                    if (msgEl) {
-                        msgEl.textContent = '⚠️ يرجى اختيار الوجبات في قسم قائمة البدائل الغذائية أولاً.';
-                        msgEl.classList.remove('hidden');
-                    }
-                    return;
+            function r2(n){ return Math.round(n*100)/100; }
+            function kcal(c,p,f){ return Math.round(c*4+p*4+f*9); }
+
+            /* ── حالة الحاسبة ── */
+            var state = {
+                targets: { carb:0, prot:0, fat:0 },
+                portions: {},      // { listKey: servings }
+                currentStep: 0,
+                remainCarb: 0,
+                remainProt: 0,
+                remainFat: 0,
+            };
+
+            /* ── تعريف الخطوات ── */
+            var STEPS = [
+                { id:'milk',    label:'الحليب',    emoji:'🥛' },
+                { id:'veg',     label:'الخضار',    emoji:'🥦' },
+                { id:'starch',  label:'النشويات',  emoji:'🍞' },
+                { id:'meat',    label:'اللحوم',    emoji:'🥩' },
+                { id:'fat',     label:'الدهون',    emoji:'🫒' },
+                { id:'done',    label:'النتيجة',   emoji:'✅' },
+            ];
+
+            /* ── مساعدات حساب إجماليات الحصص المحددة ── */
+            function getTotals() {
+                var c=0,p=0,f=0;
+                Object.keys(state.portions).forEach(function(t){
+                    var s=state.portions[t]||0;
+                    if(LISTS[t] && s>0){ c+=s*LISTS[t].carb; p+=s*LISTS[t].prot; f+=s*LISTS[t].fat; }
+                });
+                return { carb:r2(c), prot:r2(p), fat:r2(f), kcal:kcal(r2(c),r2(p),r2(f)) };
+            }
+
+            /* ── تحديث شريط الملخص ── */
+            function updateSummary() {
+                var tot = getTotals();
+                var summaryEl = document.getElementById('sc-summary');
+                var itemsEl   = document.getElementById('sc-summary-items');
+                if (!summaryEl || !itemsEl) return;
+
+                var keys = Object.keys(state.portions).filter(function(k){ return state.portions[k]>0; });
+                if (keys.length === 0) { summaryEl.classList.add('hidden'); return; }
+
+                summaryEl.classList.remove('hidden');
+                itemsEl.innerHTML = keys.map(function(t){
+                    var m=LISTS[t]; var s=state.portions[t];
+                    return '<span style="background:#fff;border:1.5px solid #0790AC;border-radius:16px;padding:2px 10px;font-size:0.78rem;font-weight:700;color:#056a80;">'+
+                        m.emoji+' '+m.name+': <strong>'+s+'</strong></span>';
+                }).join('');
+                document.getElementById('sc-sum-carb').textContent  = tot.carb;
+                document.getElementById('sc-sum-prot').textContent  = tot.prot;
+                document.getElementById('sc-sum-fat').textContent   = tot.fat;
+                document.getElementById('sc-sum-kcal').textContent  = tot.kcal;
+            }
+
+            /* ── تحديث شريط التقدم ── */
+            function renderProgress() {
+                var el = document.getElementById('sc-progress');
+                if (!el) return;
+                el.innerHTML = STEPS.map(function(s,i){
+                    var done    = i < state.currentStep;
+                    var active  = i === state.currentStep;
+                    var pending = i > state.currentStep;
+                    var bg    = done ? '#16a34a' : active ? '#0790AC' : '#e5e7eb';
+                    var tc    = done || active ? '#fff' : '#9ca3af';
+                    var fw    = active ? '800' : '600';
+                    var arrow = i < STEPS.length-1
+                        ? '<div style="width:18px;height:2px;background:'+(done?'#16a34a':'#d1d5db')+';flex-shrink:0;align-self:center;"></div>' : '';
+                    return '<div style="display:flex;align-items:center;gap:0;">' +
+                        '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;">' +
+                        '<div style="width:36px;height:36px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:'+fw+';color:'+tc+';box-shadow:'+(active?'0 0 0 3px #0790AC40':'none')+';">'+(done?'✓':s.emoji)+'</div>' +
+                        '<div style="font-size:0.65rem;font-weight:'+fw+';color:'+(active?'#0790AC':done?'#16a34a':'#9ca3af')+';white-space:nowrap;">'+s.label+'</div>' +
+                        '</div>' + arrow + '</div>';
+                }).join('');
+            }
+
+            /* ── بناء شرائح نتيجة كل خطوة ── */
+            function resultChip(label, value, color) {
+                return '<span style="background:'+color+'22;border:1.5px solid '+color+'55;border-radius:16px;padding:3px 12px;font-size:0.8rem;font-weight:700;color:'+color+';">'+label+': <strong>'+value+'</strong></span>';
+            }
+
+            /* ═══════════════════════════════════
+               رسم كل خطوة
+            ═══════════════════════════════════ */
+            function renderStep(stepIdx) {
+                var area = document.getElementById('sc-step-area');
+                if (!area) return;
+                var s = STEPS[stepIdx];
+
+                /* ── الخطوة 0: الحليب ── */
+                if (s.id === 'milk') {
+                    state.remainCarb = state.targets.carb;
+                    area.innerHTML = stepCard('الخطوة ١ — حصص الحليب ومشتقاته', '🥛',
+                        '<p style="font-size:0.85rem;color:#374151;margin-bottom:12px;">كل حصة حليب تحتوي على <strong>١٢غ كارب</strong>. حدّد عدد الحصص (يمكن أن يكون صفراً).</p>' +
+                        '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">' +
+                            '<div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;">' +
+                                '<label style="font-size:0.82rem;font-weight:700;color:#374151;">نوع الحليب</label>' +
+                                '<select id="sc-milk-type" style="border:2px solid #d1d5db;border-radius:10px;padding:8px 10px;font-size:0.9rem;font-family:inherit;outline:none;">' +
+                                    '<option value="milk_skim">🥛 خالي الدسم  (كارب:١٢ / بروتين:٨ / دهون:١.٥)</option>' +
+                                    '<option value="milk_low">🥛 قليل الدسم  (كارب:١٢ / بروتين:٨ / دهون:٥)</option>' +
+                                    '<option value="milk_full">🥛 كامل الدسم  (كارب:١٢ / بروتين:٨ / دهون:٨)</option>' +
+                                '</select>' +
+                            '</div>' +
+                            '<div style="display:flex;flex-direction:column;gap:4px;width:110px;">' +
+                                '<label style="font-size:0.82rem;font-weight:700;color:#374151;">عدد الحصص</label>' +
+                                '<input id="sc-milk-serv" type="number" min="0" step="0.5" value="0" style="border:2px solid #d1d5db;border-radius:10px;padding:8px;font-size:1rem;font-family:inherit;text-align:center;outline:none;width:100%;">' +
+                            '</div>' +
+                        '</div>' +
+                        infoBox('الكارب المتبقي قبل هذه الخطوة: <strong>'+r2(state.remainCarb)+'غ</strong> من أصل <strong>'+state.targets.carb+'غ</strong>'),
+                        'حساب →'
+                    );
                 }
 
-                // جمع توزيع الأجزاء من الحقول اليدوية
-                var manualInputs = document.querySelectorAll('.manual-parts-input');
-                var selectedParts = parseInt(document.getElementById('manual-total-parts-input')?.value) || 0;
-                var partsMap = {};
-                manualInputs.forEach(function(inp) {
-                    var key = inp.dataset.mealKey;
-                    var val = parseInt(inp.value) || 0;
-                    if (key) partsMap[key] = val;
+                /* ── الخطوة 1: الخضار ── */
+                else if (s.id === 'veg') {
+                    area.innerHTML = stepCard('الخطوة ٢ — حصص الخضار', '🥦',
+                        '<p style="font-size:0.85rem;color:#374151;margin-bottom:12px;">كل حصة خضار = <strong>٥غ كارب</strong> + ٢غ بروتين. حدّد عدد الحصص.</p>' +
+                        infoBox('الكارب المتبقي الآن: <strong>'+r2(state.remainCarb)+'غ</strong>') +
+                        '<div style="margin-top:12px;display:flex;align-items:center;gap:10px;">' +
+                            '<label style="font-size:0.82rem;font-weight:700;color:#374151;">عدد حصص الخضار</label>' +
+                            '<input id="sc-veg-serv" type="number" min="0" step="0.5" value="0" style="border:2px solid #d1d5db;border-radius:10px;padding:8px;font-size:1rem;font-family:inherit;text-align:center;outline:none;width:110px;">' +
+                        '</div>',
+                        'حساب →'
+                    );
+                }
+
+                /* ── الخطوة 2: النشويات/الفواكه ── */
+                else if (s.id === 'starch') {
+                    var total15 = r2(state.remainCarb / 15);
+                    area.innerHTML = stepCard('الخطوة ٣ — النشويات والفواكه', '🍞🍎',
+                        infoBox('الكارب المتبقي للنشويات/الفواكه: <strong>'+r2(state.remainCarb)+'غ</strong> ÷ ١٥ = <strong>'+total15+' حصة</strong> (كل حصة = ١٥غ كارب)') +
+                        '<p style="font-size:0.85rem;color:#374151;margin:12px 0 8px;">وزّع هذه الحصص بين النشويات والفواكه (المجموع يجب أن يساوي '+total15+'):</p>' +
+                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+                            '<div style="display:flex;flex-direction:column;gap:4px;">' +
+                                '<label style="font-size:0.82rem;font-weight:700;color:#374151;">🍞 حصص النشويات</label>' +
+                                '<input id="sc-starch-serv" type="number" min="0" step="0.5" value="'+total15+'" style="border:2px solid #d1d5db;border-radius:10px;padding:8px;font-size:1rem;font-family:inherit;text-align:center;outline:none;">' +
+                            '</div>' +
+                            '<div style="display:flex;flex-direction:column;gap:4px;">' +
+                                '<label style="font-size:0.82rem;font-weight:700;color:#374151;">🍎 حصص الفواكه</label>' +
+                                '<input id="sc-fruit-serv" type="number" min="0" step="0.5" value="0" style="border:2px solid #d1d5db;border-radius:10px;padding:8px;font-size:1rem;font-family:inherit;text-align:center;outline:none;">' +
+                            '</div>' +
+                        '</div>' +
+                        '<div id="sc-starch-warn" style="display:none;margin-top:8px;padding:6px 10px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;font-size:0.8rem;color:#92400e;font-weight:600;"></div>',
+                        'حساب →'
+                    );
+                    // تحديث تحذير مجموع النشويات/فواكه
+                    setTimeout(function(){
+                        function checkSum(){
+                            var a=parseFloat(document.getElementById('sc-starch-serv')?.value)||0;
+                            var b=parseFloat(document.getElementById('sc-fruit-serv')?.value)||0;
+                            var w=document.getElementById('sc-starch-warn');
+                            if(!w)return;
+                            var diff=r2(Math.abs(a+b-total15));
+                            if(diff>0.01){
+                                w.style.display='block';
+                                w.textContent='⚠️ المجموع ('+r2(a+b)+') لا يساوي '+total15+'. الفارق: '+diff;
+                            } else { w.style.display='none'; }
+                        }
+                        document.getElementById('sc-starch-serv')?.addEventListener('input',checkSum);
+                        document.getElementById('sc-fruit-serv')?.addEventListener('input',checkSum);
+                    },50);
+                }
+
+                /* ── الخطوة 3: اللحوم (البروتين) ── */
+                else if (s.id === 'meat') {
+                    var meatNeeded = r2(state.remainProt / 7);
+                    area.innerHTML = stepCard('الخطوة ٤ — اللحوم (البروتين)', '🥩',
+                        infoBox('البروتين المتبقي بعد طرح حصص الكارب والحليب: <strong>'+r2(state.remainProt)+'غ</strong> ÷ ٧ = <strong>'+meatNeeded+' حصة</strong> تقريباً') +
+                        '<p style="font-size:0.85rem;color:#374151;margin:12px 0 8px;">وزّع الحصص بين أنواع اللحوم:</p>' +
+                        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">' +
+                            meatInput('sc-meat-low',  '🥩 قليلة الدهون\n(٧ بروتين / ٢ دهون)', meatNeeded) +
+                            meatInput('sc-meat-med',  '🍗 متوسطة الدهون\n(٧ بروتين / ٥ دهون)', '0') +
+                            meatInput('sc-meat-high', '🥓 عالية الدهون\n(٧ بروتين / ٨ دهون)',  '0') +
+                        '</div>',
+                        'حساب →'
+                    );
+                }
+
+                /* ── الخطوة 4: الدهون ── */
+                else if (s.id === 'fat') {
+                    var fatNeeded = r2(state.remainFat / 5);
+                    area.innerHTML = stepCard('الخطوة ٥ — حصص الدهون', '🫒',
+                        infoBox('الدهون المتبقية بعد طرح دهون الحصص السابقة: <strong>'+r2(state.remainFat)+'غ</strong> ÷ ٥ = <strong>'+Math.max(0,fatNeeded)+' حصة</strong>') +
+                        '<div style="margin-top:12px;display:flex;align-items:center;gap:10px;">' +
+                            '<label style="font-size:0.82rem;font-weight:700;color:#374151;">🫒 عدد حصص الدهون</label>' +
+                            '<input id="sc-fat-serv" type="number" min="0" step="0.5" value="'+Math.max(0,fatNeeded)+'" style="border:2px solid #d1d5db;border-radius:10px;padding:8px;font-size:1rem;font-family:inherit;text-align:center;outline:none;width:110px;">' +
+                        '</div>',
+                        'إنهاء الحساب ✓'
+                    );
+                }
+
+                /* ── الخطوة 5: النتيجة النهائية ── */
+                else if (s.id === 'done') {
+                    var tot = getTotals();
+                    var tc  = state.targets.carb, tp = state.targets.prot, tf = state.targets.fat;
+                    var tk  = kcal(tc, tp, tf);
+
+                    function diffClass(a,t){ var d=Math.abs(a-t); var p=t>0?d/t:0; return p<=0.05?'#16a34a':p<=0.12?'#d97706':'#dc2626'; }
+
+                    // بناء صفوف الجدول
+                    var orderedKeys = [];
+                    ['milk_skim','milk_low','milk_full','vegetable','starch','fruit','meat_low','meat_medium','meat_high','fat'].forEach(function(k){
+                        if(state.portions[k]>0) orderedKeys.push(k);
+                    });
+                    var rows = orderedKeys.map(function(t){
+                        var m=LISTS[t], s=state.portions[t];
+                        var c=r2(s*m.carb),p=r2(s*m.prot),f=r2(s*m.fat),k=kcal(c,p,f);
+                        return '<tr style="border-bottom:1px solid #f3f4f6;">' +
+                            '<td style="padding:8px 12px;text-align:right;font-weight:600;">'+m.emoji+' '+m.name+'</td>' +
+                            '<td style="padding:8px;text-align:center;font-weight:700;">'+s+'</td>' +
+                            '<td style="padding:8px;text-align:center;color:#16a34a;font-weight:700;">'+c+'</td>' +
+                            '<td style="padding:8px;text-align:center;color:#2563eb;font-weight:700;">'+p+'</td>' +
+                            '<td style="padding:8px;text-align:center;color:#ea580c;font-weight:700;">'+f+'</td>' +
+                            '<td style="padding:8px;text-align:center;color:#0790AC;font-weight:700;">'+k+'</td>' +
+                            '</tr>';
+                    }).join('');
+
+                    area.innerHTML =
+                        '<div style="background:#f0fdf4;border:2px solid #86efac;border-radius:16px;padding:16px;margin-bottom:16px;">' +
+                            '<div style="font-size:1rem;font-weight:800;color:#15803d;margin-bottom:12px;">✅ النتيجة النهائية للحاسبة</div>' +
+                            '<div style="overflow-x:auto;border-radius:10px;border:1px solid #d1d5db;">' +
+                                '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;font-family:inherit;">' +
+                                    '<thead><tr style="background:#0790AC;color:#fff;">' +
+                                        '<th style="padding:10px 12px;text-align:right;">القائمة</th>' +
+                                        '<th style="padding:10px;text-align:center;">الحصص</th>' +
+                                        '<th style="padding:10px;text-align:center;">كارب(غ)</th>' +
+                                        '<th style="padding:10px;text-align:center;">بروتين(غ)</th>' +
+                                        '<th style="padding:10px;text-align:center;">دهون(غ)</th>' +
+                                        '<th style="padding:10px;text-align:center;">سعرات</th>' +
+                                    '</tr></thead>' +
+                                    '<tbody>'+rows+'</tbody>' +
+                                    '<tfoot><tr style="background:#f3f4f6;font-weight:800;border-top:2px solid #d1d5db;">' +
+                                        '<td style="padding:10px 12px;text-align:right;">الإجمالي</td>' +
+                                        '<td style="padding:10px;text-align:center;">—</td>' +
+                                        '<td style="padding:10px;text-align:center;color:#16a34a;">'+tot.carb+'</td>' +
+                                        '<td style="padding:10px;text-align:center;color:#2563eb;">'+tot.prot+'</td>' +
+                                        '<td style="padding:10px;text-align:center;color:#ea580c;">'+tot.fat+'</td>' +
+                                        '<td style="padding:10px;text-align:center;color:#0790AC;">'+tot.kcal+'</td>' +
+                                    '</tr></tfoot>' +
+                                '</table>' +
+                            '</div>' +
+                        '</div>' +
+
+                        '<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:14px;margin-bottom:16px;">' +
+                            '<div style="font-size:0.85rem;font-weight:700;color:#1d4ed8;margin-bottom:10px;">📊 مقارنة بالهدف المحدد</div>' +
+                            '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">' +
+                                cmpCard('كارب (غ)',   tot.carb,  tc,  '#16a34a') +
+                                cmpCard('بروتين (غ)', tot.prot,  tp,  '#2563eb') +
+                                cmpCard('دهون (غ)',   tot.fat,   tf,  '#ea580c') +
+                                cmpCard('سعرات',      tot.kcal,  tk,  '#0790AC') +
+                            '</div>' +
+                        '</div>' +
+
+                        '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+                            '<button id="sc-apply-btn" style="display:flex;align-items:center;gap:8px;background:#16a34a;border:none;border-radius:12px;padding:12px 22px;color:#fff;font-size:0.9rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(22,163,74,0.3);">' +
+                                '📥 أضف الحصص إلى الجدول' +
+                            '</button>' +
+                            '<button id="sc-reset-bottom" style="display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #0790AC;border-radius:12px;padding:12px 22px;color:#0790AC;font-size:0.9rem;font-weight:800;cursor:pointer;font-family:inherit;">' +
+                                '↺ إعادة الحساب' +
+                            '</button>' +
+                        '</div>';
+
+                    // ربط زر الإضافة
+                    var applyBtn = document.getElementById('sc-apply-btn');
+                    if (applyBtn) {
+                        applyBtn.addEventListener('click', function(){
+                            var sel  = document.getElementById('exchange-list-select');
+                            var srv  = document.getElementById('exchange-servings');
+                            var add  = document.getElementById('exchange-add-btn');
+                            if (!sel || !srv || !add) return;
+                            var ordK = ['milk_skim','milk_low','milk_full','vegetable','starch','fruit','meat_low','meat_medium','meat_high','fat'];
+                            ordK.forEach(function(t){
+                                var s=state.portions[t]||0;
+                                if(s<=0) return;
+                                var found=Array.from(sel.options).some(function(o){return o.value===t;});
+                                if(!found) return;
+                                sel.value=t; srv.value=s; add.click();
+                            });
+                            applyBtn.textContent='✅ تمت الإضافة!';
+                            applyBtn.style.background='#065f46';
+                        });
+                    }
+                    var resetBottom = document.getElementById('sc-reset-bottom');
+                    if (resetBottom) resetBottom.addEventListener('click', resetWizard);
+                }
+
+                // ربط زر الحساب في الخطوة
+                var btn = document.getElementById('sc-calc-btn');
+                if (btn) btn.addEventListener('click', function(){ handleStepCalc(stepIdx); });
+
+                renderProgress();
+                updateSummary();
+            }
+
+            /* ── معالجة حساب كل خطوة ── */
+            function handleStepCalc(stepIdx) {
+                var s = STEPS[stepIdx];
+
+                if (s.id === 'milk') {
+                    var milkType = document.getElementById('sc-milk-type')?.value || 'milk_skim';
+                    var milkServ = parseFloat(document.getElementById('sc-milk-serv')?.value) || 0;
+                    state.portions[milkType] = milkServ;
+                    var milkCarb = r2(milkServ * 12);
+                    state.remainCarb = r2(state.targets.carb - milkCarb);
+                }
+                else if (s.id === 'veg') {
+                    var vegServ = parseFloat(document.getElementById('sc-veg-serv')?.value) || 0;
+                    state.portions['vegetable'] = vegServ;
+                    var vegCarb = r2(vegServ * 5);
+                    state.remainCarb = r2(state.remainCarb - vegCarb);
+                }
+                else if (s.id === 'starch') {
+                    var stServ  = parseFloat(document.getElementById('sc-starch-serv')?.value) || 0;
+                    var frServ  = parseFloat(document.getElementById('sc-fruit-serv')?.value)  || 0;
+                    state.portions['starch'] = stServ;
+                    state.portions['fruit']  = frServ;
+                    // حساب البروتين المتبقي
+                    var tot = getTotals();
+                    state.remainProt = r2(state.targets.prot - tot.prot);
+                }
+                else if (s.id === 'meat') {
+                    var mLow  = parseFloat(document.getElementById('sc-meat-low')?.value)  || 0;
+                    var mMed  = parseFloat(document.getElementById('sc-meat-med')?.value)  || 0;
+                    var mHigh = parseFloat(document.getElementById('sc-meat-high')?.value) || 0;
+                    state.portions['meat_low']    = mLow;
+                    state.portions['meat_medium'] = mMed;
+                    state.portions['meat_high']   = mHigh;
+                    // حساب الدهون المتبقية
+                    var tot2 = getTotals();
+                    state.remainFat = r2(state.targets.fat - tot2.fat);
+                }
+                else if (s.id === 'fat') {
+                    var fatServ = parseFloat(document.getElementById('sc-fat-serv')?.value) || 0;
+                    state.portions['fat'] = fatServ;
+                }
+
+                state.currentStep = stepIdx + 1;
+                renderStep(state.currentStep);
+                document.getElementById('sc-step-area')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+            }
+
+            /* ── مساعدات HTML ── */
+            function stepCard(title, emoji, content, btnLabel) {
+                return '<div style="background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;box-shadow:0 2px 10px rgba(7,144,172,0.08);overflow:hidden;">' +
+                    '<div style="background:linear-gradient(135deg,#f0fafc,#fff);padding:12px 16px;border-bottom:1px solid #e6f4f7;display:flex;align-items:center;gap:8px;">' +
+                        '<span style="font-size:1.4rem;">'+emoji+'</span>' +
+                        '<span style="font-weight:800;color:#0790AC;font-size:0.95rem;">'+title+'</span>' +
+                    '</div>' +
+                    '<div style="padding:16px;">'+content+'</div>' +
+                    '<div style="padding:0 16px 16px;">' +
+                        '<button id="sc-calc-btn" style="display:inline-flex;align-items:center;gap:8px;background:#0790AC;border:none;border-radius:10px;padding:10px 22px;color:#fff;font-size:0.9rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(7,144,172,0.3);">'+btnLabel+'</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            function infoBox(html) {
+                return '<div style="background:#e6f4f7;border:1px solid #0790AC33;border-radius:10px;padding:8px 14px;font-size:0.83rem;font-weight:600;color:#056a80;margin-bottom:8px;">ℹ️ '+html+'</div>';
+            }
+            function meatInput(id, label, defaultVal) {
+                return '<div style="display:flex;flex-direction:column;gap:4px;">' +
+                    '<label style="font-size:0.75rem;font-weight:700;color:#374151;white-space:pre-line;">'+label+'</label>' +
+                    '<input id="'+id+'" type="number" min="0" step="0.5" value="'+defaultVal+'" style="border:2px solid #d1d5db;border-radius:10px;padding:8px;font-size:0.95rem;font-family:inherit;text-align:center;outline:none;">' +
+                '</div>';
+            }
+            function cmpCard(label, actual, target, color) {
+                var diff = r2(actual - target);
+                var dc = Math.abs(diff)/Math.max(target,1) <= 0.05 ? '#16a34a' : Math.abs(diff)/Math.max(target,1) <= 0.12 ? '#d97706' : '#dc2626';
+                var diffStr = diff > 0 ? '+'+diff : ''+diff;
+                return '<div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:8px;text-align:center;">' +
+                    '<div style="font-size:0.75rem;color:#6b7280;">'+label+'</div>' +
+                    '<div style="font-size:1.1rem;font-weight:800;color:'+color+';">'+actual+'</div>' +
+                    '<div style="font-size:0.72rem;color:#9ca3af;">الهدف: '+target+'</div>' +
+                    '<div style="font-size:0.75rem;font-weight:700;color:'+dc+';">('+diffStr+')</div>' +
+                '</div>';
+            }
+
+            /* ── إعادة تعيين الحاسبة ── */
+            function resetWizard() {
+                state.currentStep = 0;
+                state.portions = {};
+                state.remainCarb = 0; state.remainProt = 0; state.remainFat = 0;
+                refreshTargets();
+                renderStep(0);
+            }
+
+            /* ── قراءة الأهداف من حقول المغذيات الكبرى ── */
+            function refreshTargets() {
+                state.targets.carb = parseFloat(document.getElementById('carb-grams')?.textContent) || 0;
+                state.targets.prot = parseFloat(document.getElementById('prot-grams')?.textContent) || 0;
+                state.targets.fat  = parseFloat(document.getElementById('fat-grams')?.textContent)  || 0;
+                var tc = document.getElementById('sc-t-carb');
+                var tp = document.getElementById('sc-t-prot');
+                var tf = document.getElementById('sc-t-fat');
+                if(tc) tc.textContent = state.targets.carb || '—';
+                if(tp) tp.textContent = state.targets.prot || '—';
+                if(tf) tf.textContent = state.targets.fat  || '—';
+            }
+
+            /* ── تهيئة الحاسبة ── */
+            function initWizard() {
+                var resetBtn = document.getElementById('sc-reset-btn');
+                if (resetBtn) resetBtn.addEventListener('click', resetWizard);
+                refreshTargets();
+                renderStep(0);
+
+                // مراقبة تغيّر الأهداف في حقول المغذيات
+                var observer = new MutationObserver(function(){
+                    refreshTargets();
                 });
-
-                var hasParts = Object.keys(partsMap).length > 0;
-
-                // اسماء وأيقونات الوجبات
-                var mealMeta = {
-                    breakfast: { label: 'الفطور',   icon: '🌅' },
-                    snack1:    { label: 'سناك 1',    icon: '🍎' },
-                    lunch:     { label: 'الغداء',    icon: '☀️' },
-                    snack2:    { label: 'سناك 2',    icon: '🥜' },
-                    dinner:    { label: 'العشاء',    icon: '🌙' },
-                    snack3:    { label: 'سناك 3',    icon: '🍵' },
-                };
-
-                var mealKeys = Array.from(mealCheckboxes).map(function(cb) { return cb.value; });
-
-                if (msgEl) msgEl.classList.add('hidden');
-
-                // تاريخ اليوم
-                var today = new Date();
-                var dateStr = today.toLocaleDateString('ar-SA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-                // بناء الجدول
-                // عدد الأعمدة = خانة التاريخ + عدد الوجبات
-                var colCount = mealKeys.length + 1;
-                var colWidth = Math.round(100 / colCount);
-
-                // رأس الجدول
-                var headerCells = '<th style="min-width:120px;background:#0790AC;color:#fff;padding:10px 12px;font-size:13px;border:1px solid #056e87;border-radius:8px 0 0 0;">📅 التاريخ</th>';
-                mealKeys.forEach(function(key) {
-                    var m = mealMeta[key] || { label: key, icon: '🍽️' };
-                    var parts = partsMap[key] || 0;
-                    var fraction = (hasParts && selectedParts > 0) ? parts + '/' + selectedParts : '';
-                    var perc = (hasParts && selectedParts > 0 && parts > 0)
-                        ? '(' + Math.round((parts / selectedParts) * 100) + '%)' : '';
-                    headerCells += '<th style="background:#0790AC;color:#fff;padding:10px 12px;font-size:13px;border:1px solid #056e87;text-align:center;">' +
-                        m.icon + ' ' + m.label +
-                        (fraction ? '<br><span style="font-size:11px;opacity:0.9;font-weight:600;">' + fraction + ' ' + perc + '</span>' : '') +
-                        '</th>';
+                ['carb-grams','prot-grams','fat-grams'].forEach(function(id){
+                    var el = document.getElementById(id);
+                    if(el) observer.observe(el, { childList:true, subtree:true, characterData:true });
                 });
+            }
 
-                // صف المحتوى (فارغ للكتابة)
-                var dateCells = '<td style="background:#f0fafb;padding:10px 12px;font-size:12px;font-weight:700;color:#0790AC;border:1px solid #d1d5db;vertical-align:top;">' + dateStr + '</td>';
-                mealKeys.forEach(function(key) {
-                    dateCells += '<td style="min-height:80px;height:80px;background:#fff;border:1px solid #e5e7eb;padding:8px;vertical-align:top;"></td>';
-                });
-
-                result.innerHTML =
-                    '<div style="overflow-x:auto;border-radius:12px;box-shadow:0 2px 8px rgba(7,144,172,0.10);margin-bottom:8px;">' +
-                    '<table style="width:100%;border-collapse:collapse;direction:rtl;font-family:inherit;">' +
-                    '<thead><tr>' + headerCells + '</tr></thead>' +
-                    '<tbody><tr>' + dateCells + '</tr></tbody>' +
-                    '</table></div>' +
-                    '<p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:4px;">يمكنك إضافة تفاصيل الوجبات يدوياً في الخانات</p>';
-
-                result.classList.remove('hidden');
-                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
+            initWizard();
         })();
-        // ===== نهاية ربط منطق برنامج اليوم الواحد =====
+        // ===== نهاية حاسبة الحصص الغذائية الذكية =====
         // ===== نهاية ربط منطق إدراج البدائل الغذائية =====
 
         // ربط زر طباعة الوصفة الطبية في عرض الزيارة
@@ -6132,6 +6643,12 @@
                 }
             });
         }
+
+        // ===== تهيئة جدول خطة الوجبات بعد إدراج HTML =====
+        // نُعيد التهيئة في كل مرة يُعرض فيها ملف المريض
+        mealPlanRows = [];
+        mealPlanIdCtr = 0;
+        initMealPlanTable();
     }
     
     // (جديد A.b) تعديل الدالة لتمرير صور الهوية
@@ -6640,6 +7157,51 @@
     function createDietProgramTab() {
         return `
             <div id="view-tab-7" class="patient-view-content hidden space-y-4">
+
+                <!-- ===== حاسبة الحصص الغذائية الذكية (خطوات) ===== -->
+                <div id="sc-wizard" class="rounded-2xl border-2 border-[--color-primary] overflow-hidden" style="border-color:#0790AC;">
+                    <!-- رأس الحاسبة -->
+                    <div style="background:linear-gradient(135deg,#0790AC 0%,#056a80 100%);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:1.35rem;">🧮</span>
+                            <span style="font-size:1rem;font-weight:800;color:#fff;">حاسبة الحصص الغذائية الذكية</span>
+                        </div>
+                        <!-- شريط الأهداف -->
+                        <div id="sc-targets-bar" style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <span class="sc-target-chip" style="background:rgba(255,255,255,0.18);border-radius:20px;padding:3px 12px;font-size:0.78rem;font-weight:700;color:#fff;">كارب: <span id="sc-t-carb">—</span>غ</span>
+                            <span class="sc-target-chip" style="background:rgba(255,255,255,0.18);border-radius:20px;padding:3px 12px;font-size:0.78rem;font-weight:700;color:#fff;">بروتين: <span id="sc-t-prot">—</span>غ</span>
+                            <span class="sc-target-chip" style="background:rgba(255,255,255,0.18);border-radius:20px;padding:3px 12px;font-size:0.78rem;font-weight:700;color:#fff;">دهون: <span id="sc-t-fat">—</span>غ</span>
+                        </div>
+                        <button id="sc-reset-btn" title="إعادة تعيين الحاسبة" style="background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;padding:5px 12px;color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">↺ إعادة</button>
+                    </div>
+
+                    <!-- محتوى الخطوات -->
+                    <div id="sc-body" style="padding:20px;background:#f8fafc;">
+
+                        <!-- تسلسل الخطوات (مرئي دائماً) -->
+                        <div id="sc-progress" style="display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">
+                            <!-- سيُنشأ بـ JS -->
+                        </div>
+
+                        <!-- منطقة الخطوة الحالية -->
+                        <div id="sc-step-area"></div>
+
+                        <!-- ملخص الحصص المحددة حتى الآن -->
+                        <div id="sc-summary" class="hidden mt-4 p-3 rounded-xl border border-[#0790AC]/30" style="background:#e6f4f7;">
+                            <div style="font-size:0.8rem;font-weight:700;color:#056a80;margin-bottom:6px;">✅ الحصص المحددة حتى الآن:</div>
+                            <div id="sc-summary-items" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                            <div style="margin-top:8px;font-size:0.78rem;font-weight:600;color:#374151;">
+                                كارب: <span id="sc-sum-carb" style="color:#16a34a;font-weight:800;">0</span>غ &nbsp;|&nbsp;
+                                بروتين: <span id="sc-sum-prot" style="color:#2563eb;font-weight:800;">0</span>غ &nbsp;|&nbsp;
+                                دهون: <span id="sc-sum-fat" style="color:#ea580c;font-weight:800;">0</span>غ &nbsp;|&nbsp;
+                                سعرات: <span id="sc-sum-kcal" style="color:#0790AC;font-weight:800;">0</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- ===== نهاية حاسبة الحصص الغذائية الذكية ===== -->
+
                 <!-- ===== قسم جدول الحصص الغذائية ===== -->
                 <div class="pt-6 border-t border-gray-300 mt-6">
                     <h3 class="text-xl font-bold text-[--color-primary] mb-4">1. جدول الحصص الغذائية</h3>
@@ -6881,7 +7443,7 @@
                             <!-- زر الإدراج -->
                             <div>
                                 <button id="add-alt-btn"
-                                    class="w-full bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-bold py-2 px-4 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 shadow-sm">
+                                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-xl transition-colors text-sm flex items-center justify-center gap-2 shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                                     </svg>
@@ -6964,7 +7526,7 @@
                                             </svg>
                                             <span id="alt-view-qty-val" class="text-sm font-bold text-green-800 leading-snug flex-1"></span>
                                             <button id="alt-view-insert-btn"
-                                                class="shrink-0 flex items-center gap-1 bg-[#0790AC] hover:bg-[#056e87] text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm">
+                                                class="shrink-0 flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                                                 </svg>
@@ -6987,6 +7549,47 @@
                             </div>
                             <!-- ===== نهاية منطقة البحث ===== -->
 
+                            <!-- ===== منطقة إدراج في جدول الوجبات (تظهر عند اختيار نوع) ===== -->
+                            <div id="alt-view-table-insert-section" class="hidden px-4 pb-4 pt-3 border-t-2 border-[--color-primary]/10" style="background:linear-gradient(135deg,#eef6ff 0%,#fff 100%);">
+                                <div class="flex items-center gap-2 mb-2.5">
+                                    <span class="text-sm">📋</span>
+                                    <span class="text-xs font-bold text-indigo-800">إدراج في جدول الوجبات</span>
+                                    <span id="alt-view-selected-summary" class="text-xs text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded-lg shadow-sm"></span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+                                    <!-- اليوم المستهدف — يظهر فقط عند وجود أكثر من يوم -->
+                                    <div id="alt-view-day-wrap" class="hidden">
+                                        <label class="block text-xs font-bold text-amber-700 mb-1">📅 اليوم المستهدف</label>
+                                        <select id="alt-view-table-day"
+                                            class="w-full border-2 border-amber-300 rounded-xl px-3 py-2 text-sm font-semibold focus:border-amber-500 focus:outline-none bg-amber-50 transition-colors">
+                                            <option value="">-- اختر اليوم --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">عدد الحصص للإدراج</label>
+                                        <input type="number" id="alt-view-table-servings" min="0.5" step="0.5" value="1"
+                                            class="w-full border-2 border-indigo-200 rounded-xl px-3 py-2 text-sm text-center font-bold focus:border-indigo-500 focus:outline-none transition-colors">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">الوجبة المستهدفة</label>
+                                        <select id="alt-view-table-meal"
+                                            class="w-full border-2 border-indigo-200 rounded-xl px-3 py-2 text-sm font-semibold focus:border-indigo-500 focus:outline-none bg-white transition-colors">
+                                            <option value="">-- اختر الوجبة --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <button id="alt-view-insert-to-table-btn"
+                                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18M10 3v18M14 3v18"/>
+                                            </svg>
+                                            إدراج في الجدول
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- ===== نهاية منطقة إدراج في الجدول ===== -->
+
                             <!-- قائمة كل البدائل للإدارة (حذف) -->
                             <div id="alt-items-container" class="divide-y divide-gray-100">
                                 <!-- ستُعبأ بواسطة JS -->
@@ -6996,29 +7599,89 @@
                 </div>
                 <!-- ===== نهاية قسم إدراج البدائل الغذائية ===== -->
 
-
-                <!-- ===== قسم تصميم برنامج ليوم واحد ===== -->
+                <!-- ===== قسم الجدول التفاعلي اليومي للوجبات ===== -->
                 <div class="pt-6 border-t border-gray-300 mt-6">
-                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">4. تصميم برنامج ليوم واحد</h3>
+                    <h3 class="text-xl font-bold text-[--color-primary] mb-4">4. الجدول التفاعلي اليومي للوجبات</h3>
 
-                    <!-- زر الإنشاء -->
-                    <div class="flex items-center gap-4 mb-5">
-                        <button id="create-daily-plan-btn"
-                            class="flex items-center gap-2 bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
-                            </svg>
-                            إنشاء البرنامج
-                        </button>
-                        <div id="daily-plan-msg" class="hidden text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2"></div>
+                    <!-- منطقة الحصص المتبقية (خارج إطار الجدول) -->
+                    <div id="meal-plan-remaining-panel" class="mb-5 p-4 border-2 border-indigo-200 rounded-2xl" style="background:linear-gradient(135deg,#eef2ff 0%,#f8f9ff 100%);">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-lg">📊</span>
+                            <span class="font-bold text-indigo-800 text-sm">الحصص المتبقية من كل قائمة</span>
+                            <span class="text-xs text-gray-400 mr-1">(بناء على جدول الحصص الغذائية)</span>
+                        </div>
+                        <div id="remaining-servings-chips" class="flex flex-wrap gap-2">
+                            <span class="text-xs text-gray-400 italic">قم بإضافة قوائم في جدول الحصص الغذائية أولاً</span>
+                        </div>
                     </div>
 
-                    <!-- الجدول اليومي -->
-                    <div id="daily-plan-result" class="hidden">
-                        <!-- سيُنشأ بالـ JS -->
+                    <!-- شريط إضافة يوم -->
+                    <div class="flex flex-wrap gap-3 items-end mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm font-semibold text-gray-600">التاريخ</label>
+                            <input type="date" id="meal-plan-date-input"
+                                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]/40">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm font-semibold text-gray-600">اليوم</label>
+                            <select id="meal-plan-day-input"
+                                class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]/40">
+                                <option value="">-- اختر اليوم --</option>
+                                <option>الأحد</option>
+                                <option>الاثنين</option>
+                                <option>الثلاثاء</option>
+                                <option>الأربعاء</option>
+                                <option>الخميس</option>
+                                <option>الجمعة</option>
+                                <option>السبت</option>
+                            </select>
+                        </div>
+                        <button id="meal-plan-add-row-btn"
+                            class="flex items-center gap-2 bg-[--color-primary] hover:bg-[--color-primary-dark] text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                            </svg>
+                            إضافة يوم
+                        </button>
+                        <button id="meal-plan-clear-btn"
+                            class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
+                            مسح الجدول
+                        </button>
+                    </div>
+
+                    <!-- رسالة تنبيه اختيار الوجبات -->
+                    <div id="meal-plan-no-meals-msg" class="hidden mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm font-semibold">
+                        ⚠️ يرجى اختيار الوجبات من القسم 2 (قائمة البدائل الغذائية) لتظهر أعمدة الجدول
+                    </div>
+
+                    <!-- الجدول التفاعلي -->
+                    <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                        <table id="meal-plan-table" class="w-full text-sm">
+                            <thead id="meal-plan-thead">
+                                <tr>
+                                    <th style="min-width:100px;">التاريخ</th>
+                                    <th style="min-width:80px;">اليوم</th>
+                                    <th style="min-width:60px;">حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="meal-plan-tbody">
+                                <tr>
+                                    <td colspan="3" class="py-8 text-gray-400 text-center text-sm">
+                                        لا توجد أيام بعد — أضف يوماً من أعلاه ثم أدرج الوجبات من قائمة البدائل
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot id="meal-plan-tfoot"></tfoot>
+                        </table>
                     </div>
                 </div>
-                <!-- ===== نهاية قسم تصميم برنامج ليوم واحد ===== -->
+                <!-- ===== نهاية قسم الجدول التفاعلي ===== -->
+
+
+
                 <!-- زر طباعة البرنامج الغذائي -->
                 <div class="mt-6 flex justify-end">
                     <button id="print-diet-btn"
@@ -7355,7 +8018,7 @@
         const kcal = +((carb * 4) + (prot * 4) + (fat * 9)).toFixed(1);
 
         const id = Date.now();
-        exchangeRows.push({ id, name: list.name, servings, carb, prot, fat, kcal });
+        exchangeRows.push({ id, listKey, name: list.name, servings, carb, prot, fat, kcal });
         renderExchangeTable();
     }
 
@@ -7407,6 +8070,8 @@
 
         setExchangeTotals(totalCarb, totalProt, totalFat, totalKcal);
         updateExchangeComparison(totalCarb, totalProt, totalFat, totalKcal);
+        window._exchangeRows = exchangeRows;
+        if (typeof window.updateMealPlanRemaining === 'function') window.updateMealPlanRemaining();
 
         // event delegation لأزرار الحذف
         tbody.querySelectorAll('.exchange-delete-btn').forEach(btn => {
@@ -7446,6 +8111,497 @@
             setVal('cmp-kcal-target',  kcalTarget.toFixed(1));
         }
     }
+
+    // ===== جدول خطة الوجبات التفاعلي =====
+    var mealPlanRows = [];
+    var mealPlanIdCtr = 0;
+
+    function initMealPlanTable() {
+
+        var MEAL_LABELS = {
+            breakfast: { label: 'فطور',   icon: '🌅' },
+            snack1:    { label: 'سناك 1', icon: '🍎' },
+            lunch:     { label: 'غداء',   icon: '☀️' },
+            snack2:    { label: 'سناك 2', icon: '🥜' },
+            dinner:    { label: 'عشاء',   icon: '🌙' },
+            snack3:    { label: 'سناك 3', icon: '🍵' },
+        };
+
+        var EXCHANGE_INFO = {
+            starch:      { name: 'النشويات',              emoji:'🍞', carb:15, prot:3,  fat:0.5 },
+            fruit:       { name: 'الفواكه',               emoji:'🍎', carb:15, prot:0,  fat:0   },
+            vegetable:   { name: 'الخضار',                emoji:'🥦', carb:5,  prot:2,  fat:0   },
+            meat_low:    { name: 'لحوم قليلة الدهون',    emoji:'🥩', carb:0,  prot:7,  fat:2   },
+            meat_medium: { name: 'لحوم متوسطة الدهون',   emoji:'🍗', carb:0,  prot:7,  fat:5   },
+            meat_high:   { name: 'لحوم عالية الدهون',    emoji:'🥓', carb:0,  prot:7,  fat:8   },
+            milk_skim:   { name: 'حليب خالي الدسم',      emoji:'🥛', carb:12, prot:8,  fat:1.5 },
+            milk_low:    { name: 'حليب قليل الدسم',      emoji:'🥛', carb:12, prot:8,  fat:5   },
+            milk_full:   { name: 'حليب كامل الدسم',      emoji:'🥛', carb:12, prot:8,  fat:8   },
+            fat:         { name: 'الدهون',                emoji:'🫒', carb:0,  prot:0,  fat:5   },
+        };
+
+        // الحصول على الوجبات المختارة من مربعات الاختيار
+        function getSelectedMeals() {
+            var meals = [];
+            document.querySelectorAll('.meal-checkbox:checked').forEach(function(cb) {
+                meals.push({ key: cb.value, label: cb.dataset.label });
+            });
+            return meals;
+        }
+
+        // الحصول على السعرات المحسوبة لكل وجبة من توزيع الأجزاء
+        function getMealKcal(mealKey) {
+            var dist = window._mealDistribution;
+            if (!dist) return null;
+            var m = dist.distributed ? dist.distributed.find(function(d){ return d.key === mealKey; }) : null;
+            if (!m) return null;
+            var totalParts = dist.totalParts || 1;
+            var targetKcal = dist.targetKcal || 0;
+            if (totalParts <= 0 || targetKcal <= 0) return null;
+            return Math.round((m.parts / totalParts) * targetKcal);
+        }
+
+        // حساب سعرات حصة واحدة من فئة معينة
+        function calcItemKcal(item) {
+            var info = EXCHANGE_INFO[item.category];
+            if (!info) return 0;
+            var kcalPerServing = info.carb * 4 + info.prot * 4 + info.fat * 9;
+            return Math.round(kcalPerServing * (item.servings || 1));
+        }
+
+        // حساب إجمالي سعرات وجبة معينة في صف معين
+        function calcCellKcal(row, mealKey) {
+            var items = row.cells[mealKey] || [];
+            return items.reduce(function(sum, item) { return sum + calcItemKcal(item); }, 0);
+        }
+
+        // تحديث رأس الجدول
+        function renderMealPlanHeader() {
+            var thead = document.getElementById('meal-plan-thead');
+            if (!thead) return;
+            var meals = getSelectedMeals();
+            var noMealsMsg = document.getElementById('meal-plan-no-meals-msg');
+
+            if (meals.length === 0) {
+                if (noMealsMsg) noMealsMsg.classList.remove('hidden');
+                thead.innerHTML = '<tr><th>التاريخ</th><th>اليوم</th><th>حذف</th></tr>';
+                return;
+            }
+            if (noMealsMsg) noMealsMsg.classList.add('hidden');
+
+            var headerCells = '<th style="min-width:100px;background:linear-gradient(135deg,#0790AC,#056a80);">التاريخ</th>'
+                + '<th style="min-width:80px;background:linear-gradient(135deg,#0790AC,#056a80);">اليوم</th>';
+
+            meals.forEach(function(m) {
+                var info = MEAL_LABELS[m.key] || { label: m.label, icon: '🍽️' };
+                var kcal = getMealKcal(m.key);
+                var kcalSpan = kcal !== null
+                    ? '<span class="meal-kcal-sub">' + kcal + ' سعرة</span>'
+                    : '';
+                headerCells += '<th style="min-width:150px;background:linear-gradient(135deg,#0790AC,#056a80);">'
+                    + info.icon + ' ' + info.label + kcalSpan + '</th>';
+            });
+            headerCells += '<th style="min-width:60px;background:linear-gradient(135deg,#0790AC,#056a80);">حذف</th>';
+            thead.innerHTML = '<tr>' + headerCells + '</tr>';
+        }
+
+        // عرض جسم الجدول
+        function renderMealPlanBody() {
+            var tbody = document.getElementById('meal-plan-tbody');
+            var tfoot = document.getElementById('meal-plan-tfoot');
+            if (!tbody) return;
+            var meals = getSelectedMeals();
+
+            if (mealPlanRows.length === 0) {
+                var colspan = meals.length > 0 ? meals.length + 3 : 3;
+                tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="py-8 text-gray-400 text-center text-sm">'
+                    + 'لا توجد أيام بعد — أضف يوماً من أعلاه ثم أدرج الوجبات من قائمة البدائل'
+                    + '</td></tr>';
+                if (tfoot) tfoot.innerHTML = '';
+                return;
+            }
+
+            tbody.innerHTML = mealPlanRows.map(function(row, ri) {
+                var bg = ri % 2 === 0 ? '#fff' : '#f9fafb';
+                var dateCells = '<td class="date-cell" style="background:' + bg + ';">'
+                    + (row.date ? formatDateAr(row.date) : '—') + '</td>'
+                    + '<td class="day-cell" style="background:' + bg + ';">' + (row.day || '—') + '</td>';
+
+                var mealCells = meals.map(function(m) {
+                    var items = row.cells[m.key] || [];
+                    var targetKcal = getMealKcal(m.key);
+                    var consumedKcal = calcCellKcal(row, m.key);
+                    var remainingKcal = targetKcal !== null ? targetKcal - consumedKcal : null;
+
+                    var cellContent = items.length === 0
+                        ? '<span class="meal-cell-empty">—</span>'
+                        : items.map(function(item, ii) {
+                            var itemKcal = calcItemKcal(item);
+                            return '<div class="meal-cell-item">'
+                                + '<span class="meal-cell-item-text">'
+                                +   (EXCHANGE_INFO[item.category] ? EXCHANGE_INFO[item.category].emoji : '🍽️') + ' '
+                                +   item.type + ' × ' + item.servings + ' حصة'
+                                +   '<br><span style="font-size:0.65rem;color:#6b7280;font-weight:400;">' + item.quantity + '</span>'
+                                +   '<span style="font-size:0.65rem;color:#0790AC;font-weight:700;margin-right:4px;">· ' + itemKcal + ' سعرة</span>'
+                                + '</span>'
+                                + '<button class="meal-cell-item-del" onclick="window._removeMealPlanItem(' + row.id + ',\'' + m.key + '\',' + ii + ')" title="حذف">✕</button>'
+                                + '</div>';
+                        }).join('');
+
+                    // شريط ملخص السعرات أسفل الخلية
+                    var kcalBar = '';
+                    if (items.length > 0 || targetKcal !== null) {
+                        var barColor, barLabel, barIcon;
+                        if (targetKcal !== null) {
+                            if (remainingKcal > 0) {
+                                barColor = '#16a34a'; barIcon = '✅';
+                                barLabel = 'مستهلك: <strong>' + consumedKcal + '</strong> · متبقي: <strong style="color:#16a34a;">' + remainingKcal + '</strong> سعرة';
+                            } else if (remainingKcal === 0) {
+                                barColor = '#0790AC'; barIcon = '🎯';
+                                barLabel = 'مكتمل: <strong>' + consumedKcal + '</strong> سعرة';
+                            } else {
+                                barColor = '#dc2626'; barIcon = '⚠️';
+                                barLabel = 'مستهلك: <strong>' + consumedKcal + '</strong> · زيادة: <strong style="color:#dc2626;">' + Math.abs(remainingKcal) + '</strong> سعرة';
+                            }
+                        } else {
+                            barColor = '#6b7280'; barIcon = '🔢';
+                            barLabel = 'مستهلك: <strong>' + consumedKcal + '</strong> سعرة';
+                        }
+                        kcalBar = '<div class="meal-kcal-bar" style="border-top:1px dashed #e5e7eb;margin-top:4px;padding-top:3px;">'
+                            + '<span style="font-size:0.65rem;color:' + barColor + ';font-weight:700;">'
+                            + barIcon + ' ' + barLabel
+                            + '</span></div>';
+                    }
+
+                    return '<td class="meal-cell">' + cellContent + kcalBar + '</td>';
+                }).join('');
+
+                // إجمالي اليوم
+                var dayTotalKcal = meals.reduce(function(sum, m) { return sum + calcCellKcal(row, m.key); }, 0);
+                var delCell = '<td style="background:' + bg + ';text-align:center;vertical-align:middle;">'
+                    + '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">'
+                    + '<button onclick="window._removeMealPlanRow(' + row.id + ')" '
+                    + 'class="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="حذف اليوم">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">'
+                    + '<path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>'
+                    + '</svg></button>'
+                    + (dayTotalKcal > 0
+                        ? '<span style="font-size:0.65rem;font-weight:800;color:#0790AC;white-space:nowrap;">' + dayTotalKcal + '<br>سعرة</span>'
+                        : '')
+                    + '</div>'
+                    + '</td>';
+
+                return '<tr>' + dateCells + mealCells + delCell + '</tr>';
+            }).join('');
+
+            // مسح tfoot إن وُجد
+            if (tfoot) tfoot.innerHTML = '';
+        }
+
+        function formatDateAr(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                var d = new Date(dateStr + 'T00:00:00');
+                return d.toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' });
+            } catch(e) { return dateStr; }
+        }
+
+        // تحديث لوحة الحصص المتبقية
+        function updateRemainingPanel() {
+            var panel = document.getElementById('remaining-servings-chips');
+            if (!panel) return;
+
+            // جمع إجماليات جدول الحصص الغذائية (section 1)
+            var allocated = {}; // { category: totalServings }
+            var rows = window._exchangeRows || exchangeRows || [];
+            rows.forEach(function(r) {
+                if (r.listKey) {
+                    allocated[r.listKey] = (allocated[r.listKey] || 0) + r.servings;
+                }
+            });
+
+            if (Object.keys(allocated).length === 0) {
+                panel.innerHTML = '<span class="text-xs text-gray-400 italic">قم بإضافة قوائم في جدول الحصص الغذائية أولاً</span>';
+                return;
+            }
+
+            // جمع الحصص المستخدمة في جدول الوجبات
+            var used = {};
+            mealPlanRows.forEach(function(row) {
+                Object.keys(row.cells).forEach(function(mealKey) {
+                    row.cells[mealKey].forEach(function(item) {
+                        if (item.category) {
+                            used[item.category] = (used[item.category] || 0) + (item.servings || 0);
+                        }
+                    });
+                });
+            });
+
+            var html = '';
+            Object.keys(allocated).forEach(function(cat) {
+                var info = EXCHANGE_INFO[cat];
+                if (!info) return;
+                var total = allocated[cat];
+                var usedAmt = used[cat] || 0;
+                var remaining = +(total - usedAmt).toFixed(2);
+                var chipClass = remaining > 0 ? 'ok' : (remaining === 0 ? 'zero' : 'over');
+                var icon = info.emoji;
+                html += '<span class="remaining-chip ' + chipClass + '">'
+                    + icon + ' ' + info.name
+                    + ' <span style="opacity:0.7;font-weight:400;">|</span> '
+                    + 'المخصص: <strong>' + total + '</strong>'
+                    + ' · المستخدم: <strong>' + usedAmt + '</strong>'
+                    + ' · المتبقي: <strong>' + remaining + '</strong>'
+                    + '</span>';
+            });
+            panel.innerHTML = html || '<span class="text-xs text-gray-400 italic">لا توجد قوائم في جدول الحصص الغذائية</span>';
+        }
+
+        // مزامنة قوائم اختيار اليوم في قسم البدائل عند تحديث الجدول
+        function syncDaySelectors() {
+            var multiDay = mealPlanRows.length > 1;
+
+            // منطقة alt-view-table-insert-section
+            var altViewDayWrap = document.getElementById('alt-view-day-wrap');
+            var altViewDaySel  = document.getElementById('alt-view-table-day');
+            if (altViewDayWrap && altViewDaySel) {
+                altViewDayWrap.classList.toggle('hidden', !multiDay);
+                if (multiDay) altViewDaySel.innerHTML = getDayOptionsHTML(null);
+            }
+
+            // إعادة رسم قائمة البدائل لتحديث selects اليوم فيها
+            // (renderAltList تُعيد رسم الـ HTML بالكامل مع getDayOptionsHTML المحدّثة)
+            if (typeof window._renderAltList === 'function') window._renderAltList();
+        }
+
+        // عرض كامل للجدول
+        function renderMealPlanTable() {
+            renderMealPlanHeader();
+            renderMealPlanBody();
+            updateRemainingPanel();
+            syncDaySelectors();
+        }
+
+        // إضافة يوم جديد
+        function addMealPlanRow() {
+            var dateInp = document.getElementById('meal-plan-date-input');
+            var dayInp  = document.getElementById('meal-plan-day-input');
+            var date = dateInp ? dateInp.value : '';
+            var day  = dayInp  ? dayInp.value  : '';
+
+            if (!date && !day) {
+                if (typeof showToast === 'function') showToast('يرجى إدخال التاريخ أو اليوم', 'error');
+                else alert('يرجى إدخال التاريخ أو اليوم');
+                return;
+            }
+
+            var meals = getSelectedMeals();
+            var cells = {};
+            meals.forEach(function(m) { cells[m.key] = []; });
+
+            mealPlanRows.push({ id: ++mealPlanIdCtr, date: date, day: day, cells: cells });
+            renderMealPlanTable();
+            // لا نمسح الحقول لإتاحة إضافة أيام متتالية بنفس اليوم
+        }
+
+        // حذف يوم
+        window._removeMealPlanRow = function(rowId) {
+            mealPlanRows = mealPlanRows.filter(function(r){ return r.id !== rowId; });
+            renderMealPlanTable();
+        };
+
+        // حذف عنصر من خلية وجبة
+        window._removeMealPlanItem = function(rowId, mealKey, itemIdx) {
+            var row = mealPlanRows.find(function(r){ return r.id === rowId; });
+            if (row && row.cells[mealKey]) {
+                row.cells[mealKey].splice(itemIdx, 1);
+                renderMealPlanTable();
+            }
+        };
+
+        // توليد قائمة اختيار اليوم من صفوف الجدول الموجودة
+        function getDayOptionsHTML(selectedRowId) {
+            var html = '<option value="">-- اختر اليوم --</option>';
+            mealPlanRows.forEach(function(row) {
+                var label = (row.day || '') + (row.date ? ' · ' + formatDateAr(row.date) : '');
+                var sel = row.id === selectedRowId ? ' selected' : '';
+                html += '<option value="' + row.id + '"' + sel + '>' + label + '</option>';
+            });
+            return html;
+        }
+
+        // إدراج بديل في خلية وجبة (من قائمة البدائل المدرجة)
+        window._insertAltToTable = function(altIdx) {
+            var srvInp  = document.getElementById('alt-item-srv-' + altIdx);
+            var mealSel = document.getElementById('alt-item-meal-' + altIdx);
+            var daySel  = document.getElementById('alt-item-day-' + altIdx);
+            var items   = window._altItems || [];
+            var item    = items[altIdx];
+
+            if (!item) { alert('لم يُعثر على البديل'); return; }
+
+            var servings = srvInp ? (parseFloat(srvInp.value) || 1) : 1;
+            var mealKey  = mealSel ? mealSel.value : '';
+
+            if (!mealKey) { alert('⚠️ يرجى اختيار الوجبة'); return; }
+            if (mealPlanRows.length === 0) { alert('⚠️ يرجى إضافة يوم أولاً في جدول الوجبات'); return; }
+
+            // إذا كان هناك أكثر من يوم يجب تحديد اليوم
+            var row;
+            if (mealPlanRows.length === 1) {
+                row = mealPlanRows[0];
+            } else {
+                var selectedRowId = daySel ? parseInt(daySel.value) : NaN;
+                if (!selectedRowId || isNaN(selectedRowId)) { alert('⚠️ يرجى تحديد اليوم المراد الإدراج فيه'); return; }
+                row = mealPlanRows.find(function(r) { return r.id === selectedRowId; });
+                if (!row) { alert('⚠️ اليوم المحدد غير موجود'); return; }
+            }
+
+            if (!row.cells[mealKey]) row.cells[mealKey] = [];
+
+            row.cells[mealKey].push({
+                category: item.category,
+                type:     item.type,
+                quantity: item.quantity,
+                servings: servings,
+            });
+
+            renderMealPlanTable();
+            if (typeof showToast === 'function') showToast('✅ تم إدراج "' + item.type + '" في وجبة ' + mealKey, 'success');
+        };
+
+        // إدراج من منطقة البحث (alt-view) في جدول الوجبات
+        var altViewInsertToTableBtn = document.getElementById('alt-view-insert-to-table-btn');
+        if (altViewInsertToTableBtn) {
+            altViewInsertToTableBtn.addEventListener('click', function() {
+                var catSel   = document.getElementById('alt-view-category');
+                var typeSel  = document.getElementById('alt-view-type');
+                var srvInp   = document.getElementById('alt-view-table-servings');
+                var mealSel  = document.getElementById('alt-view-table-meal');
+                var daySel   = document.getElementById('alt-view-table-day');
+                var qtyVal   = document.getElementById('alt-view-qty-val');
+
+                if (!catSel || !typeSel || !mealSel) return;
+
+                var category = catSel.value;
+                var typeIdx  = parseInt(typeSel.value);
+                var mealKey  = mealSel.value;
+                var servings = srvInp ? (parseFloat(srvInp.value) || 1) : 1;
+
+                var altItems = window._altItems || [];
+                var filtered = altItems.filter(function(i){ return i.category === category; });
+
+                if (!category || isNaN(typeIdx) || !filtered[typeIdx]) {
+                    alert('⚠️ يرجى اختيار الفئة ونوع البديل أولاً'); return;
+                }
+                if (!mealKey) { alert('⚠️ يرجى اختيار الوجبة'); return; }
+                if (mealPlanRows.length === 0) { alert('⚠️ يرجى إضافة يوم أولاً في جدول الوجبات'); return; }
+
+                // تحديد اليوم المستهدف
+                var row;
+                if (mealPlanRows.length === 1) {
+                    row = mealPlanRows[0];
+                } else {
+                    var selRowId = daySel ? parseInt(daySel.value) : NaN;
+                    if (!selRowId || isNaN(selRowId)) { alert('⚠️ يرجى تحديد اليوم المراد الإدراج فيه'); return; }
+                    row = mealPlanRows.find(function(r) { return r.id === selRowId; });
+                    if (!row) { alert('⚠️ اليوم المحدد غير موجود'); return; }
+                }
+
+                var item = filtered[typeIdx];
+                if (!row.cells[mealKey]) row.cells[mealKey] = [];
+
+                row.cells[mealKey].push({
+                    category: category,
+                    type:     item.type,
+                    quantity: item.quantity,
+                    servings: servings,
+                });
+
+                renderMealPlanTable();
+
+                // تأثير بصري
+                altViewInsertToTableBtn.textContent = '✓ تم الإدراج';
+                altViewInsertToTableBtn.style.background = '#16a34a';
+                setTimeout(function() {
+                    altViewInsertToTableBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18M10 3v18M14 3v18"/></svg> إدراج في الجدول';
+                    altViewInsertToTableBtn.style.background = '';
+                }, 1500);
+            });
+        }
+
+        // ربط زر إضافة يوم
+        var addRowBtn = document.getElementById('meal-plan-add-row-btn');
+        if (addRowBtn) addRowBtn.addEventListener('click', addMealPlanRow);
+
+        // ربط زر مسح الجدول
+        var clearBtn = document.getElementById('meal-plan-clear-btn');
+        if (clearBtn) clearBtn.addEventListener('click', function() {
+            if (mealPlanRows.length === 0) return;
+            if (confirm('هل تريد مسح جدول الوجبات بالكامل؟')) {
+                mealPlanRows = [];
+                renderMealPlanTable();
+            }
+        });
+
+        // تحديث الجدول عند تغيير اختيار الوجبات
+        document.querySelectorAll('.meal-checkbox').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                // تحديث خلايا الأيام الموجودة لتشمل الوجبات الجديدة
+                var meals = getSelectedMeals();
+                mealPlanRows.forEach(function(row) {
+                    meals.forEach(function(m) {
+                        if (!row.cells[m.key]) row.cells[m.key] = [];
+                    });
+                });
+                renderMealPlanTable();
+            });
+        });
+
+        // تحديث الرأس عند تغيير التوزيع (المزامنة مع مخرجات الحاسبة)
+        document.addEventListener('meal-distribution-updated', function() {
+            renderMealPlanHeader();
+        });
+
+        var showDistBtn = document.getElementById('show-manual-dist-btn');
+        if (showDistBtn) {
+            showDistBtn.addEventListener('click', function() {
+                setTimeout(renderMealPlanHeader, 300);
+            });
+        }
+
+        // تعريف دالة عامة لتحديث لوحة المتبقي (تُستدعى من renderExchangeTable)
+        window.updateMealPlanRemaining = updateRemainingPanel;
+
+        // ضبط التاريخ الافتراضي على اليوم وتحديد اسم اليوم تلقائياً
+        (function() {
+            var dateInp = document.getElementById('meal-plan-date-input');
+            var dayInp  = document.getElementById('meal-plan-day-input');
+            if (dateInp) {
+                var today = new Date();
+                var yyyy  = today.getFullYear();
+                var mm    = String(today.getMonth() + 1).padStart(2, '0');
+                var dd    = String(today.getDate()).padStart(2, '0');
+                dateInp.value = yyyy + '-' + mm + '-' + dd;
+
+                // تحديد اليوم تلقائياً عند تغيير التاريخ
+                function syncDayFromDate() {
+                    var val = dateInp.value;
+                    if (!val) return;
+                    var d = new Date(val + 'T00:00:00');
+                    var dayNames = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+                    var dayName  = dayNames[d.getDay()];
+                    if (dayInp) dayInp.value = dayName;
+                }
+                syncDayFromDate(); // تطبيق فوري على اليوم الحالي
+                dateInp.addEventListener('change', syncDayFromDate);
+            }
+        })();
+
+        // عرض أولي
+        renderMealPlanTable();
+
+    } // end initMealPlanTable
 
     // --- دوال حفظ وتحميل البيانات (IndexedDB) ---
 
