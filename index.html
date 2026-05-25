@@ -3770,7 +3770,13 @@
         patientSearchInput.addEventListener('input', filterPatientList);
 
         // ربط أحداث حفظ وتحميل البيانات
-        saveDataBtn.addEventListener('click', saveDataAsJson);
+        saveDataBtn.addEventListener('click', function() {
+            // حفظ البرنامج الغذائي إن كانت هناك زيارة مفتوحة
+            if (currentViewPatient && currentViewVisit && (exchangeRows.length > 0 || mealPlanRows.length > 0)) {
+                saveDietDataToVisit();
+            }
+            saveDataAsJson();
+        });
         loadDataBtn.addEventListener('click', () => loadDataInput.click());
         loadDataInput.addEventListener('change', loadDataFromFile);
 
@@ -5852,6 +5858,22 @@
                 printDietProgram(currentViewPatient, currentViewVisit);
             }
         });
+        // ── زر حفظ البرنامج الغذائي ──
+        const saveDietBtn = document.getElementById('save-diet-btn');
+        if (saveDietBtn) saveDietBtn.addEventListener('click', saveDietDataToVisit);
+
+        // ── استعادة البيانات المحفوظة إن وُجدت ──
+        if (currentViewVisit && currentViewVisit.diet) {
+            setTimeout(function() {
+                restoreDietDataFromVisit(currentViewVisit);
+            }, 200);
+        }
+
+        // ── تعريض دالة إعادة رسم الجدول للاستخدام الخارجي ──
+        window._renderMealPlanTable = function() {
+            var evt = new Event('meal-distribution-updated');
+            document.dispatchEvent(evt);
+        };
 
         // ===== ربط منطق قائمة البدائل الغذائية =====
         (function() {
@@ -7952,8 +7974,17 @@
 
 
 
-                <!-- زر طباعة البرنامج الغذائي -->
-                <div class="mt-6 flex justify-end">
+                <!-- أزرار البرنامج الغذائي -->
+                <div class="mt-6 flex flex-wrap justify-end gap-3">
+                    <!-- زر حفظ البرنامج الغذائي -->
+                    <button id="save-diet-btn"
+                        class="flex items-center gap-2 bg-gradient-to-l from-green-600 to-green-700 hover:opacity-90 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/>
+                        </svg>
+                        حفظ البرنامج الغذائي
+                    </button>
                     <button id="print-diet-btn"
                         class="flex items-center gap-2 bg-gradient-to-l from-[--color-primary] to-[--color-primary-dark] hover:opacity-90 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all text-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -8301,6 +8332,216 @@
         exchangeRows = [];
         renderExchangeTable();
     }
+
+    // ═══════════════════════════════════════════════════
+    // ====== حفظ البرنامج الغذائي في visit.diet =======
+    // ═══════════════════════════════════════════════════
+    function collectDietData() {
+        // 1. جدول الحصص الغذائية
+        const exchangeData = (exchangeRows || []).map(r => ({
+            id: r.id, listKey: r.listKey, name: r.name,
+            servings: r.servings, carb: r.carb, prot: r.prot,
+            fat: r.fat, kcal: r.kcal
+        }));
+
+        // 2. توزيع الحصص (قائمة البدائل)
+        const distData = window._mealDistribution
+            ? JSON.parse(JSON.stringify(window._mealDistribution))
+            : null;
+
+        // 3. الوجبات المختارة (checkboxes)
+        const selectedMeals = [];
+        document.querySelectorAll('.meal-checkbox:checked').forEach(function(cb) {
+            selectedMeals.push({ key: cb.value, label: cb.dataset.label });
+        });
+
+        // 4. إجمالي الأجزاء المُدخلة يدوياً
+        const totalPartsInput = document.getElementById('manual-total-parts-input');
+        const totalParts = totalPartsInput ? totalPartsInput.value : '';
+
+        // 5. توزيع الأجزاء على الوجبات
+        const partsPerMeal = {};
+        document.querySelectorAll('[data-meal-key]').forEach(function(inp) {
+            partsPerMeal[inp.dataset.mealKey] = inp.value;
+        });
+
+        // 6. جدول خطة الوجبات (mealPlanRows)
+        const mealPlanData = (mealPlanRows || []).map(function(row) {
+            return {
+                id: row.id,
+                date: row.date,
+                day: row.day,
+                cells: row.cells ? JSON.parse(JSON.stringify(row.cells)) : {}
+            };
+        });
+
+        // 7. إعدادات الماكرو (نسب + مصدر السعرات)
+        const macroSettings = {
+            bmrFormula: document.getElementById('bmr-formula')?.value || '',
+            calorieSource: document.getElementById('calorie-source-select')?.value || '',
+            calorieTarget: document.getElementById('calorie-target')?.value || '',
+            protPerc: document.getElementById('prot-perc')?.value || '',
+            carbPerc: document.getElementById('carb-perc')?.value || '',
+            fatPerc:  document.getElementById('fat-perc')?.value  || '',
+        };
+
+        return {
+            exchangeRows: exchangeData,
+            mealDistribution: distData,
+            selectedMeals: selectedMeals,
+            totalParts: totalParts,
+            partsPerMeal: partsPerMeal,
+            mealPlanRows: mealPlanData,
+            macroSettings: macroSettings,
+            savedAt: new Date().toISOString()
+        };
+    }
+
+    function saveDietDataToVisit() {
+        if (!currentViewPatient || !currentViewVisit) {
+            if (typeof showToast === 'function') showToast('لا توجد زيارة مفتوحة للحفظ', 'error');
+            return;
+        }
+        currentViewVisit.diet = collectDietData();
+        // حفظ في قاعدة البيانات المحلية
+        saveDataToLocalStorage();
+        if (typeof showToast === 'function') showToast('تم حفظ البرنامج الغذائي بنجاح ✓', 'success');
+        isDataDirty = false;
+    }
+
+    function restoreDietDataFromVisit(visit) {
+        const diet = visit && visit.diet;
+        if (!diet) return; // لا توجد بيانات محفوظة
+
+        // ─── 1. استعادة جدول الحصص الغذائية ───
+        if (Array.isArray(diet.exchangeRows) && diet.exchangeRows.length > 0) {
+            exchangeRows = diet.exchangeRows.map(function(r) {
+                return { id: r.id, listKey: r.listKey, name: r.name,
+                         servings: r.servings, carb: r.carb,
+                         prot: r.prot, fat: r.fat, kcal: r.kcal };
+            });
+            renderExchangeTable();
+        }
+
+        // ─── 2. استعادة إعدادات الماكرو ───
+        if (diet.macroSettings) {
+            const ms = diet.macroSettings;
+            const setVal = function(id, val) {
+                var el = document.getElementById(id);
+                if (el && val !== undefined && val !== '') el.value = val;
+            };
+            setVal('bmr-formula', ms.bmrFormula);
+            setVal('calorie-source-select', ms.calorieSource);
+            setVal('calorie-target', ms.calorieTarget);
+            setVal('prot-perc', ms.protPerc);
+            setVal('carb-perc', ms.carbPerc);
+            setVal('fat-perc', ms.fatPerc);
+            // إعادة الحساب
+            if (typeof calculateMacros === 'function') calculateMacros();
+        }
+
+        // ─── 3. استعادة الوجبات المختارة ───
+        if (Array.isArray(diet.selectedMeals) && diet.selectedMeals.length > 0) {
+            var mealKeys = diet.selectedMeals.map(function(m) { return m.key; });
+            document.querySelectorAll('.meal-checkbox').forEach(function(cb) {
+                cb.checked = mealKeys.includes(cb.value);
+            });
+            // إطلاق حدث التغيير لتحديث الـ UI
+            var evt = new Event('change', { bubbles: true });
+            document.querySelectorAll('.meal-checkbox').forEach(function(cb) { cb.dispatchEvent(evt); });
+        }
+
+        // ─── 4. استعادة إجمالي الأجزاء ───
+        if (diet.totalParts) {
+            var tpInp = document.getElementById('manual-total-parts-input');
+            if (tpInp) {
+                tpInp.value = diet.totalParts;
+                // إطلاق حدث تأكيد لتفعيل التوزيع
+                var confirmBtn = document.getElementById('confirm-total-parts-btn');
+                if (confirmBtn) confirmBtn.click();
+            }
+        }
+
+        // ─── 5. استعادة توزيع الأجزاء على الوجبات ───
+        if (diet.partsPerMeal && Object.keys(diet.partsPerMeal).length > 0) {
+            setTimeout(function() {
+                Object.entries(diet.partsPerMeal).forEach(function(entry) {
+                    var key = entry[0], val = entry[1];
+                    var inp = document.querySelector('[data-meal-key="' + key + '"]');
+                    if (inp) inp.value = val;
+                });
+                // إعادة حساب التوزيع
+                var showBtn = document.getElementById('show-manual-dist-btn');
+                if (showBtn && !showBtn.classList.contains('hidden')) showBtn.click();
+            }, 300);
+        }
+
+        // ─── 6. استعادة _mealDistribution ───
+        if (diet.mealDistribution) {
+            window._mealDistribution = diet.mealDistribution;
+            // إعادة رسم بطاقات التوزيع
+            var resDiv = document.getElementById('meal-distribution-result');
+            if (resDiv) {
+                resDiv.classList.remove('hidden');
+                var container = document.getElementById('meal-cards-container');
+                var dist = diet.mealDistribution;
+                var totParts = dist.totalParts || 0;
+                var targetKcal = dist.targetKcal || 0;
+                document.getElementById('dist-total-parts') && (document.getElementById('dist-total-parts').textContent = totParts);
+                document.getElementById('dist-target-kcal') && (document.getElementById('dist-target-kcal').textContent = targetKcal > 0 ? Math.round(targetKcal) : '—');
+                document.getElementById('dist-meal-count')  && (document.getElementById('dist-meal-count').textContent = dist.distributed ? dist.distributed.length : '—');
+                if (container && dist.distributed) {
+                    var mealColors = {
+                        breakfast:{bg:'bg-amber-50',border:'border-amber-300',icon:'🌅',title:'text-amber-800'},
+                        snack1:   {bg:'bg-green-50', border:'border-green-300', icon:'🍎',title:'text-green-800'},
+                        lunch:    {bg:'bg-blue-50',  border:'border-blue-300',  icon:'☀️',title:'text-blue-800'},
+                        snack2:   {bg:'bg-purple-50',border:'border-purple-300',icon:'🥜',title:'text-purple-800'},
+                        dinner:   {bg:'bg-indigo-50',border:'border-indigo-300',icon:'🌙',title:'text-indigo-800'},
+                        snack3:   {bg:'bg-pink-50',  border:'border-pink-300',  icon:'🍵',title:'text-pink-800'},
+                    };
+                    var kcalPerPart = totParts > 0 && targetKcal > 0 ? targetKcal / totParts : 0;
+                    container.innerHTML = dist.distributed.map(function(m) {
+                        var c = mealColors[m.key] || {bg:'bg-gray-50',border:'border-gray-300',icon:'🍽',title:'text-gray-800'};
+                        var mealKcal = kcalPerPart > 0 ? Math.round(kcalPerPart * m.parts) : null;
+                        var perc = totParts > 0 ? Math.round((m.parts / totParts) * 100) : 0;
+                        return '<div class="' + c.bg + ' border-2 ' + c.border + ' rounded-2xl p-4">' +
+                            '<div class="flex items-center justify-between mb-2">' +
+                            '<span class="' + c.title + ' font-bold text-sm">' + c.icon + ' ' + m.label + '</span>' +
+                            '<span class="bg-white/70 rounded-lg px-2 py-0.5 text-xs font-bold text-gray-700">' + m.parts + ' حصة / ' + perc + '%</span>' +
+                            '</div>' +
+                            (mealKcal ? '<div class="flex justify-between items-center"><div class="text-xl font-extrabold text-[--color-primary]">' + mealKcal + '</div><div class="text-xs text-gray-500">سعرة</div></div>' : '') +
+                            '<div class="w-full bg-white/60 rounded-full h-2 mt-1"><div class="' + c.border.replace('border-','bg-') + ' h-2 rounded-full" style="width:' + perc + '%"></div></div>' +
+                            '</div>';
+                    }).join('');
+                }
+                // تحديث رأس جدول خطة الوجبات
+                setTimeout(function() {
+                    document.dispatchEvent(new Event('meal-distribution-updated'));
+                }, 50);
+            }
+        }
+
+        // ─── 7. استعادة جدول خطة الوجبات ───
+        if (Array.isArray(diet.mealPlanRows) && diet.mealPlanRows.length > 0) {
+            setTimeout(function() {
+                mealPlanRows = diet.mealPlanRows.map(function(r) {
+                    return { id: r.id, date: r.date, day: r.day, cells: r.cells || {} };
+                });
+                // تحديث العداد
+                var maxId = Math.max.apply(null, mealPlanRows.map(function(r) { return r.id || 0; }));
+                mealPlanIdCtr = isFinite(maxId) ? maxId : 0;
+                // إعادة رسم الجدول
+                if (typeof window._renderMealPlanTable === 'function') {
+                    window._renderMealPlanTable();
+                } else {
+                    // محاولة إطلاق حدث التحديث
+                    document.dispatchEvent(new Event('meal-distribution-updated'));
+                }
+            }, 400);
+        }
+    }
+    // ═══════════════════════════════════════════════════
+
 
     function renderExchangeTable() {
         const tbody = document.getElementById('exchange-table-body');
@@ -11624,6 +11865,14 @@ async function findOrCreateDriveFile() {
 
 // --- رفع البيانات إلى Google Drive ---
 async function uploadToGoogleDrive() {
+    // حفظ البرنامج الغذائي قبل المزامنة إن كانت هناك زيارة مفتوحة
+    if (typeof saveDietDataToVisit === 'function' &&
+        typeof currentViewPatient !== 'undefined' && currentViewPatient &&
+        typeof currentViewVisit !== 'undefined' && currentViewVisit &&
+        typeof exchangeRows !== 'undefined' &&
+        (exchangeRows.length > 0 || (typeof mealPlanRows !== 'undefined' && mealPlanRows.length > 0))) {
+        saveDietDataToVisit();
+    }
     if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
         if (typeof showToast === 'function') showToast('انتهت صلاحية الاتصال، يرجى تسجيل الدخول مجدداً', 'error');
         disconnectGoogleDrive();
