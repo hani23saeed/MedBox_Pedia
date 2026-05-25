@@ -1573,7 +1573,7 @@
                         <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" id="dash-logo-img" alt="MedBox Logo" style="width:52px;height:52px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,0.15);padding:4px;flex-shrink:0;">
                         <div style="flex:1;min-width:0;">
                             <h2 style="color:#fff;font-size:1.2rem;font-weight:800;margin:0;letter-spacing:-0.3px;">MedBox – Pedia</h2>
-                            <p style="color:rgba(255,255,255,0.82);font-size:0.82rem;margin:3px 0 0;">وسيلة دعم شاملة للممارسين الصحيين · تطوير الأخصائي هاني بكر سعيد · <span style="font-weight:700;color:#b7e2eb;">0955323104</span></p>
+                            <p style="color:rgba(255,255,255,0.82);font-size:0.82rem;margin:3px 0 0;">وسيلة دعم شاملة للممارسين الصحيين</p>
                         </div>
                         <div style="flex-shrink:0;text-align:left;color:rgba(255,255,255,0.7);font-size:0.75rem;display:none;" id="dash-date-badge"></div>
                     </div>
@@ -3631,9 +3631,7 @@
         
         // عرض رسالة الترحيب
         showToast(`أهلاً بكم في برنامج MedBox – Pedia.
-صمم ليكون وسيلة دعم شاملة لجميع الممارسين الصحيين.
-تم تطويره برمجياً وعلمياً من قبل الأخصائي هاني بكر سعيد.
-للدعم الفني أو الملاحظات يرجى التواصل على الرقم التالي 0955323104`, 'welcome', 10000);
+صمم ليكون وسيلة دعم شاملة لجميع الممارسين الصحيين.`, 'welcome', 6000);
 
         // ربط الأحداث
         // sidebarToggleBtn.addEventListener('click', toggleSidebar); // (تعديل 2) تم حذفه
@@ -3746,10 +3744,6 @@
                     <h2 class="text-2xl font-bold text-[--color-primary] mb-4">حول البرنامج (MedBox-Pedia)</h2>
                     <p class="text-lg text-gray-700 leading-relaxed">
                         صمم ليكون وسيلة دعم شاملة لجميع الممارسين الصحيين.
-                        <br>
-                        تم تطويره برمجياً وعلمياً من قبل الأخصائي هاني بكر سعيد.
-                        <br>
-                        للدعم الفني أو الملاحظات يرجى التواصل على الرقم التالي: <strong>0955323104</strong>
                     </p>
                 </div>
             `;
@@ -3970,10 +3964,34 @@
                     // إظهار خانة تسجيل الدخول كمستخدم إذا وُجدت حسابات
                     const accounts = getAccounts();
                     if (accounts.length === 0) {
-                        // أول مرة: توجيه لإنشاء حساب ادمن
+                        // أول مرة: التحقق من Drive ثم التوجه المناسب
                         loginDropdownMenu.classList.add('hidden');
                         document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
-                        showCreateAdminPrompt();
+                        updateGoogleUserDisplay();
+                        // التحقق من وجود بيانات على Drive
+                        (typeof findOrCreateDriveFile === 'function' ? findOrCreateDriveFile() : Promise.resolve(null))
+                            .then(function(fileId) {
+                                if (fileId) {
+                                    // يوجد بيانات على Drive → عرض نافذة التحميل
+                                    if (typeof showCloudLoadPrompt === 'function') showCloudLoadPrompt();
+                                } else {
+                                    // لا توجد بيانات على Drive → توجه مباشر لإدارة الحسابات
+                                    if (typeof renderAccountsManagementPage === 'function') {
+                                        const sidebar = document.getElementById('sidebar');
+                                        if (sidebar) sidebar.classList.add('translate-x-full');
+                                        renderAccountsManagementPage();
+                                    }
+                                    showCreateAdminForm();
+                                }
+                            }).catch(function() {
+                                // في حال فشل التحقق → توجه مباشر لإدارة الحسابات
+                                if (typeof renderAccountsManagementPage === 'function') {
+                                    const sidebar = document.getElementById('sidebar');
+                                    if (sidebar) sidebar.classList.add('translate-x-full');
+                                    renderAccountsManagementPage();
+                                }
+                                showCreateAdminForm();
+                            });
                     } else {
                         // يوجد حسابات: عرض خانة تسجيل الدخول كمستخدم
                         updateGoogleUserDisplay();
@@ -3984,8 +4002,18 @@
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     updateCloudUI();
-                    const accounts = getAccounts();
-                    if (accounts.length === 0) { loginDropdownMenu.classList.add('hidden'); showCreateAdminPrompt(); }
+                    const accounts2 = getAccounts();
+                    if (accounts2.length === 0) {
+                        loginDropdownMenu.classList.add('hidden');
+                        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
+                        updateGoogleUserDisplay();
+                        if (typeof renderAccountsManagementPage === 'function') {
+                            const sidebar = document.getElementById('sidebar');
+                            if (sidebar) sidebar.classList.add('translate-x-full');
+                            renderAccountsManagementPage();
+                        }
+                        showCreateAdminForm();
+                    }
                     else { updateGoogleUserDisplay(); document.getElementById('user-login-section')?.classList.remove('hidden'); }
                 });
             }
@@ -4014,12 +4042,19 @@
         // تسجيل الخروج من المستخدم أيضاً
         appData.currentUser = null;
         appData.currentAccountId = null;
-        document.getElementById('user-login-section')?.classList.add('hidden');
-        document.getElementById('google-user-display')?.classList.add('hidden');
-        updateCloudUI();
-        updateUI();
-        showWelcomeView();
-        showToast('تم تسجيل الخروج من Google', 'success');
+        // ===== مسح جميع أنواع الذاكرة =====
+        try { localStorage.clear(); } catch(e) {}
+        try { sessionStorage.clear(); } catch(e) {}
+        // مسح IndexedDB (جميع قواعد البيانات)
+        try {
+            if (window.indexedDB && typeof indexedDB.databases === 'function') {
+                indexedDB.databases().then(function(dbs) {
+                    dbs.forEach(function(db) { try { indexedDB.deleteDatabase(db.name); } catch(ex) {} });
+                }).catch(function(){});
+            }
+        } catch(e) {}
+        // إعادة تحميل الصفحة فوراً (لإخفاء حقول المستخدم/السر)
+        setTimeout(function() { window.location.reload(); }, 200);
     }
 
     // --- نافذة إنشاء حساب الادمن (أول مرة) ---
@@ -4152,12 +4187,20 @@
     function handleLogout() {
         appData.currentUser = null;
         appData.currentAccountId = null;
+        // ===== مسح جميع أنواع الذاكرة =====
+        try { localStorage.clear(); } catch(e) {}
+        try { sessionStorage.clear(); } catch(e) {}
+        // مسح IndexedDB (جميع قواعد البيانات)
+        try {
+            if (window.indexedDB && typeof indexedDB.databases === 'function') {
+                indexedDB.databases().then(function(dbs) {
+                    dbs.forEach(function(db) { try { indexedDB.deleteDatabase(db.name); } catch(ex) {} });
+                }).catch(function(){});
+            }
+        } catch(e) {}
         showToast('تم تسجيل الخروج من المستخدم', 'success');
-        loginDropdownMenu.classList.add('hidden');
-        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
-        addMenuSection.classList.add('hidden');
-        updateUI();
-        showWelcomeView();
+        // إعادة تحميل الصفحة
+        setTimeout(function() { window.location.reload(); }, 500);
     }
 
     // تعريض الدوال الجديدة عالمياً
@@ -9037,12 +9080,12 @@
         const acc = getCurrentAccount();
         const isDev = appData.currentUser === 'developer';
         const fullName = isDev
-            ? (appData.settings?.doctorName || 'الأخصائي هاني بكر سعيد')
+            ? (appData.settings?.doctorName || '')
             : (acc ? (acc.displayName || acc.username) : (appData.currentUser || 'الطبيب المعالج'));
         const specialty = isDev ? '' : (acc?.specialty || '');
         const clinic    = isDev ? '' : (acc?.clinic || '');
         const address   = isDev ? '' : (acc?.address || '');
-        const phone     = isDev ? '0955323104' : (acc?.phone || '');
+        const phone     = isDev ? '' : (acc?.phone || '');
         return { fullName, specialty, clinic, address, phone };
     }
 
