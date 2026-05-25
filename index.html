@@ -1363,8 +1363,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                 </button>
-                <input type="file" id="load-data-input" class="hidden" accept=".json">
-                <span class="tooltip tooltip-bottom">تحميل ملفات JSON</span>
+                <input type="file" id="load-data-input" class="hidden" accept=".medbox">
+                <span class="tooltip tooltip-bottom">تحميل ملف MedBox</span>
             </div>
             
             <!-- زر حفظ البيانات (JSON) -->
@@ -8963,65 +8963,69 @@
         });
     }
     
-    function saveDataAsJson() {
+    async function saveDataAsJson() {
         if (appData.patients.length === 0) {
             showToast('لا توجد بيانات لحفظها', 'error');
             return;
         }
-        
+
         const dataToSave = { ...appData };
         delete dataToSave.currentUser;
         delete dataToSave.currentAccountId;
         if (!dataToSave.accounts) dataToSave.accounts = getAccounts();
 
-        const jsonData = JSON.stringify(dataToSave, null, 2);
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `medbox_pedia_backup_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        isDataDirty = false;
-        showToast('تم حفظ البيانات بنجاح في ملف JSON', 'success');
+        try {
+            const encrypted = await _mbEncrypt(JSON.stringify(dataToSave));
+            const blob = new Blob([encrypted], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `medbox_backup_${new Date().toISOString().split('T')[0]}.medbox`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            isDataDirty = false;
+            showToast('تم حفظ الملف المشفّر بصيغة .medbox بنجاح ✓', 'success');
+        } catch(err) {
+            showToast('فشل تشفير الملف: ' + err.message, 'error');
+        }
     }
     
     function loadDataFromFile(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
         const fileName = file.name;
 
+        if (!fileName.endsWith('.medbox')) {
+            showToast('يُقبل فقط ملفات .medbox الصادرة من البرنامج', 'error');
+            event.target.value = null;
+            return;
+        }
+
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
-                const data = JSON.parse(e.target.result);
+                const decrypted = await _mbDecrypt(e.target.result);
+                const data = JSON.parse(decrypted);
                 if (data && data.patients !== undefined) {
                     appData = data;
                     window._appData = appData;
-                    // ضمان الحسابات عند التحميل من ملف قديم
                     getAccounts();
                     if (!Array.isArray(appData.appointments)) appData.appointments = [];
                     saveDataToLocalStorage();
                     updateUI();
                     isDataDirty = false;
-                    showToast(`تم تحميل البيانات بنجاح من ملف: ${fileName}`, 'success');
-                    
-                    if (currentView === 'patient_management') {
-                        renderPatientList();
-                    }
+                    showToast(`تم تحميل البيانات بنجاح من: ${fileName}`, 'success');
+                    if (currentView === 'patient_management') renderPatientList();
                 } else {
-                    showToast('ملف غير صالح أو بنية بيانات خاطئة', 'error');
+                    showToast('بنية البيانات في الملف غير صحيحة', 'error');
                 }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-                showToast('حدث خطأ أثناء قراءة الملف', 'error');
+            } catch(err) {
+                showToast('فشل فتح الملف — تأكد أنه صادر من MedBox-Pedia', 'error');
             }
         };
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
         event.target.value = null;
     }
 
@@ -9060,6 +9064,58 @@
         setTimeout(function() { displayPatientSummary(patientId); }, 200);
         if (typeof showToast === 'function') showToast('تم فتح ملف المريض: ' + (patient.name_ar || ''), 'success');
     };
+
+    // ================================================================
+    // ====== محرك التشفير MedBox (AES-256-GCM) ===================
+    // ================================================================
+    // المفتاح السري المدمج — لا يعمل الملف إلا من داخل البرنامج
+    const _MB_SECRET = 'MedBox@P3dia#2025$Secure!Key_v1X';
+
+    async function _mbGetKey() {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw', enc.encode(_MB_SECRET), { name: 'PBKDF2' }, false, ['deriveKey']
+        );
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: enc.encode('MedBoxSalt_v1'), iterations: 100000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    // تشفير نص → ArrayBuffer (IV 12 بايت + بيانات مشفرة)
+    async function _mbEncrypt(plainText) {
+        const key  = await _mbGetKey();
+        const iv   = crypto.getRandomValues(new Uint8Array(12));
+        const enc  = new TextEncoder();
+        const cipher = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            enc.encode(plainText)
+        );
+        // دمج IV + البيانات في مصفوفة واحدة
+        const result = new Uint8Array(iv.byteLength + cipher.byteLength);
+        result.set(iv, 0);
+        result.set(new Uint8Array(cipher), iv.byteLength);
+        return result.buffer;
+    }
+
+    // فك تشفير ArrayBuffer → نص
+    async function _mbDecrypt(arrayBuffer) {
+        const key  = await _mbGetKey();
+        const data = new Uint8Array(arrayBuffer);
+        const iv   = data.slice(0, 12);
+        const cipher = data.slice(12);
+        const plain = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            cipher
+        );
+        return new TextDecoder().decode(plain);
+    }
+    // ================================================================
 
     // --- تشغيل البرنامج ---
     document.addEventListener('DOMContentLoaded', init);
@@ -11211,7 +11267,7 @@ function printQRCard(patient, qrData) {
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <button class="cloud-btn cloud-btn-secondary" onclick="saveDataAsJson();closeCloudSyncModal();">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/></svg>
-                    تصدير JSON محلي
+                    تصدير ملف .medbox مشفّر
                 </button>
             </div>
         </div>
@@ -11456,7 +11512,9 @@ async function loadFromDrivePrompt() {
             { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
         );
         if (!res.ok) throw new Error('فشل التحميل');
-        const data = await res.json();
+        const rawBuf = await res.arrayBuffer();
+        const decText = await _mbDecrypt(rawBuf);
+        const data = JSON.parse(decText);
         if (data && data.patients !== undefined) {
             appData = data;
             window._appData = appData;
@@ -11578,12 +11636,12 @@ async function uploadToGoogleDrive() {
     try {
         addSyncLog('جاري رفع البيانات إلى Google Drive...', 'info');
 
-        // تجهيز البيانات
+        // تجهيز البيانات وتشفيرها
         const dataToSave = { ...appData };
         delete dataToSave.currentUser;
         delete dataToSave.currentAccountId;
-        const jsonStr = JSON.stringify(dataToSave, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const encryptedBuffer = await _mbEncrypt(JSON.stringify(dataToSave));
+        const blob = new Blob([encryptedBuffer], { type: 'application/octet-stream' });
 
         // البحث عن الملف الموجود
         const existingFileId = await findOrCreateDriveFile();
@@ -11595,15 +11653,11 @@ async function uploadToGoogleDrive() {
             method = 'PATCH';
         } else {
             // إنشاء ملف جديد - multipart
-            const metadata = { name: CLOUD_DRIVE_FILENAME, mimeType: 'application/json' };
+            const metadata = { name: CLOUD_DRIVE_FILENAME, mimeType: 'application/octet-stream' };
             const metaStr = JSON.stringify(metadata);
             const boundary = '-------MedBoxBoundary';
-            const bodyParts = [
-                `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaStr}\r\n`,
-                `--${boundary}\r\nContent-Type: application/json\r\n\r\n${jsonStr}\r\n`,
-                `--${boundary}--`
-            ];
-            const multipartBody = bodyParts.join('');
+            const encB64 = btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer)));
+            const bodyStr = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaStr}\r\n--${boundary}\r\nContent-Type: application/octet-stream\r\nContent-Transfer-Encoding: base64\r\n\r\n${encB64}\r\n--${boundary}--`;
             const res = await fetch(
                 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
                 {
@@ -11612,14 +11666,14 @@ async function uploadToGoogleDrive() {
                         'Authorization': 'Bearer ' + _cloudAccessToken,
                         'Content-Type': `multipart/related; boundary=${boundary}`
                     },
-                    body: multipartBody
+                    body: bodyStr
                 }
             );
             const created = await res.json();
             if (!res.ok) throw new Error(created.error?.message || 'فشل إنشاء الملف');
             _cloudDriveFileId = created.id;
-            addSyncLog('تم رفع البيانات بنجاح ✓', 'success');
-            if (typeof showToast === 'function') showToast('تم رفع البيانات إلى Google Drive ✓', 'success');
+            addSyncLog('تم رفع البيانات المشفرة بنجاح ✓', 'success');
+            if (typeof showToast === 'function') showToast('تم رفع البيانات المشفرة إلى Google Drive ✓', 'success');
             return;
         }
 
@@ -11627,7 +11681,7 @@ async function uploadToGoogleDrive() {
             method,
             headers: {
                 'Authorization': 'Bearer ' + _cloudAccessToken,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/octet-stream'
             },
             body: blob
         });
@@ -11635,8 +11689,8 @@ async function uploadToGoogleDrive() {
             const err = await res.json();
             throw new Error(err.error?.message || 'فشل الرفع');
         }
-        addSyncLog('تم رفع البيانات بنجاح ✓', 'success');
-        if (typeof showToast === 'function') showToast('تم رفع البيانات إلى Google Drive ✓', 'success');
+        addSyncLog('تم رفع البيانات المشفرة بنجاح ✓', 'success');
+        if (typeof showToast === 'function') showToast('تم رفع البيانات المشفرة إلى Google Drive ✓', 'success');
 
     } catch (e) {
         addSyncLog('فشل الرفع: ' + e.message, 'error');
@@ -11674,7 +11728,10 @@ async function downloadFromGoogleDrive() {
             const err = await res.json();
             throw new Error(err.error?.message || 'فشل التحميل');
         }
-        const data = await res.json();
+        // فك تشفير البيانات القادمة من Drive
+        const rawBuffer = await res.arrayBuffer();
+        const decrypted = await _mbDecrypt(rawBuffer);
+        const data = JSON.parse(decrypted);
         if (data && data.patients !== undefined) {
             if (confirm('سيتم استبدال البيانات المحلية بالبيانات من Google Drive. هل أنت متأكد؟')) {
                 appData = data;
@@ -11873,7 +11930,7 @@ function renderCloudSyncPage() {
                 <p style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">البيانات محفوظة دائماً على الجهاز (IndexedDB) كنسخة احتياطية.</p>
                 <button class="cloud-btn cloud-btn-secondary" onclick="saveDataAsJson()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/></svg>
-                    تصدير JSON محلي
+                    تصدير ملف .medbox مشفّر
                 </button>
             </div>
         </div>
