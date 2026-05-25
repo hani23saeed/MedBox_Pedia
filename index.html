@@ -4162,6 +4162,13 @@
         // تسجيل الدخول تلقائياً بالحساب الجديد
         appData.currentUser = 'developer';
         appData.currentAccountId = newAdmin.id;
+        // (إصلاح) حفظ الجلسة
+        try {
+            sessionStorage.setItem('mbSession', JSON.stringify({
+                currentUser: appData.currentUser,
+                currentAccountId: appData.currentAccountId
+            }));
+        } catch(e) {}
         updateGoogleUserDisplay();
         updateUI();
         if (typeof renderAccountsManagementPage === 'function') renderAccountsManagementPage();
@@ -4183,6 +4190,13 @@
         }
         appData.currentUser = account.role === 'developer' ? 'developer' : account.username;
         appData.currentAccountId = account.id;
+        // (إصلاح) حفظ الجلسة في sessionStorage لتبقى بعد تحديث الصفحة
+        try {
+            sessionStorage.setItem('mbSession', JSON.stringify({
+                currentUser: appData.currentUser,
+                currentAccountId: appData.currentAccountId
+            }));
+        } catch(e) {}
         showToast(`تم تسجيل الدخول كـ ${account.displayName || account.username}`, 'success');
         document.getElementById('login-form')?.reset();
         loginDropdownMenu.classList.add('hidden');
@@ -4194,6 +4208,8 @@
         // تسجيل الخروج من المستخدم فقط — مع الإبقاء على جلسة Google
         appData.currentUser = null;
         appData.currentAccountId = null;
+        // (إصلاح) مسح الجلسة المحفوظة
+        try { sessionStorage.removeItem('mbSession'); } catch(e) {}
         saveDataToLocalStorage();
         loginDropdownMenu.classList.add('hidden');
         document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
@@ -9215,6 +9231,17 @@
                 window._appData = appData;
                 if (!Array.isArray(appData.appointments)) appData.appointments = [];
                 getAccounts();
+                // (إصلاح) استعادة الجلسة المحفوظة عند تحديث الصفحة
+                try {
+                    const saved = sessionStorage.getItem('mbSession');
+                    if (saved) {
+                        const sess = JSON.parse(saved);
+                        if (sess && sess.currentUser) {
+                            appData.currentUser = sess.currentUser;
+                            appData.currentAccountId = sess.currentAccountId || null;
+                        }
+                    }
+                } catch(e) {}
                 isDataDirty = false;
                 updateUI();
                 showToast('تم تحميل البيانات بنجاح', 'success');
