@@ -1410,21 +1410,59 @@
                 
                 <!-- القائمة المنسدلة لـ "تسجيل الدخول" -->
                 <div id="login-dropdown-menu" class="hidden">
-                    <div id="login-section" class="p-4">
-                        <h3 class="font-semibold mb-2 text-gray-700">تسجيل الدخول</h3>
-                        <form id="login-form" class="space-y-2">
-                            <input type="text" id="username" placeholder="اسم المستخدم" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
-                            <input type="password" id="password" placeholder="كلمة السر" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
-                            <button type="submit" class="w-full bg-[--color-primary] text-white py-2 rounded-lg font-semibold hover:bg-[--color-primary-dark] transition duration-200">
-                                دخول
-                            </button>
-                        </form>
+                    <!-- قسم تسجيل الدخول بـ Google (يظهر عند عدم تسجيل الدخول) -->
+                    <div id="login-section" class="p-4" dir="rtl">
+                        <h3 class="font-semibold mb-3 text-gray-700 text-center">تسجيل الدخول</h3>
+                        <button id="google-signin-btn" onclick="handleGoogleSignIn()"
+                            class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-[#0790AC] hover:bg-[#f0fafc] text-gray-700 font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width:20px;height:20px;flex-shrink:0;">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                                <path fill="none" d="M0 0h48v48H0z"/>
+                            </svg>
+                            تسجيل الدخول بـ Google
+                        </button>
+                        <!-- خانة تسجيل الدخول كمستخدم (تظهر بعد ربط Google) -->
+                        <div id="user-login-section" class="hidden mt-3 border-t border-gray-100 pt-3">
+                            <p class="text-xs text-gray-500 text-center mb-2">تسجيل الدخول كمستخدم</p>
+                            <form id="login-form" class="space-y-2">
+                                <input type="text" id="username" placeholder="اسم المستخدم" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+                                <input type="password" id="password" placeholder="كلمة السر" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
+                                <button type="submit" class="w-full bg-[--color-primary] text-white py-2 rounded-lg font-semibold hover:bg-[--color-primary-dark] transition duration-200">
+                                    دخول
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <!-- معلومات المستخدم المسجل (تظهر بدلاً من فورم الدخول) -->
-                    <div id="user-info-section" class="hidden p-4 text-center">
-                        <p class="font-semibold text-gray-700">مرحباً, <span id="logged-in-username"></span>!</p>
-                        <button id="logout-btn" class="w-full mt-2 bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition duration-200">
-                            تسجيل الخروج
+                    <!-- معلومات المستخدم المسجل -->
+                    <div id="user-info-section" class="hidden p-4" dir="rtl">
+                        <!-- الإيميل -->
+                        <div id="google-user-display" class="hidden mb-3 pb-3 border-b border-gray-100">
+                            <div class="flex items-center gap-2">
+                                <div id="google-user-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0790AC,#056a80);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div id="google-user-name-display" class="text-xs font-semibold text-gray-800 truncate"></div>
+                                    <div id="google-user-email-display" class="text-xs text-gray-500 truncate"></div>
+                                </div>
+                            </div>
+                            <button id="google-signout-btn" onclick="handleGoogleSignOut()"
+                                class="w-full mt-2 text-xs py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition font-semibold">
+                                تسجيل الخروج من Google
+                            </button>
+                        </div>
+                        <!-- اسم المستخدم الحالي -->
+                        <div class="text-center mb-2">
+                            <p class="font-semibold text-gray-700">مرحباً، <span id="logged-in-username" class="text-[#0790AC]"></span></p>
+                        </div>
+                        <button id="logout-btn"
+                            class="w-full bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition duration-200 text-sm">
+                            تسجيل الخروج من المستخدم
                         </button>
                     </div>
                 </div>
@@ -3254,7 +3292,7 @@
                 </button>` : '';
 
             const badge = isDevAccount
-                ? `<span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-bold">مطور</span>`
+                ? `<span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-bold">ادمن</span>`
                 : `<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">مستخدم</span>`;
 
             return `
@@ -3516,7 +3554,7 @@
         if (!isDeveloperMode()) { showToast('غير مسموح', 'error'); return; }
         const accounts = getAccounts();
         const acc = accounts.find(a => a.id === accId);
-        if (!acc || acc.role === 'developer') { showToast('لا يمكن حذف حساب المطور', 'error'); return; }
+        if (!acc || acc.role === 'developer') { showToast('لا يمكن حذف حساب الادمن', 'error'); return; }
 
         showConfirm('حذف الحساب', `هل أنت متأكد من حذف حساب "${acc.displayName || acc.username}"؟`).then(confirmed => {
             if (!confirmed) return;
@@ -3880,26 +3918,12 @@
     // --- دوال تسجيل الدخول ---
 
     // الحسابات الافتراضية — تُخزَّن في appData.accounts
-    const DEVELOPER_USERNAME = 'hani';
-    const DEVELOPER_PASSWORD = 'hani';
+    // --- Google Auth State ---
+    let _googleAuthUser = null; // { email, name, picture }
 
     function getAccounts() {
         if (!appData.accounts) {
-            appData.accounts = [
-                {
-                    id: 'dev',
-                    username: DEVELOPER_USERNAME,
-                    password: DEVELOPER_PASSWORD,
-                    role: 'developer',
-                    displayName: 'المطور (Hani)',
-                    permissions: {
-                        addPatient: true,
-                        deleteVisit: true,
-                        editVisit: true,
-                        deletePatient: true
-                    }
-                }
-            ];
+            appData.accounts = [];
         }
         return appData.accounts;
     }
@@ -3909,22 +3933,204 @@
         return accounts.find(a => a.username === username && a.password === password) || null;
     }
 
+    // --- تسجيل الدخول بـ Google ---
+    function handleGoogleSignIn() {
+        if (typeof google === 'undefined' || !google.accounts) {
+            showToast('جاري تحميل مكتبة Google، حاول مجدداً...', 'error');
+            return;
+        }
+        const client = google.accounts.oauth2.initTokenClient({
+            client_id: '821846802885-42uri2u1ej32e4lqo76evhr0pu60ks6k.apps.googleusercontent.com',
+            scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+            callback: (response) => {
+                if (response.error) { showToast('فشل تسجيل الدخول: ' + response.error, 'error'); return; }
+                // جلب معلومات المستخدم
+                fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                    headers: { 'Authorization': 'Bearer ' + response.access_token }
+                }).then(r => r.json()).then(info => {
+                    _googleAuthUser = { email: info.email || '', name: info.name || info.email || 'مستخدم Google', picture: info.picture || '' };
+                    // حفظ توكن الـ Drive أيضاً
+                    _cloudAccessToken = response.access_token;
+                    _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
+                    _cloudUserEmail = _googleAuthUser.email;
+                    updateCloudUI();
+                    // إظهار خانة تسجيل الدخول كمستخدم إذا وُجدت حسابات
+                    const accounts = getAccounts();
+                    if (accounts.length === 0) {
+                        // أول مرة: توجيه لإنشاء حساب ادمن
+                        loginDropdownMenu.classList.add('hidden');
+                        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
+                        showCreateAdminPrompt();
+                    } else {
+                        // يوجد حسابات: عرض خانة تسجيل الدخول كمستخدم
+                        updateGoogleUserDisplay();
+                        document.getElementById('user-login-section')?.classList.remove('hidden');
+                    }
+                }).catch(() => {
+                    _googleAuthUser = { email: '', name: 'مستخدم Google', picture: '' };
+                    _cloudAccessToken = response.access_token;
+                    _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
+                    updateCloudUI();
+                    const accounts = getAccounts();
+                    if (accounts.length === 0) { loginDropdownMenu.classList.add('hidden'); showCreateAdminPrompt(); }
+                    else { updateGoogleUserDisplay(); document.getElementById('user-login-section')?.classList.remove('hidden'); }
+                });
+            }
+        });
+        client.requestAccessToken({ prompt: 'consent' });
+    }
+
+    function updateGoogleUserDisplay() {
+        const nameEl = document.getElementById('google-user-name-display');
+        const emailEl = document.getElementById('google-user-email-display');
+        const googleDisp = document.getElementById('google-user-display');
+        if (_googleAuthUser) {
+            if (nameEl) nameEl.textContent = _googleAuthUser.name;
+            if (emailEl) emailEl.textContent = _googleAuthUser.email;
+            if (googleDisp) googleDisp.classList.remove('hidden');
+        } else {
+            if (googleDisp) googleDisp.classList.add('hidden');
+        }
+    }
+
+    function handleGoogleSignOut() {
+        _googleAuthUser = null;
+        _cloudAccessToken = null;
+        _cloudTokenExpiry = 0;
+        _cloudUserEmail = '';
+        // تسجيل الخروج من المستخدم أيضاً
+        appData.currentUser = null;
+        appData.currentAccountId = null;
+        document.getElementById('user-login-section')?.classList.add('hidden');
+        document.getElementById('google-user-display')?.classList.add('hidden');
+        updateCloudUI();
+        updateUI();
+        showWelcomeView();
+        showToast('تم تسجيل الخروج من Google', 'success');
+    }
+
+    // --- نافذة إنشاء حساب الادمن (أول مرة) ---
+    function showCreateAdminPrompt() {
+        // الذهاب لقسم إدارة الحسابات أولاً
+        if (typeof renderAccountsManagementPage === 'function') {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.add('translate-x-full');
+            renderAccountsManagementPage();
+        }
+        // إظهار نافذة المطالبة بإنشاء حساب ادمن
+        const modal = document.createElement('div');
+        modal.id = 'create-admin-prompt-modal';
+        modal.dir = 'rtl';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:440px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(7,144,172,0.18);">
+                <div style="width:60px;height:60px;background:linear-gradient(135deg,#0790AC,#056a80);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4" stroke="white" stroke-width="2" fill="none"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                </div>
+                <h3 style="font-size:1.25rem;font-weight:700;color:#1f2937;margin-bottom:8px;">مرحباً بك! 🎉</h3>
+                <p style="color:#6b7280;font-size:0.95rem;margin-bottom:6px;line-height:1.7;">
+                    تم تسجيل الدخول بـ <strong style="color:#0790AC;">${_googleAuthUser?.email || 'Google'}</strong>
+                </p>
+                <p style="color:#374151;font-size:0.95rem;margin-bottom:24px;line-height:1.7;">
+                    لم يتم إنشاء أي حساب بعد.<br>
+                    يُرجى إنشاء <strong>حساب الادمن</strong> الذي يمتلك جميع الصلاحيات.
+                </p>
+                <button onclick="document.getElementById('create-admin-prompt-modal').remove(); showCreateAdminForm();"
+                    style="background:#0790AC;color:#fff;border:none;border-radius:10px;padding:12px 36px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:700;cursor:pointer;width:100%;">
+                    إنشاء حساب الادمن
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // --- نموذج إنشاء حساب الادمن ---
+    function showCreateAdminForm() {
+        const modal = document.createElement('div');
+        modal.id = 'create-admin-form-modal';
+        modal.dir = 'rtl';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(7,144,172,0.18);">
+                <h3 style="font-size:1.1rem;font-weight:700;color:#1f2937;margin-bottom:4px;text-align:center;">إنشاء حساب الادمن</h3>
+                <p style="color:#6b7280;font-size:0.85rem;text-align:center;margin-bottom:20px;">أدخل اسم المستخدم وكلمة السر لحساب الادمن</p>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:4px;">اسم المستخدم</label>
+                    <input id="admin-create-username" type="text" placeholder="مثال: admin" autocomplete="off"
+                        style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.95rem;box-sizing:border-box;outline:none;">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:4px;">كلمة السر</label>
+                    <input id="admin-create-password" type="password" placeholder="••••••"
+                        style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.95rem;box-sizing:border-box;outline:none;">
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:4px;">تأكيد كلمة السر</label>
+                    <input id="admin-create-password2" type="password" placeholder="••••••"
+                        style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.95rem;box-sizing:border-box;outline:none;">
+                </div>
+                <div id="admin-create-error" style="display:none;color:#dc2626;font-size:0.85rem;margin-bottom:12px;text-align:center;"></div>
+                <button onclick="submitCreateAdmin()"
+                    style="background:#0790AC;color:#fff;border:none;border-radius:10px;padding:12px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:700;cursor:pointer;width:100%;">
+                    إنشاء الحساب
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('admin-create-username')?.focus();
+    }
+
+    function submitCreateAdmin() {
+        const username = document.getElementById('admin-create-username')?.value.trim();
+        const password = document.getElementById('admin-create-password')?.value;
+        const password2 = document.getElementById('admin-create-password2')?.value;
+        const errEl = document.getElementById('admin-create-error');
+        const showErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; } };
+        if (!username) { showErr('اسم المستخدم مطلوب'); return; }
+        if (!password) { showErr('كلمة السر مطلوبة'); return; }
+        if (password !== password2) { showErr('كلمتا السر غير متطابقتين'); return; }
+        const newAdmin = {
+            id: 'admin_' + Date.now(),
+            username,
+            password,
+            role: 'developer',
+            displayName: username,
+            permissions: { addPatient: true, deleteVisit: true, editVisit: true, deletePatient: true }
+        };
+        if (!appData.accounts) appData.accounts = [];
+        appData.accounts.push(newAdmin);
+        if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
+        document.getElementById('create-admin-form-modal')?.remove();
+        // تسجيل الدخول تلقائياً بالحساب الجديد
+        appData.currentUser = 'developer';
+        appData.currentAccountId = newAdmin.id;
+        updateGoogleUserDisplay();
+        updateUI();
+        if (typeof renderAccountsManagementPage === 'function') renderAccountsManagementPage();
+        showToast('تم إنشاء حساب الادمن وتسجيل الدخول بنجاح ✓', 'success');
+    }
+
     function handleLogin(e) {
         e.preventDefault();
-        const username = loginForm.username.value.trim();
-        const password = loginForm.password.value;
-
+        if (!_googleAuthUser) {
+            showToast('يجب تسجيل الدخول بـ Google أولاً', 'error');
+            return;
+        }
+        const username = document.getElementById('username')?.value.trim() || '';
+        const password = document.getElementById('password')?.value || '';
         const account = findAccount(username, password);
         if (!account) {
             showToast('اسم المستخدم أو كلمة السر غير صحيحة', 'error');
             return;
         }
-
         appData.currentUser = account.role === 'developer' ? 'developer' : account.username;
         appData.currentAccountId = account.id;
         showToast(`تم تسجيل الدخول كـ ${account.displayName || account.username}`, 'success');
-
-        loginForm.reset();
+        document.getElementById('login-form')?.reset();
         loginDropdownMenu.classList.add('hidden');
         document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
         updateUI();
@@ -3933,13 +4139,19 @@
     function handleLogout() {
         appData.currentUser = null;
         appData.currentAccountId = null;
-        showToast('تم تسجيل الخروج', 'success');
+        showToast('تم تسجيل الخروج من المستخدم', 'success');
         loginDropdownMenu.classList.add('hidden');
         document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
         addMenuSection.classList.add('hidden');
         updateUI();
         showWelcomeView();
     }
+
+    // تعريض الدوال الجديدة عالمياً
+    window.handleGoogleSignIn = handleGoogleSignIn;
+    window.handleGoogleSignOut = handleGoogleSignOut;
+    window.showCreateAdminForm = showCreateAdminForm;
+    window.submitCreateAdmin = submitCreateAdmin;
 
     // دالة للحصول على الحساب الحالي
     function getCurrentAccount() {
@@ -3961,9 +4173,12 @@
             userInfoSection.classList.remove('hidden');
             const acc = getCurrentAccount();
             const usernameText = appData.currentUser === 'developer'
-                ? 'المطور (Hani)'
+                ? (acc ? (acc.displayName || acc.username) : 'الادمن')
                 : (acc ? (acc.displayName || acc.username) : appData.currentUser);
             loggedInUsername.textContent = usernameText;
+
+            // عرض معلومات Google إذا كان مسجلاً
+            updateGoogleUserDisplay();
 
             loginIcon.classList.add('hidden');
             loggedInUsernameIcon.textContent = usernameText;
@@ -8804,7 +9019,7 @@
         const fullName = isDev
             ? (appData.settings?.doctorName || 'الأخصائي هاني بكر سعيد')
             : (acc ? (acc.displayName || acc.username) : (appData.currentUser || 'الطبيب المعالج'));
-        const specialty = isDev ? 'مطور النظام' : (acc?.specialty || '');
+        const specialty = isDev ? '' : (acc?.specialty || '');
         const clinic    = isDev ? '' : (acc?.clinic || '');
         const address   = isDev ? '' : (acc?.address || '');
         const phone     = isDev ? '0955323104' : (acc?.phone || '');
@@ -10540,7 +10755,7 @@ window._waReminder = function(patientName, rawNumber) {
     }).sort(function(a, b) { return a.date.localeCompare(b.date); });
 
     var acc = getCurrentAccount();
-    var doctorName = acc ? (acc.displayName || acc.username) : (appData.currentUser === 'developer' ? 'هاني بكر سعيد' : 'الطبيب');
+    var doctorName = acc ? (acc.displayName || acc.username) : (appData.currentUser === 'developer' ? (getCurrentAccount()?.displayName || 'الادمن') : 'الطبيب');
     var clinicName = acc ? (acc.clinic || '') : '';
     var clinicPhone = acc ? (acc.phone || '') : '';
 
@@ -10567,7 +10782,7 @@ window._waReminder = function(patientName, rawNumber) {
 window._waReport = function(patientName, rawNumber) {
     var visit = currentViewVisit;
     var acc = getCurrentAccount();
-    var doctorName = acc ? (acc.displayName || acc.username) : (appData.currentUser === 'developer' ? 'هاني بكر سعيد' : 'الطبيب');
+    var doctorName = acc ? (acc.displayName || acc.username) : (appData.currentUser === 'developer' ? (getCurrentAccount()?.displayName || 'الادمن') : 'الطبيب');
     var clinicName = acc ? (acc.clinic || '') : '';
     var clinicPhone = acc ? (acc.phone || '') : '';
 
@@ -11050,6 +11265,15 @@ function saveClientId() {
 
 // --- OAuth 2.0 بـ Google Identity Services ---
 function connectGoogleDrive() {
+    // إذا كان المستخدم مسجلاً بالفعل عبر Google Auth الرئيسي، لا نحتاج تسجيل دخول مجدد
+    if (_googleAuthUser && _cloudAccessToken && Date.now() < _cloudTokenExpiry) {
+        addSyncLog('تم الاتصال بـ ' + _googleAuthUser.email, 'success');
+        updateCloudUI();
+        if (typeof showToast === 'function') showToast('تم الاتصال بـ Google Drive ✓', 'success');
+        showCloudLoadPrompt();
+        return;
+    }
+
     if (typeof google === 'undefined' || !google.accounts) {
         if (typeof showToast === 'function') showToast('جاري تحميل مكتبة Google، حاول مجدداً...', 'error');
         addSyncLog('مكتبة Google لم تُحمّل بعد، أعد المحاولة', 'error');
