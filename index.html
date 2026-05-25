@@ -345,6 +345,9 @@
             direction: rtl;
             line-height: 1.8;
         }
+        /* زر المزامنة الفورية في شريط الأدوات */
+        #instant-sync-btn.syncing svg { animation: spin 1s linear infinite; }
+        #instant-sync-btn.syncing { color: #0790AC !important; }
         /* أيقونة المزامنة في شريط الأدوات */
         #cloud-sync-btn .sync-spinner {
             animation: spin 1s linear infinite;
@@ -1373,6 +1376,16 @@
                     </svg>
                 </button>
                 <span class="tooltip tooltip-bottom">حفظ ملفات JSON</span>
+            </div>
+
+            <!-- زر المزامنة الفورية مع Drive -->
+            <div class="group relative">
+                <button id="instant-sync-btn" class="top-bar-icon-btn" style="color:#0790AC" onclick="instantSync()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
+                <span class="tooltip tooltip-bottom">مزامنة فورية مع Drive</span>
             </div>
 
             <!-- (تعديل 10) تم نقل زر إدارة الحدود الطبيعية إلى القائمة الجانبية -->
@@ -9010,6 +9023,13 @@
     document.addEventListener('DOMContentLoaded', init);
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof updateCloudUI === 'function') updateCloudUI();
+        // كشف إعادة تحميل الصفحة: sessionStorage تُحفظ طوال الجلسة
+        const isReload = sessionStorage.getItem('medbox_page_loaded');
+        if (isReload) {
+            // صفحة أُعيد تحميلها - انتظر حتى يتحقق الاتصال
+            window._checkReloadSyncOnConnect = true;
+        }
+        sessionStorage.setItem('medbox_page_loaded', '1');
     });
 
     // ===== دالة مساعدة: استخراج بيانات الطبيب/الأخصائي للطباعة =====
@@ -11204,6 +11224,13 @@ function clearSyncLog() {
 
 function updateCloudUI() {
     const isConnected = !!_cloudAccessToken && Date.now() < _cloudTokenExpiry;
+
+    // رسالة إعادة التحميل: إذا كان المستخدم متصلاً وكانت الصفحة قد أُعيد تحميلها
+    if (isConnected && window._checkReloadSyncOnConnect) {
+        window._checkReloadSyncOnConnect = false;
+        setTimeout(() => { if (typeof showPageReloadSyncPrompt === 'function') showPageReloadSyncPrompt(); }, 500);
+    }
+
     const statusBadge = document.getElementById('cloud-connection-status');
     const connectBtn = document.getElementById('cloud-connect-btn');
     const disconnectBtn = document.getElementById('cloud-disconnect-btn');
@@ -11301,15 +11328,147 @@ function connectGoogleDrive() {
                 updateCloudUI();
                 addSyncLog('تم الاتصال بـ ' + _cloudUserEmail, 'success');
                 if (typeof showToast === 'function') showToast('تم الاتصال بـ Google Drive', 'success');
+                // رسالة تحميل آخر نسخة متزامنة
+                if (typeof showCloudLoadPrompt === 'function') showCloudLoadPrompt();
             }).catch(() => {
                 _cloudUserEmail = 'مستخدم Google';
                 updateCloudUI();
                 addSyncLog('تم الاتصال بنجاح', 'success');
+                if (typeof showCloudLoadPrompt === 'function') showCloudLoadPrompt();
             });
         }
     });
     client.requestAccessToken({ prompt: 'consent' });
 }
+
+// ==========================================
+// === دوال المزامنة الإضافية ===============
+// ==========================================
+
+// --- رسالة تحميل آخر نسخة متزامنة بعد تسجيل الدخول ---
+async function showCloudLoadPrompt() {
+    try {
+        const fileId = await findOrCreateDriveFile();
+        if (!fileId) return; // لا يوجد ملف، لا داعي للسؤال
+    } catch(e) { return; }
+
+    const modal = document.createElement('div');
+    modal.id = 'cloud-load-prompt-modal';
+    modal.dir = 'rtl';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;';
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(7,144,172,0.18);">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,#0790AC,#056a80);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 12v6m-3-3l3 3 3-3"/>
+                </svg>
+            </div>
+            <h3 style="font-size:1.2rem;font-weight:700;color:#1f2937;margin-bottom:10px;">نسخة متزامنة متاحة</h3>
+            <p style="color:#6b7280;font-size:0.95rem;margin-bottom:24px;line-height:1.7;">
+                يوجد آخر نسخة محفوظة في <strong>Google Drive</strong>.<br>
+                هل تريد عرضها واستخدامها الآن؟
+            </p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button onclick="loadFromDrivePrompt();document.getElementById('cloud-load-prompt-modal').remove();"
+                    style="background:#0790AC;color:#fff;border:none;border-radius:10px;padding:10px 28px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">
+                    نعم، حمّل النسخة
+                </button>
+                <button onclick="document.getElementById('cloud-load-prompt-modal').remove();"
+                    style="background:#f3f4f6;color:#374151;border:none;border-radius:10px;padding:10px 28px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">
+                    لا، استمر بالبيانات الحالية
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// تحميل من Drive مباشرة (بدون confirm إضافي)
+async function loadFromDrivePrompt() {
+    if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+        if (typeof showToast === 'function') showToast('انتهت صلاحية الاتصال، يرجى تسجيل الدخول مجدداً', 'error');
+        return;
+    }
+    try {
+        addSyncLog('جاري تحميل البيانات من Google Drive...', 'info');
+        const fileId = await findOrCreateDriveFile();
+        if (!fileId) {
+            if (typeof showToast === 'function') showToast('لا يوجد ملف احتياطي في Drive', 'error');
+            return;
+        }
+        const res = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
+        );
+        if (!res.ok) throw new Error('فشل التحميل');
+        const data = await res.json();
+        if (data && data.patients !== undefined) {
+            appData = data;
+            window._appData = appData;
+            if (!Array.isArray(appData.appointments)) appData.appointments = [];
+            if (typeof getAccounts === 'function') getAccounts();
+            if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
+            if (typeof updateUI === 'function') updateUI();
+            addSyncLog('تم تحميل البيانات وتطبيقها بنجاح ✓', 'success');
+            if (typeof showToast === 'function') showToast('تم تحميل البيانات من Google Drive ✓', 'success');
+        } else {
+            throw new Error('بنية البيانات غير صحيحة');
+        }
+    } catch (e) {
+        addSyncLog('فشل التحميل: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast('فشل التحميل: ' + e.message, 'error');
+    }
+}
+
+// --- رسالة تأكيد عند تحديث الصفحة ---
+function showPageReloadSyncPrompt() {
+    const modal = document.createElement('div');
+    modal.id = 'cloud-reload-prompt-modal';
+    modal.dir = 'rtl';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;';
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:440px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(7,144,172,0.18);">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+            </div>
+            <h3 style="font-size:1.2rem;font-weight:700;color:#1f2937;margin-bottom:10px;">تنزيل آخر نسخة متزامنة؟</h3>
+            <p style="color:#6b7280;font-size:0.92rem;margin-bottom:8px;line-height:1.7;">
+                يوجد آخر نسخة محفوظة في <strong>Google Drive</strong>.<br>
+                هل تريد تنزيلها وعرضها؟
+            </p>
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;margin-bottom:20px;color:#92400e;font-size:0.85rem;text-align:right;">
+                ⚠️ <strong>تنبيه:</strong> سيتم حذف أي إضافات محلية لم يتم مزامنتها مسبقاً مع Google Drive.
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button onclick="loadFromDrivePrompt();document.getElementById('cloud-reload-prompt-modal').remove();"
+                    style="background:#0790AC;color:#fff;border:none;border-radius:10px;padding:10px 28px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">
+                    نعم، نزّل النسخة
+                </button>
+                <button onclick="document.getElementById('cloud-reload-prompt-modal').remove();"
+                    style="background:#f3f4f6;color:#374151;border:none;border-radius:10px;padding:10px 28px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;">
+                    لا، استمر بالبيانات الحالية
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// --- المزامنة الفورية ---
+async function instantSync() {
+    const btn = document.getElementById('instant-sync-btn');
+    if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+        if (typeof showToast === 'function') showToast('يجب تسجيل الدخول إلى Google Drive أولاً', 'error');
+        return;
+    }
+    if (btn) btn.classList.add('syncing');
+    await uploadToGoogleDrive();
+    if (btn) btn.classList.remove('syncing');
+}
+
 
 function disconnectGoogleDrive() {
     if (_cloudAccessToken && typeof google !== 'undefined') {
