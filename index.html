@@ -4185,22 +4185,21 @@
     }
 
     function handleLogout() {
+        // تسجيل الخروج من المستخدم فقط — مع الإبقاء على جلسة Google
         appData.currentUser = null;
         appData.currentAccountId = null;
-        // ===== مسح جميع أنواع الذاكرة =====
-        try { localStorage.clear(); } catch(e) {}
-        try { sessionStorage.clear(); } catch(e) {}
-        // مسح IndexedDB (جميع قواعد البيانات)
-        try {
-            if (window.indexedDB && typeof indexedDB.databases === 'function') {
-                indexedDB.databases().then(function(dbs) {
-                    dbs.forEach(function(db) { try { indexedDB.deleteDatabase(db.name); } catch(ex) {} });
-                }).catch(function(){});
-            }
-        } catch(e) {}
+        saveDataToLocalStorage();
+        loginDropdownMenu.classList.add('hidden');
+        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
+        addMenuSection.classList.add('hidden');
+        // إعادة إظهار قسم تسجيل الدخول كمستخدم (حقلا اسم المستخدم وكلمة السر)
+        if (_googleAuthUser) {
+            updateGoogleUserDisplay();
+            document.getElementById('user-login-section')?.classList.remove('hidden');
+        }
+        updateUI();
+        showWelcomeView();
         showToast('تم تسجيل الخروج من المستخدم', 'success');
-        // إعادة تحميل الصفحة
-        setTimeout(function() { window.location.reload(); }, 500);
     }
 
     // تعريض الدوال الجديدة عالمياً
