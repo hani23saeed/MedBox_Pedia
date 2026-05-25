@@ -6938,6 +6938,7 @@
 
         // ===== تهيئة جدول خطة الوجبات بعد إدراج HTML =====
         // نُعيد التهيئة في كل مرة يُعرض فيها ملف المريض
+        exchangeRows = []; // (إصلاح) مسح بيانات المريض السابق
         mealPlanRows = [];
         mealPlanIdCtr = 0;
         initMealPlanTable();
@@ -8402,11 +8403,33 @@
             if (typeof showToast === 'function') showToast('لا توجد زيارة مفتوحة للحفظ', 'error');
             return;
         }
+        // (إصلاح) التأكد من أن currentViewVisit مرتبط بـ appData وليس كائناً منفصلاً
+        const patient = appData.patients.find(function(p) { return p.id === currentViewPatient.id; });
+        if (patient) {
+            const visitInData = patient.visits.find(function(v) { return v === currentViewVisit; });
+            if (!visitInData) {
+                // إذا كان المرجع منفصلاً، ابحث عن الزيارة الصحيحة بالتاريخ
+                const matchedVisit = patient.visits.find(function(v) { return v.date === currentViewVisit.date; });
+                if (matchedVisit) { currentViewVisit = matchedVisit; }
+            }
+        }
         currentViewVisit.diet = collectDietData();
-        // حفظ في قاعدة البيانات المحلية
-        saveDataToLocalStorage();
-        if (typeof showToast === 'function') showToast('تم حفظ البرنامج الغذائي بنجاح ✓', 'success');
-        isDataDirty = false;
+        // حفظ في قاعدة البيانات المحلية (إصلاح: نُظهر التوست بعد الحفظ الفعلي)
+        idbSet('medboxPediaData', (function() {
+            var d = Object.assign({}, appData);
+            delete d.currentUser;
+            delete d.currentAccountId;
+            if (!d.accounts) d.accounts = getAccounts();
+            return d;
+        })())
+        .then(function() {
+            isDataDirty = false;
+            if (typeof showToast === 'function') showToast('تم حفظ البرنامج الغذائي بنجاح ✓', 'success');
+        })
+        .catch(function(e) {
+            console.error('فشل حفظ البرنامج الغذائي', e);
+            if (typeof showToast === 'function') showToast('فشل حفظ البرنامج الغذائي — حاول مجدداً', 'error');
+        });
     }
 
     function restoreDietDataFromVisit(visit) {
@@ -9186,7 +9209,9 @@
 
         idbGet('medboxPediaData').then(data => {
             if (data) {
-                appData = data;
+                // (إصلاح) نسخ الخصائص بدلاً من إعادة التعيين للحفاظ على المراجع
+                Object.keys(appData).forEach(function(k) { delete appData[k]; });
+                Object.assign(appData, data);
                 window._appData = appData;
                 if (!Array.isArray(appData.appointments)) appData.appointments = [];
                 getAccounts();
@@ -9250,7 +9275,8 @@
                 const decrypted = await _mbDecrypt(e.target.result);
                 const data = JSON.parse(decrypted);
                 if (data && data.patients !== undefined) {
-                    appData = data;
+                    Object.keys(appData).forEach(function(k) { delete appData[k]; });
+                    Object.assign(appData, data);
                     window._appData = appData;
                     getAccounts();
                     if (!Array.isArray(appData.appointments)) appData.appointments = [];
@@ -11757,7 +11783,8 @@ async function loadFromDrivePrompt() {
         const decText = await _mbDecrypt(rawBuf);
         const data = JSON.parse(decText);
         if (data && data.patients !== undefined) {
-            appData = data;
+            Object.keys(appData).forEach(function(k) { delete appData[k]; });
+            Object.assign(appData, data);
             window._appData = appData;
             if (!Array.isArray(appData.appointments)) appData.appointments = [];
             if (typeof getAccounts === 'function') getAccounts();
@@ -11983,7 +12010,8 @@ async function downloadFromGoogleDrive() {
         const data = JSON.parse(decrypted);
         if (data && data.patients !== undefined) {
             if (confirm('سيتم استبدال البيانات المحلية بالبيانات من Google Drive. هل أنت متأكد؟')) {
-                appData = data;
+                Object.keys(appData).forEach(function(k) { delete appData[k]; });
+                Object.assign(appData, data);
                 window._appData = appData;
                 if (!Array.isArray(appData.appointments)) appData.appointments = [];
                 if (typeof getAccounts === 'function') getAccounts();
