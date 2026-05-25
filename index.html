@@ -3930,6 +3930,34 @@
 
     // --- دوال تسجيل الدخول ---
 
+    // (إصلاح) تجديد توكن Google بشكل صامت بعد تحديث الصفحة
+    function _silentGoogleRefresh() {
+        try {
+            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                // المكتبة لم تُحمَّل بعد — انتظر ثم أعد المحاولة
+                setTimeout(_silentGoogleRefresh, 1500);
+                return;
+            }
+            const client = google.accounts.oauth2.initTokenClient({
+                client_id: '821846802885-42uri2u1ej32e4lqo76evhr0pu60ks6k.apps.googleusercontent.com',
+                scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+                prompt: '',  // صامت — بدون نافذة consent
+                callback: function(response) {
+                    if (response.error) return; // فشل صامت — المستخدم سيحتاج تسجيل دخول يدوي
+                    _cloudAccessToken = response.access_token;
+                    _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
+                    if (typeof updateCloudUI === 'function') updateCloudUI();
+                    if (typeof _autoSyncTimer !== 'undefined' && _autoSyncTimer) {
+                        // إعادة تفعيل المزامنة التلقائية إن كانت مفعّلة
+                        if (typeof startAutoSync === 'function') startAutoSync();
+                    }
+                }
+            });
+            client.requestAccessToken({ prompt: '' });
+        } catch(e) { /* فشل صامت */ }
+    }
+
+
     // الحسابات الافتراضية — تُخزَّن في appData.accounts
     // --- Google Auth State ---
     let _googleAuthUser = null; // { email, name, picture }
@@ -3966,6 +3994,8 @@
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     _cloudUserEmail = _googleAuthUser.email;
+                    // (إصلاح) حفظ بيانات Google في sessionStorage للبقاء بعد التحديث
+                    try { sessionStorage.setItem('mbGoogleUser', JSON.stringify(_googleAuthUser)); sessionStorage.setItem('mbGoogleEmail', _cloudUserEmail); } catch(e) {}
                     updateCloudUI();
                     // إظهار خانة تسجيل الدخول كمستخدم إذا وُجدت حسابات
                     const accounts = getAccounts();
@@ -9242,6 +9272,22 @@
                         }
                     }
                 } catch(e) {}
+                // (إصلاح) استعادة بيانات Google Auth من sessionStorage فوراً
+                try {
+                    const savedGUser = sessionStorage.getItem('mbGoogleUser');
+                    const savedGEmail = sessionStorage.getItem('mbGoogleEmail');
+                    if (savedGUser) {
+                        _googleAuthUser = JSON.parse(savedGUser);
+                        _cloudUserEmail = savedGEmail || _googleAuthUser.email || '';
+                        updateGoogleUserDisplay();
+                        // إظهار قسم تسجيل الدخول كمستخدم إذا كان مسجلاً بـ Google فقط
+                        if (!appData.currentUser) {
+                            document.getElementById('user-login-section')?.classList.remove('hidden');
+                        }
+                        // تجديد توكن Google بشكل صامت في الخلفية
+                        _silentGoogleRefresh();
+                    }
+                } catch(e) {}
                 isDataDirty = false;
                 updateUI();
                 showToast('تم تحميل البيانات بنجاح', 'success');
@@ -11717,6 +11763,8 @@ function connectGoogleDrive() {
                 headers: { 'Authorization': 'Bearer ' + _cloudAccessToken }
             }).then(r => r.json()).then(info => {
                 _cloudUserEmail = info.email || info.name || 'مستخدم Google';
+                // (إصلاح) حفظ بيانات Google في sessionStorage
+                try { sessionStorage.setItem('mbGoogleEmail', _cloudUserEmail); } catch(e) {}
                 updateCloudUI();
                 addSyncLog('تم الاتصال بـ ' + _cloudUserEmail, 'success');
                 if (typeof showToast === 'function') showToast('تم الاتصال بـ Google Drive', 'success');
