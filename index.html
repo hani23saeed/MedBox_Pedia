@@ -6214,6 +6214,206 @@
             let altItems = [];
             let listVisible = true;
 
+            // ===== قاعدة بيانات البدائل الغذائية الافتراضية =====
+            const DEFAULT_FOOD_DB = {
+                starch: [
+                    { type: 'خبز أبيض',               quantity: 'شريحة واحدة (30 غ)' },
+                    { type: 'خبز أسمر (قمح كامل)',     quantity: 'شريحة واحدة (30 غ)' },
+                    { type: 'خبز عربي (رغيف صغير)',    quantity: 'ربع رغيف (30 غ)' },
+                    { type: 'خبز تست (توست)',           quantity: 'شريحة واحدة (25 غ)' },
+                    { type: 'خبز باغيت',               quantity: 'قطعة صغيرة (30 غ)' },
+                    { type: 'خبز الذرة (تورتيلا)',      quantity: 'تورتيلا صغيرة (30 غ)' },
+                    { type: 'أرز أبيض مطبوخ',           quantity: 'ثلث كوب (50 غ)' },
+                    { type: 'أرز بني مطبوخ',            quantity: 'ثلث كوب (50 غ)' },
+                    { type: 'معكرونة مطبوخة',           quantity: 'نصف كوب (70 غ)' },
+                    { type: 'سباغيتي مطبوخة',           quantity: 'نصف كوب (70 غ)' },
+                    { type: 'شعيرية مطبوخة',            quantity: 'نصف كوب (70 غ)' },
+                    { type: 'فريكة مطبوخة',             quantity: 'ثلث كوب (50 غ)' },
+                    { type: 'برغل مطبوخ',               quantity: 'ثلث كوب (50 غ)' },
+                    { type: 'كينوا مطبوخة',             quantity: 'ثلث كوب (50 غ)' },
+                    { type: 'دقيق القمح',               quantity: '3 ملاعق كبيرة (20 غ)' },
+                    { type: 'نشا الذرة',                quantity: '2 ملعقة كبيرة (15 غ)' },
+                    { type: 'بطاطا مسلوقة',             quantity: 'حبة صغيرة (85 غ)' },
+                    { type: 'بطاطا حلوة مسلوقة',        quantity: 'نصف كوب (75 غ)' },
+                    { type: 'بطاطا مهروسة',             quantity: 'نصف كوب (90 غ)' },
+                    { type: 'ذرة حبوب مطبوخة',          quantity: 'نصف كوب (80 غ)' },
+                    { type: 'ذرة مفردة (كوز)',           quantity: 'نصف كوز صغير (80 غ)' },
+                    { type: 'عدس مطبوخ',                quantity: 'نصف كوب (90 غ)' },
+                    { type: 'حمص مطبوخ',                quantity: 'نصف كوب (90 غ)' },
+                    { type: 'فاصوليا بيضاء مطبوخة',     quantity: 'نصف كوب (90 غ)' },
+                    { type: 'فول مدمس',                 quantity: 'نصف كوب (90 غ)' },
+                    { type: 'بسكويت مالح (كراكر)',       quantity: '6 قطع (20 غ)' },
+                    { type: 'شوفان (نيء)',               quantity: 'ثلث كوب (30 غ)' },
+                    { type: 'كورن فليكس',               quantity: 'ثلاثة أرباع كوب (20 غ)' },
+                    { type: 'غرانولا',                  quantity: 'ربع كوب (30 غ)' },
+                    { type: 'بوشار (فشار)',              quantity: '3 أكواب (24 غ)' },
+                    { type: 'بقسماط',                   quantity: '2-3 قطع (25 غ)' },
+                    { type: 'كعك سادة صغير',            quantity: 'حبة واحدة (25 غ)' },
+                    { type: 'سمبوسك غير محشي (صغير)',   quantity: 'قطعتان (30 غ)' },
+                ],
+                fruit: [
+                    { type: 'تفاح',                    quantity: 'حبة صغيرة (115 غ)' },
+                    { type: 'موز',                     quantity: 'نصف حبة متوسطة (60 غ)' },
+                    { type: 'برتقال',                  quantity: 'حبة متوسطة (130 غ)' },
+                    { type: 'يوسفي / كليمنتين',        quantity: 'حبتان صغيرتان (120 غ)' },
+                    { type: 'عنب',                     quantity: '17 حبة صغيرة (85 غ)' },
+                    { type: 'بطيخ أحمر',               quantity: 'شريحة صغيرة (280 غ)' },
+                    { type: 'شمام',                    quantity: 'كوب مكعبات (160 غ)' },
+                    { type: 'فراولة',                  quantity: 'كوب وربع (170 غ)' },
+                    { type: 'توت بري (بلوبيري)',        quantity: '¾ كوب (105 غ)' },
+                    { type: 'كرز',                     quantity: '12 حبة كبيرة (85 غ)' },
+                    { type: 'خوخ',                     quantity: 'حبة متوسطة (115 غ)' },
+                    { type: 'إجاص',                    quantity: 'حبة صغيرة (115 غ)' },
+                    { type: 'مانجو',                   quantity: 'نصف كوب مكعبات (82 غ)' },
+                    { type: 'أناناس',                  quantity: '¾ كوب مكعبات (125 غ)' },
+                    { type: 'بابايا (خوخ هندي)',        quantity: 'كوب مكعبات (140 غ)' },
+                    { type: 'مشمش',                    quantity: '4 حبات صغيرة (140 غ)' },
+                    { type: 'خوخ مجفف',                quantity: '3 حبات (35 غ)' },
+                    { type: 'زبيب',                    quantity: '2 ملعقة كبيرة (30 غ)' },
+                    { type: 'تمر',                     quantity: '3 حبات متوسطة (45 غ)' },
+                    { type: 'تين مجفف',                quantity: '1.5 حبة (30 غ)' },
+                    { type: 'برقوق مجفف',              quantity: '3 حبات (35 غ)' },
+                    { type: 'كيوي',                    quantity: 'حبة كبيرة (115 غ)' },
+                    { type: 'رمان',                    quantity: 'نصف حبة متوسطة (100 غ)' },
+                    { type: 'جوافة',                   quantity: 'حبة صغيرة (90 غ)' },
+                    { type: 'عصير برتقال طبيعي',       quantity: 'نصف كوب (120 مل)' },
+                    { type: 'عصير تفاح طبيعي',         quantity: 'نصف كوب (120 مل)' },
+                    { type: 'عصير عنب طبيعي',          quantity: 'ثلث كوب (80 مل)' },
+                    { type: 'ليمون (عصير)',             quantity: 'كوب ونصف (350 مل)' },
+                ],
+                vegetable: [
+                    { type: 'خيار',                    quantity: 'كوب مقطع (120 غ)' },
+                    { type: 'طماطم',                   quantity: 'حبة متوسطة (120 غ)' },
+                    { type: 'خس وسلطة خضراء',          quantity: 'كوبان (80 غ)' },
+                    { type: 'ملفوف (كابيج)',            quantity: 'كوب مقطع (90 غ)' },
+                    { type: 'بروكلي',                  quantity: 'كوب قطع صغيرة (91 غ)' },
+                    { type: 'قرنبيط (كولي فلاور)',      quantity: 'كوب قطع صغيرة (100 غ)' },
+                    { type: 'سبانخ',                   quantity: 'كوب ونصف نيء أو نصف كوب مطبوخ' },
+                    { type: 'بامية',                   quantity: 'نصف كوب مطبوخة (80 غ)' },
+                    { type: 'فاصوليا خضراء',           quantity: 'نصف كوب مطبوخة (90 غ)' },
+                    { type: 'كوسا (زوكيني)',            quantity: 'نصف كوب مطبوخة (90 غ)' },
+                    { type: 'باذنجان',                 quantity: 'نصف كوب مطبوخ (50 غ)' },
+                    { type: 'فلفل أحمر / أخضر',        quantity: 'نصف كوب مقطع (75 غ)' },
+                    { type: 'جزر',                     quantity: 'نصف كوب مقطع (78 غ)' },
+                    { type: 'شمر (أنيسون خضر)',         quantity: 'نصف كوب مقطع (87 غ)' },
+                    { type: 'كرفس',                    quantity: 'كوب مقطع (101 غ)' },
+                    { type: 'ملوخية',                  quantity: 'نصف كوب مطبوخة (80 غ)' },
+                    { type: 'لفت',                     quantity: 'نصف كوب مطبوخ (75 غ)' },
+                    { type: 'قرع (كوسا عسلي)',          quantity: 'نصف كوب مطبوخ (90 غ)' },
+                    { type: 'خرشوف (أرضي شوكي)',        quantity: 'نصف قلب (85 غ)' },
+                    { type: 'هليون',                   quantity: 'نصف كوب مطبوخ (90 غ)' },
+                    { type: 'بصل',                     quantity: 'نصف كوب مقطع (80 غ)' },
+                    { type: 'ثوم',                     quantity: '3 فصوص (15 غ)' },
+                    { type: 'فطر',                     quantity: 'نصف كوب مطبوخ (78 غ)' },
+                    { type: 'طماطم مطبوخة / معلبة',    quantity: 'نصف كوب (120 غ)' },
+                    { type: 'نبق (عوسج)',               quantity: '½ كوب (75 غ)' },
+                ],
+                meat_low: [
+                    { type: 'دجاج (صدر بدون جلد)',      quantity: '30 غ (مطبوخ)' },
+                    { type: 'ديك رومي (صدر بدون جلد)', quantity: '30 غ (مطبوخ)' },
+                    { type: 'لحم بقر خالي الدهن',       quantity: '30 غ (مطبوخ)' },
+                    { type: 'لحم غنم خالي الدهن',       quantity: '30 غ (مطبوخ)' },
+                    { type: 'سمك أبيض (دينيس، فيليه)', quantity: '30 غ (مطبوخ)' },
+                    { type: 'تونة معلب بالماء',         quantity: '30 غ (¼ علبة)' },
+                    { type: 'سردين معلب بالماء',        quantity: '30 غ (2 قطع)' },
+                    { type: 'جمبري (روبيان)',            quantity: '30 غ (4 حبات كبيرة)' },
+                    { type: 'بياض البيض',               quantity: '2 بياضة كبيرة' },
+                    { type: 'جبن قريش (قليل الدسم)',    quantity: '¼ كوب (55 غ)' },
+                    { type: 'جبن كوتج خالي الدسم',      quantity: '¼ كوب (55 غ)' },
+                    { type: 'لحم سمك مفروم',            quantity: '30 غ' },
+                    { type: 'سلمون (بقليل دهون)',        quantity: '30 غ (مطبوخ)' },
+                    { type: 'حبار',                     quantity: '30 غ (مطبوخ)' },
+                    { type: 'أوكتوبوس',                 quantity: '30 غ (مطبوخ)' },
+                ],
+                meat_medium: [
+                    { type: 'لحم بقر متوسط الدهن',      quantity: '30 غ (مطبوخ)' },
+                    { type: 'لحم غنم متوسط',            quantity: '30 غ (مطبوخ)' },
+                    { type: 'دجاج بالجلد',               quantity: '30 غ (مطبوخ)' },
+                    { type: 'سمك سلمون',                quantity: '30 غ (مطبوخ)' },
+                    { type: 'سمك بلطي',                 quantity: '30 غ (مطبوخ)' },
+                    { type: 'أسماك دهنية (ماكريل)',      quantity: '30 غ (مطبوخ)' },
+                    { type: 'جبن فيتا',                 quantity: '30 غ' },
+                    { type: 'جبن موزاريلا جزئي الدسم',  quantity: '30 غ' },
+                    { type: 'بيض كامل',                 quantity: 'بيضة واحدة كبيرة' },
+                    { type: 'كبد دجاج',                 quantity: '30 غ (مطبوخ)' },
+                    { type: 'كبد بقر',                  quantity: '30 غ (مطبوخ)' },
+                    { type: 'لحم عجل',                  quantity: '30 غ (مطبوخ)' },
+                    { type: 'ديك رومي مع جلد',          quantity: '30 غ (مطبوخ)' },
+                    { type: 'جمبري بالزبدة',            quantity: '30 غ (مطبوخ)' },
+                ],
+                meat_high: [
+                    { type: 'لحم بقر دهني (ريب آي)',    quantity: '30 غ (مطبوخ)' },
+                    { type: 'لحم غنم دهني',             quantity: '30 غ (مطبوخ)' },
+                    { type: 'نقانق دجاج',               quantity: '30 غ (1 قطعة صغيرة)' },
+                    { type: 'سجق بقري',                 quantity: '30 غ (قطعة واحدة)' },
+                    { type: 'بيكون دجاج',               quantity: '30 غ (2 شريحة)' },
+                    { type: 'جبن شيدر',                 quantity: '30 غ (شريحة)' },
+                    { type: 'جبن كممبير',               quantity: '30 غ' },
+                    { type: 'جبن بري',                  quantity: '30 غ' },
+                    { type: 'جبن بروسيوتو',             quantity: '30 غ' },
+                    { type: 'لحم مقدد (بيكون لحم بقر)', quantity: '30 غ (2 شريحة)' },
+                    { type: 'هوت دوج دجاج',             quantity: 'قطعة واحدة (45 غ)' },
+                    { type: 'ريش لحم (ظلع)',            quantity: '30 غ (مطبوخ)' },
+                    { type: 'لحم خروف دهني',            quantity: '30 غ (مطبوخ)' },
+                ],
+                milk_skim: [
+                    { type: 'حليب خالي الدسم (0%)',     quantity: 'كوب واحد (240 مل)' },
+                    { type: 'لبن (زبادي) خالي الدسم',   quantity: 'ثلاثة أرباع كوب (170 غ)' },
+                    { type: 'حليب مجفف خالي الدسم',     quantity: '⅓ كوب مسحوق (25 غ)' },
+                    { type: 'حليب صويا خالي الدسم',     quantity: 'كوب واحد (240 مل)' },
+                    { type: 'حليب اللوز غير محلى',      quantity: 'كوب واحد (240 مل)' },
+                    { type: 'شاي بحليب خالي الدسم',     quantity: 'كوب واحد (240 مل)' },
+                    { type: 'لبن (شرب) خالي الدسم',     quantity: 'كوب واحد (240 مل)' },
+                ],
+                milk_low: [
+                    { type: 'حليب قليل الدسم (1%)',     quantity: 'كوب واحد (240 مل)' },
+                    { type: 'حليب قليل الدسم (2%)',     quantity: 'كوب واحد (240 مل)' },
+                    { type: 'لبن (زبادي) قليل الدسم',   quantity: 'ثلاثة أرباع كوب (170 غ)' },
+                    { type: 'حليب جوز الهند خفيف',      quantity: 'نصف كوب (120 مل)' },
+                    { type: 'حليب شوفان',               quantity: 'نصف كوب (120 مل)' },
+                    { type: 'حليب كاكاو قليل الدسم',    quantity: 'كوب واحد (240 مل)' },
+                    { type: 'قشطة خفيفة (كريمة خفيفة)', quantity: 'نصف كوب (120 مل)' },
+                ],
+                milk_full: [
+                    { type: 'حليب كامل الدسم (3.25%)',  quantity: 'كوب واحد (240 مل)' },
+                    { type: 'لبن (زبادي) كامل الدسم',   quantity: 'ثلاثة أرباع كوب (170 غ)' },
+                    { type: 'حليب بوفالو',              quantity: '½ كوب (120 مل)' },
+                    { type: 'حليب ماعز',                quantity: 'كوب واحد (240 مل)' },
+                    { type: 'قشطة (كريمة) كاملة',       quantity: '¼ كوب (60 مل)' },
+                    { type: 'حليب مكثف محلى',           quantity: '2 ملعقة كبيرة (30 مل)' },
+                    { type: 'كاكاو بحليب كامل',         quantity: 'كوب واحد (240 مل)' },
+                ],
+                fat: [
+                    { type: 'زيت زيتون',                quantity: 'ملعقة صغيرة (5 مل)' },
+                    { type: 'زيت عباد الشمس',           quantity: 'ملعقة صغيرة (5 مل)' },
+                    { type: 'زيت جوز الهند',            quantity: 'ملعقة صغيرة (5 مل)' },
+                    { type: 'زيت الذرة',                quantity: 'ملعقة صغيرة (5 مل)' },
+                    { type: 'زيت السمسم',               quantity: 'ملعقة صغيرة (5 مل)' },
+                    { type: 'زبدة (طبيعية)',             quantity: 'ملعقة صغيرة (5 غ)' },
+                    { type: 'سمن (بقري أو نباتي)',       quantity: 'ملعقة صغيرة (5 غ)' },
+                    { type: 'مرغرين',                   quantity: 'ملعقة صغيرة (5 غ)' },
+                    { type: 'زبدة الفول السوداني',       quantity: 'نصف ملعقة كبيرة (8 غ)' },
+                    { type: 'طحينة (سمسم)',              quantity: '2 ملعقة صغيرة (10 غ)' },
+                    { type: 'أفوكادو',                  quantity: '2 ملعقة كبيرة / ⅛ حبة (30 غ)' },
+                    { type: 'جوز',                      quantity: '4 نصفيات (15 غ)' },
+                    { type: 'لوز',                      quantity: '6 حبات (10 غ)' },
+                    { type: 'كاجو',                     quantity: '6 حبات (10 غ)' },
+                    { type: 'بندق',                     quantity: '5 حبات (10 غ)' },
+                    { type: 'فستق حلبي',                quantity: '16 حبة (15 غ)' },
+                    { type: 'فول سوداني',               quantity: '8 حبات كبيرة (10 غ)' },
+                    { type: 'بذور السمسم',              quantity: 'ملعقة كبيرة (9 غ)' },
+                    { type: 'بذور عباد الشمس',           quantity: 'ملعقة كبيرة (9 غ)' },
+                    { type: 'بذور اليقطين',             quantity: 'ملعقة كبيرة (9 غ)' },
+                    { type: 'بذور الكتان',              quantity: 'ملعقة كبيرة (10 غ)' },
+                    { type: 'جبن كريمي (فيلادلفيا)',     quantity: 'ملعقة كبيرة (15 غ)' },
+                    { type: 'قشطة حامضة (ساور كريم)',    quantity: 'ملعقة كبيرة (15 غ)' },
+                    { type: 'زيتون أسود',               quantity: '8 حبات كبيرة (24 غ)' },
+                    { type: 'زيتون أخضر',               quantity: '10 حبات (45 غ)' },
+                    { type: 'مايونيز',                  quantity: 'ملعقة صغيرة (5 غ)' },
+                    { type: 'صلصة طرطور / رانش',        quantity: 'ملعقة كبيرة (15 مل)' },
+                ],
+            };
+
             const categoryIcons = {
                 'starch':      '🍞',
                 'fruit':       '🍎',
@@ -6379,9 +6579,16 @@
                     return;
                 }
 
-                var filtered = altItems.filter(function(i) { return i.category === selectedCat; });
+                // دمج قائمة الافتراضية + البدائل المضافة يدوياً
+                var defaultItems = (DEFAULT_FOOD_DB[selectedCat] || []).map(function(d) {
+                    return { category: selectedCat, type: d.type, quantity: d.quantity, isDefault: true };
+                });
+                var customItems = altItems.filter(function(i) { return i.category === selectedCat; }).map(function(d) {
+                    return { category: d.category, type: d.type, quantity: d.quantity, isDefault: false };
+                });
+                var combined = defaultItems.concat(customItems);
 
-                if (filtered.length === 0) {
+                if (combined.length === 0) {
                     typeSel.innerHTML = '<option value="">لا توجد بدائل لهذه الفئة</option>';
                     typeSel.disabled = true;
                     if (emptyCat) emptyCat.classList.remove('hidden');
@@ -6389,10 +6596,33 @@
                 }
 
                 typeSel.disabled = false;
-                typeSel.innerHTML = '<option value="">-- اختر نوع البديل --</option>'
-                    + filtered.map(function(item, i) {
-                        return '<option value="' + i + '">' + item.type + '</option>';
-                    }).join('');
+                typeSel.innerHTML = '<option value="">-- اختر نوع البديل --</option>';
+                // مجموعة الافتراضية
+                if (defaultItems.length > 0) {
+                    var grpDefault = document.createElement('optgroup');
+                    grpDefault.label = '📋 القائمة الافتراضية';
+                    defaultItems.forEach(function(item, i) {
+                        var opt = document.createElement('option');
+                        opt.value = 'default_' + i;
+                        opt.textContent = item.type;
+                        grpDefault.appendChild(opt);
+                    });
+                    typeSel.appendChild(grpDefault);
+                }
+                // مجموعة المضافة يدوياً
+                if (customItems.length > 0) {
+                    var grpCustom = document.createElement('optgroup');
+                    grpCustom.label = '✏️ مضافة يدوياً';
+                    customItems.forEach(function(item, i) {
+                        var opt = document.createElement('option');
+                        opt.value = 'custom_' + i;
+                        opt.textContent = item.type;
+                        grpCustom.appendChild(opt);
+                    });
+                    typeSel.appendChild(grpCustom);
+                }
+
+                typeSel._combined = combined; // حفظ مرجع مدمج لاستخدامه في showViewQty
 
                 // إعادة تعيين الكمية عند تغيير الفئة
                 if (qtyWrap) qtyWrap.classList.add('hidden');
@@ -6408,22 +6638,31 @@
                 if (!catSel || !typeSel || !qtyWrap || !qtyVal) return;
 
                 var selectedCat = catSel.value;
-                var idx = parseInt(typeSel.value);
+                var selVal = typeSel.value;
 
-                if (!selectedCat || isNaN(idx)) {
+                if (!selectedCat || !selVal) {
                     qtyWrap.classList.add('hidden');
                     if (tblSec) tblSec.classList.add('hidden');
                     return;
                 }
 
-                var filtered = altItems.filter(function(i) { return i.category === selectedCat; });
-                if (!filtered[idx]) {
+                // استخراج العنصر من القائمة المدمجة المحفوظة
+                var combined = typeSel._combined || [];
+                var item = null;
+                if (selVal.startsWith('default_')) {
+                    item = combined[parseInt(selVal.replace('default_', ''))];
+                } else if (selVal.startsWith('custom_')) {
+                    var defLen = (DEFAULT_FOOD_DB[selectedCat] || []).length;
+                    item = combined[defLen + parseInt(selVal.replace('custom_', ''))];
+                }
+
+                if (!item) {
                     qtyWrap.classList.add('hidden');
                     if (tblSec) tblSec.classList.add('hidden');
                     return;
                 }
 
-                qtyVal.textContent = filtered[idx].quantity;
+                qtyVal.textContent = item.quantity;
                 qtyWrap.classList.remove('hidden');
                 // تأثير ظهور لطيف
                 qtyWrap.style.opacity = '0';
@@ -6441,7 +6680,7 @@
                     var mealMap = { breakfast:'🌅 فطور', snack1:'🍎 سناك 1', lunch:'☀️ غداء', snack2:'🥜 سناك 2', dinner:'🌙 عشاء', snack3:'🍵 سناك 3' };
                     var sumEl = document.getElementById('alt-view-selected-summary');
                     var catIcons = { starch:'🍞', fruit:'🍎', vegetable:'🥦', meat_low:'🥩', meat_medium:'🍗', meat_high:'🥓', milk_skim:'🥛', milk_low:'🧀', milk_full:'🫙', fat:'🫒' };
-                    if (sumEl) sumEl.textContent = (catIcons[selectedCat]||'🍽️') + ' ' + filtered[idx].type + ' — ' + filtered[idx].quantity;
+                    if (sumEl) sumEl.textContent = (catIcons[selectedCat]||'🍽️') + ' ' + item.type + ' — ' + item.quantity;
                     // تحديث قائمة الوجبات
                     var mealSel = document.getElementById('alt-view-table-meal');
                     if (mealSel) {
@@ -6453,9 +6692,10 @@
                             mealSel.appendChild(opt);
                         });
                     }
-                    // حفظ معلومات العنصر المحدد حالياً
+                    // حفظ معلومات العنصر المحدد
+                    tblSec.dataset.selectedType = item.type;
+                    tblSec.dataset.selectedQty  = item.quantity;
                     tblSec.dataset.catKey = selectedCat;
-                    tblSec.dataset.typeIdx = idx;
                     tblSec.classList.remove('hidden');
                 }
             }
@@ -6479,14 +6719,19 @@
             if (altViewInsertBtn) {
                 altViewInsertBtn.addEventListener('click', function() {
                     var catSel   = document.getElementById('alt-view-category');
-                    var typeSel  = document.getElementById('alt-view-type');
+                    var tblSec   = document.getElementById('alt-view-table-insert-section');
                     var qtyVal   = document.getElementById('alt-view-qty-val');
-                    var category = catSel  ? catSel.value  : '';
-                    var type     = typeSel ? typeSel.options[typeSel.selectedIndex]?.text.trim() : '';
-                    var quantity = qtyVal  ? qtyVal.textContent.trim() : '';
+                    var category = catSel ? catSel.value : '';
+                    // استخدام الاسم المحفوظ في dataset بدلاً من نص الخيار (لتجنب بادئات الـ optgroup)
+                    var type     = tblSec ? tblSec.dataset.selectedType : '';
+                    var quantity = qtyVal ? qtyVal.textContent.trim() : '';
                     if (!category || !type || !quantity) return;
-                    altItems.push({ category: category, type: type, quantity: quantity });
-                    renderAltList();
+                    // تحقق من عدم التكرار في البدائل المخصصة
+                    var exists = altItems.some(function(i){ return i.category === category && i.type === type; });
+                    if (!exists) {
+                        altItems.push({ category: category, type: type, quantity: quantity });
+                        renderAltList();
+                    }
                     listVisible = true;
                     var dropdown = document.getElementById('alt-list-dropdown');
                     var icon = document.getElementById('alt-list-toggle-icon');
@@ -9122,19 +9367,18 @@
                 var srvInp   = document.getElementById('alt-view-table-servings');
                 var mealSel  = document.getElementById('alt-view-table-meal');
                 var daySel   = document.getElementById('alt-view-table-day');
-                var qtyVal   = document.getElementById('alt-view-qty-val');
+                var tblSec   = document.getElementById('alt-view-table-insert-section');
 
                 if (!catSel || !typeSel || !mealSel) return;
 
-                var category = catSel.value;
-                var typeIdx  = parseInt(typeSel.value);
-                var mealKey  = mealSel.value;
-                var servings = srvInp ? (parseFloat(srvInp.value) || 1) : 1;
+                var category    = catSel.value;
+                var mealKey     = mealSel.value;
+                var servings    = srvInp ? (parseFloat(srvInp.value) || 1) : 1;
+                // استخدام البيانات المحفوظة في dataset
+                var itemType    = tblSec ? tblSec.dataset.selectedType : '';
+                var itemQty     = tblSec ? tblSec.dataset.selectedQty  : '';
 
-                var altItems = window._altItems || [];
-                var filtered = altItems.filter(function(i){ return i.category === category; });
-
-                if (!category || isNaN(typeIdx) || !filtered[typeIdx]) {
+                if (!category || !itemType || !itemQty) {
                     alert('⚠️ يرجى اختيار الفئة ونوع البديل أولاً'); return;
                 }
                 if (!mealKey) { alert('⚠️ يرجى اختيار الوجبة'); return; }
@@ -9151,13 +9395,12 @@
                     if (!row) { alert('⚠️ اليوم المحدد غير موجود'); return; }
                 }
 
-                var item = filtered[typeIdx];
                 if (!row.cells[mealKey]) row.cells[mealKey] = [];
 
                 row.cells[mealKey].push({
                     category: category,
-                    type:     item.type,
-                    quantity: item.quantity,
+                    type:     itemType,
+                    quantity: itemQty,
                     servings: servings,
                 });
 
