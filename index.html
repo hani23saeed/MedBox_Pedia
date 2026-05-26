@@ -3301,6 +3301,7 @@
 
         const permLabels = {
             addPatient:    'إضافة مريض جديد',
+            addVisit:      'إضافة زيارة',
             deleteVisit:   'حذف مراجعة',
             editVisit:     'تعديل مراجعة',
             deletePatient: 'حذف مريض'
@@ -3634,7 +3635,7 @@
             showToast('اسم المستخدم مستخدم بالفعل، اختر اسماً آخر', 'error'); return;
         }
 
-        const permKeys = ['addPatient', 'deleteVisit', 'editVisit', 'deletePatient'];
+        const permKeys = ['addPatient', 'addVisit', 'deleteVisit', 'editVisit', 'deletePatient'];
         const permissions = {};
         permKeys.forEach(k => { permissions[k] = document.getElementById(`new-perm-${k}`)?.checked || false; });
 
@@ -4589,7 +4590,7 @@
             password,
             role: 'developer',
             displayName: username,
-            permissions: { addPatient: true, deleteVisit: true, editVisit: true, deletePatient: true }
+            permissions: { addPatient: true, addVisit: true, deleteVisit: true, editVisit: true, deletePatient: true }
         };
         if (!appData.accounts) appData.accounts = [];
         appData.accounts.push(newAdmin);
@@ -5711,13 +5712,14 @@
 
             let devButtons = '';
             const canAdd    = hasPermission('addPatient');
+            const canAddVis = hasPermission('addVisit');
             const canDelPat = hasPermission('deletePatient');
             const canEdit   = hasPermission('editVisit');
             const canDelVis = hasPermission('deleteVisit');
-            if (canAdd || canDelPat) {
+            if (canAddVis || canDelPat) {
                 devButtons = `
                     <div class="flex-shrink-0 flex items-center space-x-1">
-                        ${canAdd ? `<button data-id="${patient.id}" class="add-visit-btn text-xs text-green-600 hover:text-green-800 p-1" title="إضافة مراجعة">
+                        ${canAddVis ? `<button data-id="${patient.id}" class="add-visit-btn text-xs text-green-600 hover:text-green-800 p-1" title="إضافة مراجعة">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
                         </button>` : ''}
                         ${canDelPat ? `<button data-id="${patient.id}" class="delete-patient-btn text-xs text-red-600 hover:text-red-800 p-1" title="حذف المريض">
