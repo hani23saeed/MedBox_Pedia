@@ -6544,7 +6544,11 @@
                 }).join('');
 
                 // ===== تحديث القائمة المتتالية بعد أي تغيير =====
-                refreshViewTypeDropdown();
+                // فقط إذا كانت هناك فئة محددة مسبقاً
+                var catSel = document.getElementById('alt-view-category');
+                if (catSel && catSel.value) {
+                    refreshViewTypeDropdown();
+                }
             }
 
             // ===== إعادة تعيين القوائم المتتالية =====
