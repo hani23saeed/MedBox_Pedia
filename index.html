@@ -12527,10 +12527,49 @@ async function loadFromDrivePrompt() {
         const decText = await _mbDecrypt(rawBuf);
         const data = JSON.parse(decText);
         if (data && data.patients !== undefined) {
+            // (إصلاح) حفظ بيانات الجلسة الحالية قبل الكتابة فوق appData
+            var _savedCurrentUser2 = appData.currentUser || null;
+            var _savedCurrentAccountId2 = appData.currentAccountId || null;
+            if (!_savedCurrentUser2) {
+                try {
+                    var _sess2 = sessionStorage.getItem('mbSession');
+                    if (_sess2) {
+                        var _sessObj2 = JSON.parse(_sess2);
+                        _savedCurrentUser2 = _sessObj2.currentUser || null;
+                        _savedCurrentAccountId2 = _sessObj2.currentAccountId || null;
+                    }
+                } catch(e) {}
+            }
+
             Object.keys(appData).forEach(function(k) { delete appData[k]; });
             Object.assign(appData, data);
             window._appData = appData;
             if (!Array.isArray(appData.appointments)) appData.appointments = [];
+
+            // (إصلاح) إعادة تطبيق بيانات الجلسة بعد تحميل بيانات Drive
+            if (_savedCurrentUser2) {
+                appData.currentUser = _savedCurrentUser2;
+                appData.currentAccountId = _savedCurrentAccountId2;
+                if (typeof getAccounts === 'function') {
+                    var _accs2 = getAccounts();
+                    var _stillExists2 = _accs2.find(function(a) {
+                        return a.id === _savedCurrentAccountId2 || a.username === _savedCurrentUser2 || _savedCurrentUser2 === 'developer';
+                    });
+                    if (!_stillExists2) {
+                        appData.currentUser = null;
+                        appData.currentAccountId = null;
+                        try { sessionStorage.removeItem('mbSession'); } catch(e) {}
+                    } else {
+                        try {
+                            sessionStorage.setItem('mbSession', JSON.stringify({
+                                currentUser: appData.currentUser,
+                                currentAccountId: appData.currentAccountId
+                            }));
+                        } catch(e) {}
+                    }
+                }
+            }
+
             if (typeof getAccounts === 'function') getAccounts();
             if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
             if (typeof updateUI === 'function') updateUI();
@@ -12573,19 +12612,62 @@ async function loadFromDrivePromptSilent(accountName) {
         const decText = await _mbDecrypt(rawBuf);
         const data = JSON.parse(decText);
         if (data && data.patients !== undefined) {
+            // (إصلاح) حفظ بيانات الجلسة الحالية قبل الكتابة فوق appData
+            var _savedCurrentUser = appData.currentUser || null;
+            var _savedCurrentAccountId = appData.currentAccountId || null;
+            // محاولة استعادة الجلسة من sessionStorage إن لم تكن محفوظة في appData
+            if (!_savedCurrentUser) {
+                try {
+                    var _sess = sessionStorage.getItem('mbSession');
+                    if (_sess) {
+                        var _sessObj = JSON.parse(_sess);
+                        _savedCurrentUser = _sessObj.currentUser || null;
+                        _savedCurrentAccountId = _sessObj.currentAccountId || null;
+                    }
+                } catch(e) {}
+            }
+
             Object.keys(appData).forEach(function(k) { delete appData[k]; });
             Object.assign(appData, data);
             window._appData = appData;
             if (!Array.isArray(appData.appointments)) appData.appointments = [];
+
+            // (إصلاح) إعادة تطبيق بيانات الجلسة بعد تحميل بيانات Drive
+            if (_savedCurrentUser) {
+                appData.currentUser = _savedCurrentUser;
+                appData.currentAccountId = _savedCurrentAccountId;
+                // تأكد أن الحساب لا يزال موجوداً في البيانات الجديدة
+                if (typeof getAccounts === 'function') {
+                    var _accs = getAccounts();
+                    var _stillExists = _accs.find(function(a) {
+                        return a.id === _savedCurrentAccountId || a.username === _savedCurrentUser || _savedCurrentUser === 'developer';
+                    });
+                    if (!_stillExists) {
+                        // الحساب لم يعد موجوداً في البيانات الجديدة — لا نُبقي الجلسة
+                        appData.currentUser = null;
+                        appData.currentAccountId = null;
+                        try { sessionStorage.removeItem('mbSession'); } catch(e) {}
+                    } else {
+                        // تحديث sessionStorage بالجلسة المستعادة
+                        try {
+                            sessionStorage.setItem('mbSession', JSON.stringify({
+                                currentUser: appData.currentUser,
+                                currentAccountId: appData.currentAccountId
+                            }));
+                        } catch(e) {}
+                    }
+                }
+            }
+
             if (typeof getAccounts === 'function') getAccounts();
             if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
             if (typeof updateUI === 'function') updateUI();
             addSyncLog('تم استعادة البيانات من Google Drive ✓', 'success');
             var displayName = accountName || 'حساب Google';
             if (typeof showToast === 'function') showToast('✅ تم تحديث البيانات من (' + displayName + ')', 'success');
-            var accounts = (typeof getAccounts === 'function') ? getAccounts() : [];
-            if (accounts && accounts.length > 0) {
-                if (typeof updateGoogleUserDisplay === 'function') updateGoogleUserDisplay();
+            if (typeof updateGoogleUserDisplay === 'function') updateGoogleUserDisplay();
+            // إظهار قسم تسجيل الدخول فقط إذا لم يكن هناك مستخدم مسجل
+            if (!appData.currentUser) {
                 document.getElementById('user-login-section')?.classList.remove('hidden');
             }
         } else {
