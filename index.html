@@ -1448,6 +1448,13 @@
                         </button>
                         <!-- خانة تسجيل الدخول كمستخدم (تظهر بعد ربط Google) -->
                         <div id="user-login-section" class="hidden mt-3 border-t border-gray-100 pt-3">
+                            <!-- بانر الإيميل المسجل به Google -->
+                            <div id="login-google-email-banner" class="hidden mb-2 flex items-center gap-2 px-3 py-2 rounded-lg" style="background:#f0fafc;border:1px solid #bae6fd;">
+                                <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;flex-shrink:0;color:#0790AC;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+                                </svg>
+                                <span id="login-google-email-text" class="text-xs font-semibold truncate flex-1" style="color:#0790AC;direction:ltr;"></span>
+                            </div>
                             <p class="text-xs text-gray-500 text-center mb-2">تسجيل الدخول كمستخدم</p>
                             <form id="login-form" class="space-y-2">
                                 <input type="text" id="username" placeholder="اسم المستخدم" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required>
@@ -1594,7 +1601,7 @@
                         <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" id="dash-logo-img" alt="MedBox Logo" style="width:52px;height:52px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,0.15);padding:4px;flex-shrink:0;">
                         <div style="flex:1;min-width:0;">
                             <h2 style="color:#fff;font-size:1.2rem;font-weight:800;margin:0;letter-spacing:-0.3px;">MedBox – Pedia</h2>
-                            <p style="color:rgba(255,255,255,0.55);font-size:0.72rem;margin:1px 0 2px;letter-spacing:0.5px;font-family:'Courier New',monospace;font-weight:600;">V 2-1-1 | 26-5-26</p>
+                            <p style="color:rgba(255,255,255,0.55);font-size:0.72rem;margin:1px 0 2px;letter-spacing:0.5px;font-family:'Courier New',monospace;font-weight:600;">V 2-1-1 | 29-5-26</p>
                             <p style="color:rgba(255,255,255,0.82);font-size:0.82rem;margin:0;">وسيلة دعم شاملة للممارسين الصحيين</p>
                         </div>
                         <div style="flex-shrink:0;text-align:left;color:rgba(255,255,255,0.7);font-size:0.75rem;display:none;" id="dash-date-badge"></div>
@@ -4383,105 +4390,192 @@
                     headers: { 'Authorization': 'Bearer ' + response.access_token }
                 }).then(r => r.json()).then(info => {
                     _googleAuthUser = { email: info.email || '', name: info.name || info.email || 'مستخدم Google', picture: info.picture || '' };
-                    // حفظ توكن الـ Drive أيضاً
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     _cloudUserEmail = _googleAuthUser.email;
-                    // (إصلاح) حفظ بيانات Google في sessionStorage للبقاء بعد التحديث
-                    try { sessionStorage.setItem('mbGoogleUser', JSON.stringify(_googleAuthUser)); sessionStorage.setItem('mbGoogleEmail', _cloudUserEmail); } catch(e) {}
+                    try {
+                        sessionStorage.setItem('mbGoogleUser', JSON.stringify(_googleAuthUser));
+                        sessionStorage.setItem('mbGoogleEmail', _cloudUserEmail);
+                    } catch(e) {}
                     updateCloudUI();
-                    // إظهار خانة تسجيل الدخول كمستخدم إذا وُجدت حسابات
-                    const accounts = getAccounts();
-                    if (accounts.length === 0) {
-                        // أول مرة: التحقق من Drive ثم التوجه المناسب
-                        loginDropdownMenu.classList.add('hidden');
-                        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
-                        updateGoogleUserDisplay();
-                        // التحقق من وجود بيانات على Drive
-                        (typeof findOrCreateDriveFile === 'function' ? findOrCreateDriveFile() : Promise.resolve(null))
-                            .then(function(fileId) {
-                                if (fileId) {
-                                    // يوجد بيانات على Drive → استعادة فورية بدون سؤال
-                                    var accountName = (_googleAuthUser && _googleAuthUser.name) ? _googleAuthUser.name : 'حساب Google';
-                                    if (typeof loadFromDrivePromptSilent === 'function') {
-                                        loadFromDrivePromptSilent(accountName);
-                                    } else if (typeof loadFromDrivePrompt === 'function') {
-                                        loadFromDrivePrompt();
-                                    }
-                                } else {
-                                    // لا توجد بيانات على Drive → توجه مباشر لإدارة الحسابات
-                                    if (typeof renderAccountsManagementPage === 'function') {
-                                        const sidebar = document.getElementById('sidebar');
-                                        if (sidebar) sidebar.classList.add('translate-x-full');
-                                        renderAccountsManagementPage();
-                                    }
-                                    showCreateAdminForm();
-                                }
-                            }).catch(function() {
-                                // في حال فشل التحقق → توجه مباشر لإدارة الحسابات
-                                if (typeof renderAccountsManagementPage === 'function') {
-                                    const sidebar = document.getElementById('sidebar');
-                                    if (sidebar) sidebar.classList.add('translate-x-full');
-                                    renderAccountsManagementPage();
-                                }
-                                showCreateAdminForm();
-                            });
-                    } else {
-                        // يوجد حسابات: تحميل آخر نسخة من Drive أولاً ثم إظهار خانة الدخول
-                        updateGoogleUserDisplay();
-                        var accountName2 = (_googleAuthUser && _googleAuthUser.name) ? _googleAuthUser.name : 'حساب Google';
-                        loginDropdownMenu.classList.add('hidden');
-                        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
-                        // تحميل Drive بشكل صامت مع الإبقاء على جلسة المستخدم الحالية
-                        (typeof findOrCreateDriveFile === 'function' ? findOrCreateDriveFile() : Promise.resolve(null))
-                            .then(function(fileId) {
-                                if (fileId) {
-                                    if (typeof loadFromDrivePromptSilent === 'function') {
-                                        loadFromDrivePromptSilent(accountName2);
-                                    } else {
-                                        document.getElementById('user-login-section')?.classList.remove('hidden');
-                                    }
-                                } else {
-                                    document.getElementById('user-login-section')?.classList.remove('hidden');
-                                }
-                            }).catch(function() {
-                                document.getElementById('user-login-section')?.classList.remove('hidden');
-                            });
-                    }
+                    updateGoogleUserDisplay();
+                    loginDropdownMenu.classList.add('hidden');
+                    document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
+
+                    // ══════════════════════════════════════════════════
+                    // الخطوة 1: محاولة تحميل آخر نسخة من Drive تلقائياً
+                    // ══════════════════════════════════════════════════
+                    (typeof findOrCreateDriveFile === 'function' ? findOrCreateDriveFile() : Promise.resolve(null))
+                        .then(function(fileId) {
+                            if (fileId) {
+                                // ✅ توجد نسخة محفوظة → تحميل تلقائي صامت
+                                _loadFromDriveAndThenShowLogin(_googleAuthUser.name || 'حساب Google');
+                            } else {
+                                // ❌ لا توجد نسخة محفوظة → عرض رسالة ثم إظهار خانة الدخول
+                                _showNoCloudDataMessage();
+                            }
+                        }).catch(function() {
+                            // فشل الاتصال → إظهار خانة الدخول مباشرة
+                            _showNoCloudDataMessage();
+                        });
                 }).catch(() => {
+                    // فشل جلب معلومات المستخدم
                     _googleAuthUser = { email: '', name: 'مستخدم Google', picture: '' };
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     updateCloudUI();
-                    const accounts2 = getAccounts();
-                    if (accounts2.length === 0) {
-                        loginDropdownMenu.classList.add('hidden');
-                        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
-                        updateGoogleUserDisplay();
-                        if (typeof renderAccountsManagementPage === 'function') {
-                            const sidebar = document.getElementById('sidebar');
-                            if (sidebar) sidebar.classList.add('translate-x-full');
-                            renderAccountsManagementPage();
-                        }
-                        showCreateAdminForm();
-                    }
-                    else { updateGoogleUserDisplay(); document.getElementById('user-login-section')?.classList.remove('hidden'); }
+                    loginDropdownMenu.classList.add('hidden');
+                    document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
+                    _showNoCloudDataMessage();
                 });
             }
         });
         client.requestAccessToken({ prompt: 'consent' });
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // تحميل البيانات من Drive ثم إظهار خانة تسجيل الدخول كمستخدم
+    // (لا يُسجّل الخروج من Google — فقط يُحدّث البيانات)
+    // ══════════════════════════════════════════════════════════════
+    async function _loadFromDriveAndThenShowLogin(accountName) {
+        if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+            _showLoginSection();
+            return;
+        }
+        try {
+            const fileId = await findOrCreateDriveFile();
+            if (!fileId) { _showNoCloudDataMessage(); return; }
+
+            const res = await fetch(
+                'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media',
+                { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
+            );
+            if (!res.ok) throw new Error('فشل التحميل');
+            const rawBuf = await res.arrayBuffer();
+            const decText = await _mbDecrypt(rawBuf);
+            const data = JSON.parse(decText);
+
+            if (data && data.patients !== undefined) {
+                // حفظ الجلسة الحالية قبل الكتابة
+                var _savedUser = appData.currentUser || null;
+                var _savedAccId = appData.currentAccountId || null;
+                if (!_savedUser) {
+                    try {
+                        var _s = sessionStorage.getItem('mbSession');
+                        if (_s) { var _so = JSON.parse(_s); _savedUser = _so.currentUser || null; _savedAccId = _so.currentAccountId || null; }
+                    } catch(e) {}
+                }
+
+                // تطبيق البيانات الجديدة
+                Object.keys(appData).forEach(function(k) { delete appData[k]; });
+                Object.assign(appData, data);
+                window._appData = appData;
+                if (!Array.isArray(appData.appointments)) appData.appointments = [];
+
+                // استعادة الجلسة إن وُجدت
+                if (_savedUser && typeof getAccounts === 'function') {
+                    var _accs = getAccounts();
+                    var _exists = _accs.find(function(a) {
+                        return a.id === _savedAccId || a.username === _savedUser || _savedUser === 'developer';
+                    });
+                    if (_exists) {
+                        appData.currentUser = _savedUser;
+                        appData.currentAccountId = _savedAccId;
+                        try { sessionStorage.setItem('mbSession', JSON.stringify({ currentUser: _savedUser, currentAccountId: _savedAccId })); } catch(e) {}
+                    } else {
+                        appData.currentUser = null;
+                        appData.currentAccountId = null;
+                        try { sessionStorage.removeItem('mbSession'); } catch(e) {}
+                    }
+                }
+
+                if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
+                if (typeof updateUI === 'function') updateUI();
+
+                // ✅ رسالة: تم تحديث البيانات
+                showToast('✅ تم تحديث البيانات من (' + (accountName || 'Google Drive') + ')', 'success');
+                if (typeof addSyncLog === 'function') addSyncLog('تم استعادة البيانات من Google Drive ✓', 'success');
+
+                // الآن نحدد ما يجب إظهاره:
+                var accounts = typeof getAccounts === 'function' ? getAccounts() : (appData.accounts || []);
+                if (!appData.currentUser) {
+                    // لم يكن هناك مستخدم مسجّل → إظهار خانة الدخول
+                    if (accounts.length > 0) {
+                        _showLoginSection();
+                    } else {
+                        // البيانات المحمّلة لا تحتوي حسابات → إنشاء ادمن
+                        _showNoCloudDataMessage();
+                    }
+                }
+                // إذا كان المستخدم مسجّلاً: updateUI() فعلت كل شيء بالفعل
+
+            } else {
+                throw new Error('بنية بيانات غير صحيحة');
+            }
+        } catch(e) {
+            if (typeof addSyncLog === 'function') addSyncLog('فشل الاستعادة: ' + e.message, 'error');
+            showToast('تعذّر تحميل البيانات: ' + e.message, 'error');
+            _showLoginSection();
+        }
+    }
+
+    // إظهار رسالة "لا توجد بيانات سابقة" ثم توجيه المستخدم
+    function _showNoCloudDataMessage() {
+        var accounts = typeof getAccounts === 'function' ? getAccounts() : (appData.accounts || []);
+        if (accounts.length === 0) {
+            // لا توجد بيانات محلية ولا سحابية → إنشاء حساب ادمن جديد
+            var noDataModal = document.createElement('div');
+            noDataModal.id = 'no-cloud-data-modal';
+            noDataModal.dir = 'rtl';
+            noDataModal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;';
+            noDataModal.innerHTML = '<div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:440px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(7,144,172,0.18);">'
+                + '<div style="width:56px;height:56px;background:linear-gradient(135deg,#6b7280,#9ca3af);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>'
+                + '</div>'
+                + '<h3 style="font-size:1.15rem;font-weight:700;color:#1f2937;margin-bottom:8px;">لا توجد بيانات سابقة</h3>'
+                + '<p style="color:#6b7280;font-size:0.92rem;margin-bottom:24px;line-height:1.7;">لم يتم العثور على أي نسخة محفوظة في Google Drive.<br>سيتم إنشاء حساب ادمن جديد للبدء.</p>'
+                + '<button onclick="document.getElementById(\'no-cloud-data-modal\').remove();'
+                + '(function(){if(typeof renderAccountsManagementPage===\'function\'){var sb=document.getElementById(\'sidebar\');if(sb)sb.classList.add(\'translate-x-full\');renderAccountsManagementPage();}if(typeof showCreateAdminForm===\'function\')showCreateAdminForm();})()"'
+                + ' style="background:#0790AC;color:#fff;border:none;border-radius:10px;padding:12px 36px;font-family:Cairo,sans-serif;font-size:1rem;font-weight:700;cursor:pointer;width:100%;">إنشاء حساب الادمن</button>'
+                + '</div>';
+            document.body.appendChild(noDataModal);
+        } else {
+            // توجد حسابات محلية → إظهار خانة الدخول
+            _showLoginSection();
+        }
+    }
+
+    // إظهار خانة تسجيل الدخول كمستخدم مع الإيميل في الأعلى
+    function _showLoginSection() {
+        var accounts = typeof getAccounts === 'function' ? getAccounts() : (appData.accounts || []);
+        if (accounts.length === 0) {
+            _showNoCloudDataMessage();
+            return;
+        }
+        updateGoogleUserDisplay();
+        // إذا كان المستخدم مسجلاً بالفعل لا نُظهر خانة الدخول
+        if (appData.currentUser) { updateUI(); return; }
+        document.getElementById('user-login-section')?.classList.remove('hidden');
+        // إعادة فتح القائمة لإظهار الإيميل وخانة الدخول
+        loginDropdownMenu.classList.remove('hidden');
+        document.getElementById('login-dropdown-backdrop')?.classList.remove('hidden');
+    }
+
     function updateGoogleUserDisplay() {
         const nameEl = document.getElementById('google-user-name-display');
         const emailEl = document.getElementById('google-user-email-display');
         const googleDisp = document.getElementById('google-user-display');
+        const loginGoogleEmailBanner = document.getElementById('login-google-email-banner');
+        const loginGoogleEmailText = document.getElementById('login-google-email-text');
         if (_googleAuthUser) {
             if (nameEl) nameEl.textContent = _googleAuthUser.name;
             if (emailEl) emailEl.textContent = _googleAuthUser.email;
             if (googleDisp) googleDisp.classList.remove('hidden');
+            if (loginGoogleEmailBanner) loginGoogleEmailBanner.classList.remove('hidden');
+            if (loginGoogleEmailText) loginGoogleEmailText.textContent = _googleAuthUser.email || _googleAuthUser.name;
         } else {
             if (googleDisp) googleDisp.classList.add('hidden');
+            if (loginGoogleEmailBanner) loginGoogleEmailBanner.classList.add('hidden');
         }
     }
 
@@ -4553,10 +4647,14 @@
         modal.id = 'create-admin-form-modal';
         modal.dir = 'rtl';
         modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;';
+        var emailHtml = (_googleAuthUser && _googleAuthUser.email)
+            ? '<div style="display:flex;align-items:center;gap:6px;background:#f0fafc;border:1px solid #bae6fd;border-radius:8px;padding:6px 12px;margin-bottom:14px;"><span style="font-size:0.75rem;color:#0790AC;direction:ltr;flex:1;text-align:center;font-weight:600;">📧 ' + _googleAuthUser.email + '</span></div>'
+            : '';
         modal.innerHTML = `
             <div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(7,144,172,0.18);">
-                <h3 style="font-size:1.1rem;font-weight:700;color:#1f2937;margin-bottom:4px;text-align:center;">إنشاء حساب الادمن</h3>
-                <p style="color:#6b7280;font-size:0.85rem;text-align:center;margin-bottom:20px;">أدخل اسم المستخدم وكلمة السر لحساب الادمن</p>
+                <h3 style="font-size:1.1rem;font-weight:700;color:#1f2937;margin-bottom:4px;text-align:center;">إنشاء حساب الادمن ⭐</h3>
+                <p style="color:#6b7280;font-size:0.85rem;text-align:center;margin-bottom:10px;">هذا هو الحساب الرئيسي (الادمن) الذي يمتلك جميع الصلاحيات</p>
+                ${emailHtml}
                 <div style="margin-bottom:12px;">
                     <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:4px;">اسم المستخدم</label>
                     <input id="admin-create-username" type="text" placeholder="مثال: admin" autocomplete="off"
