@@ -4450,9 +4450,27 @@
                 'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media',
                 { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
             );
-            if (!res.ok) throw new Error('فشل التحميل');
+            if (!res.ok) throw new Error('فشل التحميل - كود: ' + res.status);
             const rawBuf = await res.arrayBuffer();
-            const decText = await _mbDecrypt(rawBuf);
+
+            // محاولة فك التشفير مع fallback للبيانات غير المشفرة
+            var decText;
+            var decryptFn = window._mbDecrypt || (typeof _mbDecrypt !== 'undefined' ? _mbDecrypt : null);
+            if (decryptFn) {
+                try {
+                    decText = await decryptFn(rawBuf);
+                } catch(decErr) {
+                    // قد تكون البيانات غير مشفرة (نسخة قديمة)
+                    try {
+                        decText = new TextDecoder().decode(rawBuf);
+                    } catch(e2) {
+                        throw new Error('فشل فك التشفير: ' + decErr.message);
+                    }
+                }
+            } else {
+                // لا توجد دالة تشفير - حاول قراءة النص مباشرة
+                decText = new TextDecoder().decode(rawBuf);
+            }
             const data = JSON.parse(decText);
 
             if (data && data.patients !== undefined) {
@@ -10254,6 +10272,11 @@
         return new TextDecoder().decode(plain);
     }
     // ================================================================
+    // تعريض دوال التشفير عالمياً حتى تعمل مع Google Drive خارج هذا النطاق
+    window._mbEncrypt = _mbEncrypt;
+    window._mbDecrypt = _mbDecrypt;
+    window._mbGetKey  = _mbGetKey;
+    // ================================================================
 
     // --- تشغيل البرنامج ---
     document.addEventListener('DOMContentLoaded', init);
@@ -12889,23 +12912,29 @@ function disconnectGoogleDrive() {
     if (typeof showToast === 'function') showToast('تم قطع الاتصال بـ Google Drive', 'success');
 }
 
-// --- البحث عن الملف في Drive أو إنشاؤه ---
+// --- البحث عن الملف في Drive ---
 async function findOrCreateDriveFile() {
     if (!_cloudAccessToken) return null;
-
-    // البحث أولاً
     if (_cloudDriveFileId) return _cloudDriveFileId;
 
-    const searchRes = await fetch(
-        `https://www.googleapis.com/drive/v3/files?q=name='${CLOUD_DRIVE_FILENAME}' and trashed=false&spaces=drive&fields=files(id,name)`,
-        { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
-    );
-    const searchData = await searchRes.json();
-    if (searchData.files && searchData.files.length > 0) {
-        _cloudDriveFileId = searchData.files[0].id;
-        return _cloudDriveFileId;
-    }
-    // الملف غير موجود - سيُنشأ عند الرفع
+    // البحث في drive (الأساسي)
+    try {
+        const encoded = encodeURIComponent("name='" + CLOUD_DRIVE_FILENAME + "' and trashed=false");
+        const r1 = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=' + encoded + '&spaces=drive&fields=files(id,name)',
+            { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
+        );
+        if (r1.ok) {
+            const d1 = await r1.json();
+            if (d1.files && d1.files.length > 0) {
+                _cloudDriveFileId = d1.files[0].id;
+                console.log('[MedBox] ملف Drive موجود:', _cloudDriveFileId);
+                return _cloudDriveFileId;
+            }
+        }
+    } catch(e) { console.warn('[MedBox] خطأ في البحث:', e); }
+
+    console.log('[MedBox] لا يوجد ملف محفوظ في Drive');
     return null;
 }
 
