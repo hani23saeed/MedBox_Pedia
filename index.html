@@ -1604,7 +1604,11 @@
                             <p style="color:rgba(255,255,255,0.55);font-size:0.72rem;margin:1px 0 2px;letter-spacing:0.5px;font-family:'Courier New',monospace;font-weight:600;">V 2-2-2 | 29-5-26</p>
                             <p style="color:rgba(255,255,255,0.82);font-size:0.82rem;margin:0;">وسيلة دعم شاملة للممارسين الصحيين</p>
                         </div>
-                        <div style="flex-shrink:0;text-align:left;color:rgba(255,255,255,0.7);font-size:0.75rem;display:none;" id="dash-date-badge"></div>
+                        <!-- بيانات العيادة مكان التاريخ في أقصى اليسار -->
+                        <div id="dash-date-badge" style="flex-shrink:0;text-align:right;">
+                            <div id="dash-clinic-banner-name" style="color:#fff;font-size:0.82rem;font-weight:800;line-height:1.5;"></div>
+                            <div id="dash-clinic-banner-spec" style="color:rgba(255,255,255,0.85);font-size:0.75rem;line-height:1.4;margin-top:1px;"></div>
+                        </div>
                     </div>
 
                     <!-- لوحة المعلومات (Dashboard) -->
@@ -1634,9 +1638,9 @@
                                 <div>
                                     <div><span id="digital-clock">--:--:--</span><span id="digital-ampm"></span></div>
                                     <div class="date-line"><span class="lbl">الميلادي:</span><span id="dash-greg-date">--</span></div>
-                                    <div id="dash-clinic-info" style="margin-top:8px;padding:7px 10px;background:linear-gradient(135deg,rgba(7,144,172,0.08) 0%,rgba(7,144,172,0.03) 100%);border-radius:10px;border:1px solid rgba(7,144,172,0.15);">
-                                        <div id="dash-clinic-name" style="font-size:0.82rem;font-weight:800;color:#0790AC;line-height:1.4;"></div>
-                                        <div id="dash-clinic-specialty-name" style="font-size:0.75rem;color:#374151;line-height:1.4;margin-top:2px;"></div>
+                                    <div id="dash-clinic-info" style="margin-top:6px;padding:6px 10px;background:linear-gradient(135deg,rgba(7,144,172,0.09) 0%,rgba(7,144,172,0.03) 100%);border-radius:9px;border:1px solid rgba(7,144,172,0.15);">
+                                        <div id="dash-clinic-name" style="font-size:0.78rem;font-weight:800;color:#0790AC;line-height:1.4;"></div>
+                                        <div id="dash-clinic-specialty-name" style="font-size:0.72rem;color:#374151;line-height:1.4;margin-top:1px;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -3019,13 +3023,31 @@
         if (headerLogo && dashLogo) {
             dashLogo.src = headerLogo.src;
         }
-        // تحديث شارة التاريخ
-        var badge = document.getElementById('dash-date-badge');
-        if (badge) {
-            var d = new Date();
-            badge.textContent = d.toLocaleDateString('ar-SA', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-            badge.style.display = 'block';
+        // تحديث بيانات العيادة في البانر الأزرق (مكان التاريخ)
+        function updateDashClinicBanner() {
+            var nameEl = document.getElementById('dash-clinic-banner-name');
+            var specEl = document.getElementById('dash-clinic-banner-spec');
+            if (!nameEl || !specEl) return;
+            try {
+                var acc = (typeof getCurrentAccount === 'function') ? getCurrentAccount() : null;
+                var isDev = appData && appData.currentUser === 'developer';
+                var clinicName = acc ? (acc.clinic || '') : '';
+                var specialty  = acc ? (acc.specialty || '') : '';
+                var fullName   = isDev
+                    ? (acc ? (acc.displayName || acc.username || 'الادمن') : 'الادمن')
+                    : (acc ? (acc.displayName || acc.username || '') : '');
+                nameEl.textContent = clinicName ? '🏥 ' + clinicName : '';
+                if (specialty && fullName) {
+                    specEl.textContent = specialty + ': ' + fullName;
+                } else if (fullName) {
+                    specEl.textContent = fullName;
+                } else {
+                    specEl.textContent = '';
+                }
+            } catch(e) {}
         }
+        updateDashClinicBanner();
+        window._updateDashClinicBanner = updateDashClinicBanner;
     })();
     </script>
 </body>
@@ -4838,8 +4860,9 @@
             loginToggleBtn.classList.add('px-3');
             loginToggleBtn.querySelector('.tooltip').textContent = "عرض معلومات الحساب";
 
-            // تحديث بيانات العيادة في بطاقة الداش بورد
+            // تحديث بيانات العيادة في البانر الأزرق
             if (typeof updateDashClinicInfo === 'function') updateDashClinicInfo();
+            if (typeof window._updateDashClinicBanner === 'function') window._updateDashClinicBanner();
 
             // إظهار زر الإضافة حسب صلاحية addPatient
             if (hasPermission('addPatient')) {
@@ -11202,39 +11225,17 @@
 
             const greg = document.getElementById('dash-greg-date');
             if (greg) greg.textContent = `${arDays[now.getDay()]} ${now.getDate()} ${arMonths[now.getMonth()]} ${now.getFullYear()}`;
+            const hij  = document.getElementById('dash-hijri-date');
+            if (hij) hij.textContent = hijriFormatter ? hijriFormatter.format(now) : '—';
         }
         updateClock();
         setInterval(updateClock, 1000);
 
-        // ----- تحديث بيانات العيادة في بطاقة الساعة -----
+        // ----- تحديث بيانات العيادة في البانر الأزرق -----
         function updateDashClinicInfo() {
-            const clinicNameEl      = document.getElementById('dash-clinic-name');
-            const clinicSpecialtyEl = document.getElementById('dash-clinic-specialty-name');
-            if (!clinicNameEl || !clinicSpecialtyEl) return;
-            try {
-                const acc = (typeof getCurrentAccount === 'function') ? getCurrentAccount() : null;
-                const isDev = appData && appData.currentUser === 'developer';
-                const clinicName  = acc ? (acc.clinic || '') : '';
-                const specialty   = acc ? (acc.specialty || '') : '';
-                const fullName    = isDev
-                    ? (acc ? (acc.displayName || acc.username || 'الادمن') : 'الادمن')
-                    : (acc ? (acc.displayName || acc.username || '') : '');
-                if (clinicName) {
-                    clinicNameEl.textContent = '🏥 ' + clinicName;
-                } else {
-                    clinicNameEl.textContent = '';
-                }
-                if (specialty && fullName) {
-                    clinicSpecialtyEl.textContent = specialty + ': ' + fullName;
-                } else if (fullName) {
-                    clinicSpecialtyEl.textContent = fullName;
-                } else {
-                    clinicSpecialtyEl.textContent = '';
-                }
-            } catch(e) {}
+            if (typeof window._updateDashClinicBanner === 'function') window._updateDashClinicBanner();
         }
         updateDashClinicInfo();
-        // تحديث عند تسجيل الدخول/الخروج
         document.addEventListener('medbox:login', updateDashClinicInfo);
         document.addEventListener('medbox:logout', updateDashClinicInfo);
 
