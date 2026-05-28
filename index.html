@@ -4265,7 +4265,7 @@
 
     function showToast(message, type = 'success', duration = 3000) {
         toastMessage.textContent = message;
-        toast.classList.remove('bg-green-600', 'bg-red-600', 'bg-[--color-primary]', 'bg-gray-800');
+        toast.classList.remove('bg-green-600', 'bg-red-600', 'bg-[--color-primary]', 'bg-gray-800', 'bg-blue-500');
 
         if (type === 'success') {
             toast.classList.add('bg-green-600');
@@ -4273,6 +4273,8 @@
             toast.classList.add('bg-red-600');
         } else if (type === 'welcome') {
             toast.classList.add('bg-[--color-primary]');
+        } else if (type === 'info') {
+            toast.classList.add('bg-blue-500');
         } else {
             toast.classList.add('bg-gray-800');
         }
@@ -12939,7 +12941,7 @@ async function findOrCreateDriveFile() {
 }
 
 // --- رفع البيانات إلى Google Drive ---
-async function uploadToGoogleDrive() {
+async function uploadToGoogleDrive(silent) {
     // حفظ البرنامج الغذائي قبل المزامنة إن كانت هناك زيارة مفتوحة
     if (typeof saveDietDataToVisit === 'function' &&
         typeof currentViewPatient !== 'undefined' && currentViewPatient &&
@@ -12997,7 +12999,7 @@ async function uploadToGoogleDrive() {
             if (!res.ok) throw new Error(created.error?.message || 'فشل إنشاء الملف');
             _cloudDriveFileId = created.id;
             addSyncLog('تم حفظ البيانات المشفرة بنجاح ✓', 'success');
-            if (typeof showToast === 'function') showToast('تم حفظ البيانات المشفرة إلى Google Drive ✓', 'success');
+            if (!silent && typeof showToast === 'function') showToast('تم حفظ البيانات المشفرة إلى Google Drive ✓', 'success');
             return;
         }
 
@@ -13014,11 +13016,12 @@ async function uploadToGoogleDrive() {
             throw new Error(err.error?.message || 'فشل الحفظ');
         }
         addSyncLog('تم حفظ البيانات المشفرة بنجاح ✓', 'success');
-        if (typeof showToast === 'function') showToast('تم حفظ البيانات المشفرة إلى Google Drive ✓', 'success');
+        if (!silent && typeof showToast === 'function') showToast('تم حفظ البيانات المشفرة إلى Google Drive ✓', 'success');
 
     } catch (e) {
         addSyncLog('فشل الحفظ: ' + e.message, 'error');
-        if (typeof showToast === 'function') showToast('فشل الحفظ: ' + e.message, 'error');
+        if (!silent && typeof showToast === 'function') showToast('فشل الحفظ: ' + e.message, 'error');
+        if (silent) throw e; // أعد رمي الخطأ لـ triggerAutoGoogleDriveSync
     } finally {
         if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg> رفع إلى Drive'; }
     }
@@ -13287,34 +13290,54 @@ function renderCloudSyncPage() {
  * ====================================================
  */
 function triggerAutoGoogleDriveSync(triggerLabel) {
+    // التحقق من وجود توكن Google صالح
     if (!window._cloudAccessToken || !window._cloudTokenExpiry || Date.now() >= window._cloudTokenExpiry) {
-        return;
+        return; // غير متصل — لا نُظهر أي خطأ
     }
-    if (typeof syncToDrive === 'function') {
-        setTimeout(function() {
-            syncToDrive(true)
-                .then(function() {
-                    var now = new Date();
-                    var timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-                    var label = triggerLabel || 'حفظ يدوي';
-                    if (typeof addSyncLogEntry === 'function') addSyncLogEntry('✅ حفظ تلقائي بعد ' + label + ' — ' + timeStr);
-                    var syncBtn = document.getElementById('cloud-sync-btn') || document.getElementById('instant-sync-btn');
-                    if (syncBtn) {
-                        syncBtn.classList.add('syncing');
-                        setTimeout(function() { syncBtn.classList.remove('syncing'); }, 2000);
-                    }
-                })
-                .catch(function(err) { console.warn('فشل الحفظ التلقائي على Drive:', err); });
-        }, 400);
-        return;
+
+    var label = triggerLabel || 'حفظ';
+    var syncBtn = document.getElementById('instant-sync-btn');
+
+    // 1) تشغيل دوران زر الحفظ الفوري فوراً
+    if (syncBtn) {
+        syncBtn.classList.add('syncing');
+        syncBtn.title = 'جاري الحفظ على Drive...';
     }
-    if (typeof saveToDrive === 'function') {
-        setTimeout(function() { saveToDrive(true); }, 400);
-        return;
+
+    // 2) إشعار بدء الحفظ
+    if (typeof showToast === 'function') {
+        showToast('☁️ جاري الحفظ التلقائي على Google Drive...', 'info', 2000);
     }
-    if (typeof findOrCreateDriveFile === 'function') {
-        setTimeout(function() { _triggerDriveSyncFallback(triggerLabel); }, 400);
-    }
+
+    // 3) تأخير صغير لضمان حفظ LocalStorage أولاً ثم الرفع
+    setTimeout(async function() {
+        try {
+            if (typeof uploadToGoogleDrive === 'function') {
+                await uploadToGoogleDrive(true);
+
+                // 4) إشعار النجاح
+                var now = new Date();
+                var timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                if (typeof showToast === 'function') {
+                    showToast('✅ تم الحفظ على Google Drive — ' + timeStr, 'success', 3500);
+                }
+                if (typeof addSyncLog === 'function') {
+                    addSyncLog('✅ حفظ تلقائي بعد ' + label + ' — ' + timeStr, 'success');
+                }
+            }
+        } catch(err) {
+            console.warn('[MedBox] فشل الحفظ التلقائي:', err);
+            if (typeof showToast === 'function') {
+                showToast('⚠️ فشل الحفظ التلقائي على Drive', 'error', 3000);
+            }
+        } finally {
+            // 5) إيقاف دوران الزر بعد الانتهاء
+            if (syncBtn) {
+                syncBtn.classList.remove('syncing');
+                syncBtn.title = 'حفظ فوري مع Drive';
+            }
+        }
+    }, 350);
 }
 
 async function _triggerDriveSyncFallback(triggerLabel) {
