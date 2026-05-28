@@ -1422,8 +1422,8 @@
                     <svg id="login-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                     </svg>
-                    <!-- سيتم عرض اسم المستخدم هنا عند تسجيل الدخول -->
-                    <span id="logged-in-username-icon" class="hidden text-sm font-semibold text-[--color-primary]"></span>
+                    <!-- اسم المستخدم مخفي عمداً -->
+                    <span id="logged-in-username-icon" class="hidden" style="display:none!important;"></span>
                     <span class="tooltip tooltip-bottom">تسجيل الدخول</span>
                 </button>
                 
@@ -1634,7 +1634,10 @@
                                 <div>
                                     <div><span id="digital-clock">--:--:--</span><span id="digital-ampm"></span></div>
                                     <div class="date-line"><span class="lbl">الميلادي:</span><span id="dash-greg-date">--</span></div>
-                                    <div class="date-line"><span class="lbl">الهجري:</span><span id="dash-hijri-date">--</span></div>
+                                    <div id="dash-clinic-info" style="margin-top:8px;padding:7px 10px;background:linear-gradient(135deg,rgba(7,144,172,0.08) 0%,rgba(7,144,172,0.03) 100%);border-radius:10px;border:1px solid rgba(7,144,172,0.15);">
+                                        <div id="dash-clinic-name" style="font-size:0.82rem;font-weight:800;color:#0790AC;line-height:1.4;"></div>
+                                        <div id="dash-clinic-specialty-name" style="font-size:0.75rem;color:#374151;line-height:1.4;margin-top:2px;"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4828,11 +4831,15 @@
             updateGoogleUserDisplay();
 
             loginIcon.classList.add('hidden');
-            loggedInUsernameIcon.textContent = usernameText;
-            loggedInUsernameIcon.classList.remove('hidden');
+            // اسم المستخدم مخفي عمداً من الشريط العلوي
+            // loggedInUsernameIcon.textContent = usernameText;
+            // loggedInUsernameIcon.classList.remove('hidden');
             loginToggleBtn.classList.remove('w-10');
             loginToggleBtn.classList.add('px-3');
             loginToggleBtn.querySelector('.tooltip').textContent = "عرض معلومات الحساب";
+
+            // تحديث بيانات العيادة في بطاقة الداش بورد
+            if (typeof updateDashClinicInfo === 'function') updateDashClinicInfo();
 
             // إظهار زر الإضافة حسب صلاحية addPatient
             if (hasPermission('addPatient')) {
@@ -4860,6 +4867,9 @@
 
             addMenuSection.classList.add('hidden');
             manageLimitsBtn.classList.add('hidden');
+
+            // مسح بيانات العيادة عند تسجيل الخروج
+            if (typeof updateDashClinicInfo === 'function') updateDashClinicInfo();
         }
 
         if (currentView === 'patient_management') {
@@ -11191,12 +11201,42 @@
             if (sh) sh.setAttribute('transform', `rotate(${secondAngle} 100 100)`);
 
             const greg = document.getElementById('dash-greg-date');
-            const hij  = document.getElementById('dash-hijri-date');
             if (greg) greg.textContent = `${arDays[now.getDay()]} ${now.getDate()} ${arMonths[now.getMonth()]} ${now.getFullYear()}`;
-            if (hij) hij.textContent = hijriFormatter ? hijriFormatter.format(now) : '—';
         }
         updateClock();
         setInterval(updateClock, 1000);
+
+        // ----- تحديث بيانات العيادة في بطاقة الساعة -----
+        function updateDashClinicInfo() {
+            const clinicNameEl      = document.getElementById('dash-clinic-name');
+            const clinicSpecialtyEl = document.getElementById('dash-clinic-specialty-name');
+            if (!clinicNameEl || !clinicSpecialtyEl) return;
+            try {
+                const acc = (typeof getCurrentAccount === 'function') ? getCurrentAccount() : null;
+                const isDev = appData && appData.currentUser === 'developer';
+                const clinicName  = acc ? (acc.clinic || '') : '';
+                const specialty   = acc ? (acc.specialty || '') : '';
+                const fullName    = isDev
+                    ? (acc ? (acc.displayName || acc.username || 'الادمن') : 'الادمن')
+                    : (acc ? (acc.displayName || acc.username || '') : '');
+                if (clinicName) {
+                    clinicNameEl.textContent = '🏥 ' + clinicName;
+                } else {
+                    clinicNameEl.textContent = '';
+                }
+                if (specialty && fullName) {
+                    clinicSpecialtyEl.textContent = specialty + ': ' + fullName;
+                } else if (fullName) {
+                    clinicSpecialtyEl.textContent = fullName;
+                } else {
+                    clinicSpecialtyEl.textContent = '';
+                }
+            } catch(e) {}
+        }
+        updateDashClinicInfo();
+        // تحديث عند تسجيل الدخول/الخروج
+        document.addEventListener('medbox:login', updateDashClinicInfo);
+        document.addEventListener('medbox:logout', updateDashClinicInfo);
 
         // ----- 2) الإحصائيات -----
         function getAllVisits() {
@@ -11867,6 +11907,7 @@
             updateStats();
             renderMiniCalendar();
             renderReminders(false); // بدون صوت في أول تحميل (لمنع الإزعاج قبل التفاعل)
+            if (typeof updateDashClinicInfo === 'function') updateDashClinicInfo();
         };
 
         // تشغيل أولي
