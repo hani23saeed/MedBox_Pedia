@@ -1374,27 +1374,8 @@
                 <span class="tooltip tooltip-bottom">مسح QR Code للمريض</span>
             </div>
 
-            <!-- زر تحميل البيانات (JSON) -->
-            <div class="group relative">
-                <button id="load-data-btn" class="top-bar-icon-btn" style="color:#0790AC">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </button>
-                <input type="file" id="load-data-input" class="hidden" accept=".medbox">
-                <span class="tooltip tooltip-bottom">تحميل ملف MedBox</span>
-            </div>
-            
-            <!-- زر حفظ البيانات (JSON) -->
-            <div class="group relative">
-                <button id="save-data-btn" class="top-bar-icon-btn" style="color:#0790AC">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6" />
-                    </svg>
-                </button>
-                <span class="tooltip tooltip-bottom">حفظ ملفات JSON</span>
-            </div>
+            <!-- input تحميل البيانات (مخفي - يُستدعى من الإعدادات) -->
+            <input type="file" id="load-data-input" class="hidden" accept=".medbox">
 
             <!-- سويتش الحفظ التلقائي (فوق زر الحفظ الفوري) -->
             <div class="group relative flex flex-col items-center justify-center gap-0.5" style="min-width:52px;">
@@ -3121,8 +3102,6 @@
     const sidebarSettingsView = document.getElementById('sidebar-settings-view'); // (جديد 5)
     const patientListContainer = document.getElementById('patient-list-container');
     const patientSearchInput = document.getElementById('patient-search-input');
-    const saveDataBtn = document.getElementById('save-data-btn');
-    const loadDataBtn = document.getElementById('load-data-btn');
     const loadDataInput = document.getElementById('load-data-input');
     
     // --- (جديد) عناصر نافذة القيم الطبيعية ---
@@ -4177,15 +4156,7 @@
             topbarAutoSyncToggle.checked = !!_autoSyncTimer;
         }
 
-        // ربط أحداث حفظ وتحميل البيانات
-        saveDataBtn.addEventListener('click', function() {
-            // حفظ البرنامج الغذائي إن كانت هناك زيارة مفتوحة
-            if (currentViewPatient && currentViewVisit && (exchangeRows.length > 0 || mealPlanRows.length > 0)) {
-                saveDietDataToVisit();
-            }
-            saveDataAsJson();
-        });
-        loadDataBtn.addEventListener('click', () => loadDataInput.click());
+        // ربط حدث تحميل البيانات (يُستدعى من قسم الإعدادات)
         loadDataInput.addEventListener('change', loadDataFromFile);
 
         // ربط زر طباعة الوصفة الطبية
@@ -5404,6 +5375,9 @@
         closePatientModal();
         showToast(`تم حفظ البيانات للمريض: ${visitData.personal.name_ar}`, 'success');
         
+        // حفظ تلقائي على Google Drive بعد إنشاء مريض جديد أو إضافة جلسة
+        triggerAutoGoogleDriveSync('مريض/جلسة جديدة');
+
         if (currentView !== 'patient_management') {
             showPatientManagementView();
         } 
@@ -5465,6 +5439,9 @@
         closePatientModal();
         showToast(`تم حفظ التعديلات للمريض: ${visitData.personal.name_ar}`, 'success');
         
+        // حفظ تلقائي على Google Drive بعد حفظ التعديلات
+        triggerAutoGoogleDriveSync('تعديل بيانات مريض');
+
         renderPatientList(); // <-- (إصلاح 1) تحديث القائمة
         
         // (تعديل 5) عرض بيانات الزيارة المعدلة
@@ -9163,6 +9140,8 @@
         .then(function() {
             isDataDirty = false;
             if (typeof showToast === 'function') showToast('تم حفظ البرنامج الغذائي بنجاح ✓', 'success');
+            // حفظ تلقائي على Google Drive بعد حفظ البرنامج الغذائي
+            triggerAutoGoogleDriveSync('البرنامج الغذائي');
         })
         .catch(function(e) {
             console.error('فشل حفظ البرنامج الغذائي', e);
@@ -13034,16 +13013,94 @@ function renderCloudSyncPage() {
             </div>
             <div class="p-5">
                 <p style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">البيانات محفوظة دائماً على الجهاز (IndexedDB) كنسخة احتياطية.</p>
-                <button class="cloud-btn cloud-btn-secondary" onclick="saveDataAsJson()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/></svg>
-                    تصدير ملف .medbox مشفّر
-                </button>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="cloud-btn cloud-btn-secondary" onclick="saveDataAsJson()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5M9 17h6M9 13h6"/></svg>
+                        تصدير ملف .medbox مشفّر
+                    </button>
+                    <button class="cloud-btn cloud-btn-primary" onclick="document.getElementById('load-data-input').click()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        تحميل ملف .medbox
+                    </button>
+                </div>
             </div>
         </div>
     </div>`;
 
     patientDisplayArea.classList.remove('hidden');
     document.getElementById('welcome-message')?.classList.add('hidden');
+}
+</script>
+
+<script>
+/**
+ * ====================================================
+ * حفظ تلقائي على Google Drive عند الحفظ اليدوي
+ * يُستدعى من: saveNewPatient, saveVisitEdits, saveDietDataToVisit
+ * ====================================================
+ */
+function triggerAutoGoogleDriveSync(triggerLabel) {
+    if (!window._cloudAccessToken || !window._cloudTokenExpiry || Date.now() >= window._cloudTokenExpiry) {
+        return;
+    }
+    if (typeof syncToDrive === 'function') {
+        setTimeout(function() {
+            syncToDrive(true)
+                .then(function() {
+                    var now = new Date();
+                    var timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                    var label = triggerLabel || 'حفظ يدوي';
+                    if (typeof addSyncLogEntry === 'function') addSyncLogEntry('✅ حفظ تلقائي بعد ' + label + ' — ' + timeStr);
+                    var syncBtn = document.getElementById('cloud-sync-btn') || document.getElementById('instant-sync-btn');
+                    if (syncBtn) {
+                        syncBtn.classList.add('syncing');
+                        setTimeout(function() { syncBtn.classList.remove('syncing'); }, 2000);
+                    }
+                })
+                .catch(function(err) { console.warn('فشل الحفظ التلقائي على Drive:', err); });
+        }, 400);
+        return;
+    }
+    if (typeof saveToDrive === 'function') {
+        setTimeout(function() { saveToDrive(true); }, 400);
+        return;
+    }
+    if (typeof findOrCreateDriveFile === 'function') {
+        setTimeout(function() { _triggerDriveSyncFallback(triggerLabel); }, 400);
+    }
+}
+
+async function _triggerDriveSyncFallback(triggerLabel) {
+    try {
+        if (!window._cloudAccessToken || Date.now() >= window._cloudTokenExpiry) return;
+        var plainData = JSON.stringify((function() {
+            var d = Object.assign({}, appData);
+            delete d.currentUser;
+            delete d.currentAccountId;
+            if (!d.accounts) d.accounts = (typeof getAccounts === 'function' ? getAccounts() : []);
+            return d;
+        })());
+        var dataToSave;
+        if (typeof _mbEncrypt === 'function') {
+            var encrypted = await _mbEncrypt(plainData);
+            var uint8 = new Uint8Array(encrypted);
+            var binaryStr = '';
+            uint8.forEach(function(b) { binaryStr += String.fromCharCode(b); });
+            dataToSave = btoa(binaryStr);
+        } else {
+            dataToSave = plainData;
+        }
+        var fileId = await findOrCreateDriveFile();
+        if (!fileId) return;
+        await fetch('https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media', {
+            method: 'PATCH',
+            headers: { 'Authorization': 'Bearer ' + window._cloudAccessToken, 'Content-Type': 'application/octet-stream' },
+            body: dataToSave
+        });
+        var now = new Date();
+        var timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        if (typeof addSyncLogEntry === 'function') addSyncLogEntry('✅ حفظ تلقائي بعد ' + (triggerLabel || 'حفظ يدوي') + ' — ' + timeStr);
+    } catch (e) { console.warn('فشل الحفظ التلقائي الاحتياطي:', e); }
 }
 </script>
 
