@@ -3825,7 +3825,7 @@
                                     </div>
                                     <div>
                                         <p class="text-xs text-gray-500 font-semibold">رقم الإصدار</p>
-                                        <p class="text-2xl font-black text-purple-600 ltr" dir="ltr">V2.1.1</p>
+                                        <p class="text-2xl font-black text-purple-600 ltr" dir="ltr">V2.2.3</p>
                                     </div>
                                 </div>
                                 <div class="bg-white px-4 py-2 rounded-xl border border-gray-200">
@@ -4334,6 +4334,8 @@
                     if (response.error) return; // فشل صامت — المستخدم سيحتاج تسجيل دخول يدوي
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
+                    window._cloudAccessToken = _cloudAccessToken;
+                    window._cloudTokenExpiry = _cloudTokenExpiry;
                     if (typeof updateCloudUI === 'function') updateCloudUI();
                     if (typeof _autoSyncTimer !== 'undefined' && _autoSyncTimer) {
                         if (typeof startAutoSync === 'function') startAutoSync();
@@ -4395,6 +4397,9 @@
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     _cloudUserEmail = _googleAuthUser.email;
+                    // مزامنة مع window للحفظ التلقائي
+                    window._cloudAccessToken = _cloudAccessToken;
+                    window._cloudTokenExpiry = _cloudTokenExpiry;
                     try {
                         sessionStorage.setItem('mbGoogleUser', JSON.stringify(_googleAuthUser));
                         sessionStorage.setItem('mbGoogleEmail', _cloudUserEmail);
@@ -4425,6 +4430,8 @@
                     _googleAuthUser = { email: '', name: 'مستخدم Google', picture: '' };
                     _cloudAccessToken = response.access_token;
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
+                    window._cloudAccessToken = _cloudAccessToken;
+                    window._cloudTokenExpiry = _cloudTokenExpiry;
                     updateCloudUI();
                     loginDropdownMenu.classList.add('hidden');
                     document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
@@ -12446,12 +12453,21 @@ const CLOUD_DRIVE_FILENAME = 'medbox_pedia_cloud_backup.json';
 const CLOUD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 const AUTO_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 دقائق
 
-let _cloudAccessToken = null;
-let _cloudTokenExpiry = 0;
-let _cloudDriveFileId = null;
-let _autoSyncTimer = null;
-let _autoSyncCountdownTimer = null;
-let _autoSyncNextTime = null;
+// ملاحظة: هذه المتغيرات تُعرَّض على window حتى تستطيع دوال خارج النطاق الوصول إليها
+window._cloudAccessToken = null;
+window._cloudTokenExpiry = 0;
+window._cloudDriveFileId = null;
+window._autoSyncTimer = null;
+window._autoSyncCountdownTimer = null;
+window._autoSyncNextTime = null;
+
+// تعريف اختصارات محلية (للتوافق مع الكود القديم)
+var _cloudAccessToken = null;
+var _cloudTokenExpiry = 0;
+var _cloudDriveFileId = null;
+var _autoSyncTimer = null;
+var _autoSyncCountdownTimer = null;
+var _autoSyncNextTime = null;
 // Client ID مدمج مباشرة - لا يحتاج المستخدم لإدخاله
 const GOOGLE_CLIENT_ID = '821846802885-42uri2u1ej32e4lqo76evhr0pu60ks6k.apps.googleusercontent.com';
 let _googleClientId = GOOGLE_CLIENT_ID;
@@ -12588,6 +12604,8 @@ function connectGoogleDrive() {
             _cloudAccessToken = response.access_token;
             _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
             _cloudDriveFileId = null;
+            window._cloudAccessToken = _cloudAccessToken;
+            window._cloudTokenExpiry = _cloudTokenExpiry;
             // جلب معلومات المستخدم
             fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
                 headers: { 'Authorization': 'Bearer ' + _cloudAccessToken }
@@ -12902,6 +12920,9 @@ function disconnectGoogleDrive() {
     _cloudTokenExpiry = 0;
     _cloudDriveFileId = null;
     _cloudUserEmail = '';
+    window._cloudAccessToken = null;
+    window._cloudTokenExpiry = 0;
+    window._cloudDriveFileId = null;
     // إيقاف الحفظ التلقائي
     if (_autoSyncTimer) { clearInterval(_autoSyncTimer); _autoSyncTimer = null; }
     if (_autoSyncCountdownTimer) { clearInterval(_autoSyncCountdownTimer); _autoSyncCountdownTimer = null; }
@@ -13290,8 +13311,15 @@ function renderCloudSyncPage() {
  * ====================================================
  */
 function triggerAutoGoogleDriveSync(triggerLabel) {
+    // الحصول على التوكن من أي نطاق متاح (window أو محلي)
+    var token = window._cloudAccessToken || (typeof _cloudAccessToken !== 'undefined' ? _cloudAccessToken : null);
+    var expiry = window._cloudTokenExpiry || (typeof _cloudTokenExpiry !== 'undefined' ? _cloudTokenExpiry : 0);
+    // مزامنة window لضمان التناسق في المستقبل
+    if (token) window._cloudAccessToken = token;
+    if (expiry) window._cloudTokenExpiry = expiry;
     // التحقق من وجود توكن Google صالح
-    if (!window._cloudAccessToken || !window._cloudTokenExpiry || Date.now() >= window._cloudTokenExpiry) {
+    if (!token || !expiry || Date.now() >= expiry) {
+        console.log('[MedBox] لا يوجد توكن Google صالح — تم تخطي الحفظ التلقائي');
         return; // غير متصل — لا نُظهر أي خطأ
     }
 
@@ -13342,7 +13370,10 @@ function triggerAutoGoogleDriveSync(triggerLabel) {
 
 async function _triggerDriveSyncFallback(triggerLabel) {
     try {
-        if (!window._cloudAccessToken || Date.now() >= window._cloudTokenExpiry) return;
+        var _tok = window._cloudAccessToken || (typeof _cloudAccessToken !== 'undefined' ? _cloudAccessToken : null);
+        var _exp = window._cloudTokenExpiry || (typeof _cloudTokenExpiry !== 'undefined' ? _cloudTokenExpiry : 0);
+        if (!_tok || Date.now() >= _exp) return;
+        if (_tok) window._cloudAccessToken = _tok;
         var plainData = JSON.stringify((function() {
             var d = Object.assign({}, appData);
             delete d.currentUser;
