@@ -216,7 +216,7 @@
             color: #fff;
         }
         
-        /* ===== نافذة المزامنة السحابية ===== */
+        /* ===== نافذة الحفظ السحابي ===== */
         #cloud-sync-modal {
             display: none;
             position: fixed;
@@ -356,17 +356,17 @@
             direction: rtl;
             line-height: 1.8;
         }
-        /* زر المزامنة الفورية في شريط الأدوات */
+        /* زر الحفظ الفوري في شريط الأدوات */
         #instant-sync-btn.syncing svg { animation: spin 1s linear infinite; }
         #instant-sync-btn.syncing { color: #0790AC !important; }
-        /* سويتش المزامنة التلقائية في الشريط العلوي */
+        /* سويتش الحفظ التلقائي في الشريط العلوي */
         #topbar-auto-sync-toggle + .toggle-slider { border-radius: 20px; }
         #topbar-auto-sync-toggle:checked + .toggle-slider { background: #0790AC; }
         #topbar-auto-sync-toggle:checked + .toggle-slider:before { transform: translateX(-16px); }
         .toggle-switch[style*="width:36px"] .toggle-slider:before {
             width: 14px; height: 14px; top: 3px; right: 3px;
         }
-        /* أيقونة المزامنة في شريط الأدوات */
+        /* أيقونة الحفظ في شريط الأدوات */
         #cloud-sync-btn .sync-spinner {
             animation: spin 1s linear infinite;
         }
@@ -1396,24 +1396,24 @@
                 <span class="tooltip tooltip-bottom">حفظ ملفات JSON</span>
             </div>
 
-            <!-- سويتش المزامنة التلقائية (فوق زر المزامنة الفورية) -->
+            <!-- سويتش الحفظ التلقائي (فوق زر الحفظ الفوري) -->
             <div class="group relative flex flex-col items-center justify-center gap-0.5" style="min-width:52px;">
-                <label class="toggle-switch" style="width:36px;height:20px;" title="المزامنة التلقائية كل 5 دقائق">
+                <label class="toggle-switch" style="width:36px;height:20px;" title="الحفظ التلقائي كل 5 دقائق">
                     <input type="checkbox" id="topbar-auto-sync-toggle" onchange="toggleAutoSync(this.checked)">
                     <span class="toggle-slider" style="border-radius:20px;"></span>
                 </label>
                 <span style="font-size:0.6rem;color:#9ca3af;font-weight:600;white-space:nowrap;line-height:1;">تلقائي</span>
-                <span class="tooltip tooltip-bottom">المزامنة التلقائية كل 5 دقائق</span>
+                <span class="tooltip tooltip-bottom">الحفظ التلقائي كل 5 دقائق</span>
             </div>
 
-            <!-- زر المزامنة الفورية مع Drive -->
+            <!-- زر الحفظ الفوري مع Drive -->
             <div class="group relative">
                 <button id="instant-sync-btn" class="top-bar-icon-btn" style="color:#0790AC" onclick="instantSync()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
                 </button>
-                <span class="tooltip tooltip-bottom">مزامنة فورية مع Drive</span>
+                <span class="tooltip tooltip-bottom">حفظ فوري مع Drive</span>
             </div>
 
             <!-- (تعديل 10) تم نقل زر إدارة الحدود الطبيعية إلى القائمة الجانبية -->
@@ -1433,7 +1433,7 @@
             <div class="relative">
                 <!-- الزر الذي يظهر دائما (أيقونة المستخدم أو اسم المستخدم) -->
                 <button id="login-toggle-btn" class="group top-bar-icon-btn flex-col gap-0" style="color:#0790AC; height:auto; min-height:40px; padding: 4px 8px;">
-                    <!-- شارة حالة المزامنة السحابية -->
+                    <!-- شارة حالة الحفظ السحابي -->
                     <span id="cloud-topbar-badge" style="display:none; align-items:center; gap:3px; font-size:0.6rem; font-weight:700; line-height:1; padding:1px 5px; border-radius:20px; background:#fee2e2; color:#dc2626; white-space:nowrap; margin-bottom:2px;">
                         <span id="cloud-topbar-dot" style="width:5px;height:5px;border-radius:50%;background:#dc2626;display:inline-block;flex-shrink:0;"></span>
                         <span id="cloud-topbar-label">غير متصل</span>
@@ -1510,7 +1510,7 @@
             </div>
 
         </div>
-    <!-- مؤشر المزامنة (مخفي، للحفاظ على وظيفة JS) -->
+    <!-- مؤشر الحفظ (مخفي، للحفاظ على وظيفة JS) -->
     <span id="cloud-sync-indicator" class="hidden" style="display:none!important;"></span>
     </header>
 
@@ -1561,7 +1561,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6" />
                         </svg>
-                        <span>المزامنة السحابية</span>
+                        <span>الحفظ السحابي</span>
                         <span id="cloud-sync-status-dot" class="mr-auto w-2.5 h-2.5 rounded-full bg-red-400 inline-block" title="غير متصل"></span>
                     </button>
                     <button id="settings-accounts-btn" class="w-full text-right p-3 rounded-lg hover:bg-gray-100 transition-colors">إدارة الحسابات</button>
@@ -4019,7 +4019,7 @@
                                 </div>
                             </div>
 
-                            <!-- 6. المزامنة السحابية -->
+                            <!-- 6. الحفظ السحابي -->
                             <div class="bg-gradient-to-br from-cyan-50 to-white p-6 rounded-2xl border-2 border-cyan-200 hover:shadow-lg transition-shadow">
                                 <div class="flex items-start gap-4">
                                     <div class="shrink-0 w-14 h-14 bg-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -4028,7 +4028,7 @@
                                         </svg>
                                     </div>
                                     <div class="flex-1">
-                                        <h3 class="text-lg font-bold text-gray-800 mb-2">مزامنة سحابية سلسة</h3>
+                                        <h3 class="text-lg font-bold text-gray-800 mb-2">حفظ سحابي سلس</h3>
                                         <ul class="space-y-1.5 text-sm text-gray-600">
                                             <li class="flex items-start gap-2">
                                                 <span class="text-cyan-500 mt-0.5">●</span>
@@ -4036,7 +4036,7 @@
                                             </li>
                                             <li class="flex items-start gap-2">
                                                 <span class="text-cyan-500 mt-0.5">●</span>
-                                                <span>مزامنة فورية للبيانات عبر الأجهزة المختلفة</span>
+                                                <span>حفظ فوري للبيانات عبر الأجهزة المختلفة</span>
                                             </li>
                                             <li class="flex items-start gap-2">
                                                 <span class="text-cyan-500 mt-0.5">●</span>
@@ -4171,7 +4171,7 @@
             });
         }
 
-        // مزامنة سويتش الشريط العلوي مع حالة المزامنة التلقائية
+        // مزامنة سويتش الشريط العلوي مع حالة الحفظ التلقائي
         const topbarAutoSyncToggle = document.getElementById('topbar-auto-sync-toggle');
         if (topbarAutoSyncToggle) {
             topbarAutoSyncToggle.checked = !!_autoSyncTimer;
@@ -4356,7 +4356,7 @@
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     if (typeof updateCloudUI === 'function') updateCloudUI();
                     if (typeof _autoSyncTimer !== 'undefined' && _autoSyncTimer) {
-                        // إعادة تفعيل المزامنة التلقائية إن كانت مفعّلة
+                        // إعادة تفعيل الحفظ التلقائي إن كانت مفعّلة
                         if (typeof startAutoSync === 'function') startAutoSync();
                     }
                 }
@@ -4416,8 +4416,13 @@
                         (typeof findOrCreateDriveFile === 'function' ? findOrCreateDriveFile() : Promise.resolve(null))
                             .then(function(fileId) {
                                 if (fileId) {
-                                    // يوجد بيانات على Drive → عرض نافذة التحميل
-                                    if (typeof showCloudLoadPrompt === 'function') showCloudLoadPrompt();
+                                    // يوجد بيانات على Drive → استعادة فورية بدون سؤال
+                                    var accountName = (_googleAuthUser && _googleAuthUser.name) ? _googleAuthUser.name : 'حساب Google';
+                                    if (typeof loadFromDrivePromptSilent === 'function') {
+                                        loadFromDrivePromptSilent(accountName);
+                                    } else if (typeof loadFromDrivePrompt === 'function') {
+                                        loadFromDrivePrompt();
+                                    }
                                 } else {
                                     // لا توجد بيانات على Drive → توجه مباشر لإدارة الحسابات
                                     if (typeof renderAccountsManagementPage === 'function') {
@@ -12205,7 +12210,7 @@ function printQRCard(patient, qrData) {
 }
 </script>
 
-<!-- ===== نافذة المزامنة السحابية (Google Drive) ===== -->
+<!-- ===== نافذة الحفظ السحابي (Google Drive) ===== -->
 <div id="cloud-sync-modal" dir="rtl">
     <div id="cloud-sync-box">
         <div id="cloud-sync-header">
@@ -12213,7 +12218,7 @@ function printQRCard(patient, qrData) {
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
                 </svg>
-                المزامنة السحابية – Google Drive
+                الحفظ السحابي – Google Drive
             </div>
             <button onclick="closeCloudSyncModal()" style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:1.5rem;line-height:1;">✕</button>
         </div>
@@ -12248,7 +12253,7 @@ function printQRCard(patient, qrData) {
 
         <!-- رفع وتحميل يدوي -->
         <div class="cloud-sync-section">
-            <div class="cloud-sync-section-title">مزامنة يدوية</div>
+            <div class="cloud-sync-section-title">حفظ يدوي</div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                 <button id="cloud-upload-btn" class="cloud-btn cloud-btn-success" onclick="uploadToGoogleDrive()" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
@@ -12261,12 +12266,12 @@ function printQRCard(patient, qrData) {
             </div>
         </div>
 
-        <!-- المزامنة التلقائية -->
+        <!-- الحفظ التلقائي -->
         <div class="cloud-sync-section">
-            <div class="cloud-sync-section-title">المزامنة التلقائية</div>
+            <div class="cloud-sync-section-title">الحفظ التلقائي</div>
             <div class="auto-sync-toggle">
                 <div>
-                    <div style="font-weight:600;font-size:0.9rem;color:#374151;">مزامنة تلقائية كل 5 دقائق</div>
+                    <div style="font-weight:600;font-size:0.9rem;color:#374151;">حفظ تلقائي كل 5 دقائق</div>
                     <div id="auto-sync-next" style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">غير مفعّل</div>
                 </div>
                 <label class="toggle-switch">
@@ -12276,13 +12281,13 @@ function printQRCard(patient, qrData) {
             </div>
         </div>
 
-        <!-- سجل المزامنة -->
+        <!-- سجل الحفظ -->
         <div class="cloud-sync-section">
             <div class="cloud-sync-section-title" style="display:flex;align-items:center;justify-content:space-between;">
-                <span>سجل المزامنة</span>
+                <span>سجل الحفظ</span>
                 <button onclick="clearSyncLog()" style="font-size:0.75rem;color:#9ca3af;background:none;border:none;cursor:pointer;">مسح</button>
             </div>
-            <div id="cloud-sync-log" class="cloud-sync-log">لا توجد عمليات مزامنة حتى الآن</div>
+            <div id="cloud-sync-log" class="cloud-sync-log">لا توجد عمليات حفظ حتى الآن</div>
         </div>
 
         <!-- النسخ الاحتياطي المحلي -->
@@ -12301,7 +12306,7 @@ function printQRCard(patient, qrData) {
 
 
 <script>
-// ===== المزامنة السحابية - Google Drive API =====
+// ===== الحفظ السحابي - Google Drive API =====
 
 // --- الثوابت والحالة ---
 const CLOUD_DRIVE_FILENAME = 'medbox_pedia_cloud_backup.json';
@@ -12337,12 +12342,12 @@ function addSyncLog(msg, type) {
     const entry = document.createElement('div');
     entry.style.cssText = `color:${color};border-bottom:1px solid #f3f4f6;padding:3px 0;`;
     entry.textContent = `[${now}] ${msg}`;
-    if (log.textContent === 'لا توجد عمليات مزامنة حتى الآن') log.textContent = '';
+    if (log.textContent === 'لا توجد عمليات حفظ حتى الآن') log.textContent = '';
     log.insertBefore(entry, log.firstChild);
 }
 function clearSyncLog() {
     const log = document.getElementById('cloud-sync-log');
-    if (log) log.innerHTML = 'لا توجد عمليات مزامنة حتى الآن';
+    if (log) log.innerHTML = 'لا توجد عمليات حفظ حتى الآن';
 }
 
 function updateCloudUI() {
@@ -12528,7 +12533,7 @@ async function loadFromDrivePrompt() {
         return;
     }
     try {
-        addSyncLog('جاري تحميل البيانات من Google Drive...', 'info');
+        addSyncLog('جاري استرداد البيانات من Google Drive...', 'info');
         const fileId = await findOrCreateDriveFile();
         if (!fileId) {
             if (typeof showToast === 'function') showToast('لا يوجد ملف احتياطي في Drive', 'error');
@@ -12561,6 +12566,63 @@ async function loadFromDrivePrompt() {
     }
 }
 
+
+// --- استعادة صامتة عند تسجيل دخول Google جديد (بدون سؤال) ---
+async function loadFromDrivePromptSilent(accountName) {
+    if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
+        if (typeof showToast === 'function') showToast('انتهت صلاحية الاتصال، يرجى تسجيل الدخول مجدداً', 'error');
+        return;
+    }
+    try {
+        addSyncLog('جاري استعادة البيانات من Google Drive...', 'info');
+        const fileId = await findOrCreateDriveFile();
+        if (!fileId) {
+            if (typeof renderAccountsManagementPage === 'function') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.add('translate-x-full');
+                renderAccountsManagementPage();
+            }
+            if (typeof showCreateAdminForm === 'function') showCreateAdminForm();
+            return;
+        }
+        const res = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            { headers: { 'Authorization': 'Bearer ' + _cloudAccessToken } }
+        );
+        if (!res.ok) throw new Error('فشل التحميل');
+        const rawBuf = await res.arrayBuffer();
+        const decText = await _mbDecrypt(rawBuf);
+        const data = JSON.parse(decText);
+        if (data && data.patients !== undefined) {
+            Object.keys(appData).forEach(function(k) { delete appData[k]; });
+            Object.assign(appData, data);
+            window._appData = appData;
+            if (!Array.isArray(appData.appointments)) appData.appointments = [];
+            if (typeof getAccounts === 'function') getAccounts();
+            if (typeof saveDataToLocalStorage === 'function') saveDataToLocalStorage();
+            if (typeof updateUI === 'function') updateUI();
+            addSyncLog('تم استعادة البيانات من Google Drive ✓', 'success');
+            var displayName = accountName || 'حساب Google';
+            if (typeof showToast === 'function') showToast('✅ تم تحديث البيانات من (' + displayName + ')', 'success');
+            var accounts = (typeof getAccounts === 'function') ? getAccounts() : [];
+            if (accounts && accounts.length > 0) {
+                if (typeof updateGoogleUserDisplay === 'function') updateGoogleUserDisplay();
+                document.getElementById('user-login-section')?.classList.remove('hidden');
+            }
+        } else {
+            throw new Error('بنية البيانات غير صحيحة');
+        }
+    } catch (e) {
+        addSyncLog('فشل الاستعادة: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast('فشل استعادة البيانات: ' + e.message, 'error');
+        if (typeof renderAccountsManagementPage === 'function') {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.add('translate-x-full');
+            renderAccountsManagementPage();
+        }
+        if (typeof showCreateAdminForm === 'function') showCreateAdminForm();
+    }
+}
 // --- رسالة تأكيد عند تحديث الصفحة ---
 function showPageReloadSyncPrompt() {
     const modal = document.createElement('div');
@@ -12580,7 +12642,7 @@ function showPageReloadSyncPrompt() {
                 هل تريد تنزيلها وعرضها؟
             </p>
             <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;margin-bottom:20px;color:#92400e;font-size:0.85rem;text-align:right;">
-                ⚠️ <strong>تنبيه:</strong> سيتم حذف أي إضافات محلية لم يتم مزامنتها مسبقاً مع Google Drive.
+                ⚠️ <strong>تنبيه:</strong> سيتم حذف أي إضافات محلية لم يتم حفظها مسبقاً على Google Drive.
             </div>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
                 <button onclick="loadFromDrivePrompt();document.getElementById('cloud-reload-prompt-modal').remove();"
@@ -12618,7 +12680,7 @@ function disconnectGoogleDrive() {
     _cloudTokenExpiry = 0;
     _cloudDriveFileId = null;
     _cloudUserEmail = '';
-    // إيقاف المزامنة التلقائية
+    // إيقاف الحفظ التلقائي
     if (_autoSyncTimer) { clearInterval(_autoSyncTimer); _autoSyncTimer = null; }
     if (_autoSyncCountdownTimer) { clearInterval(_autoSyncCountdownTimer); _autoSyncCountdownTimer = null; }
     const toggle = document.getElementById('auto-sync-toggle');
@@ -12667,7 +12729,7 @@ async function uploadToGoogleDrive() {
     }
 
     const uploadBtn = document.getElementById('cloud-upload-btn');
-    if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.innerHTML = '<svg class="w-4 h-4 sync-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="animation:spin 1s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg> جاري الرفع...'; }
+    if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.innerHTML = '<svg class="w-4 h-4 sync-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="animation:spin 1s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg> جاري الحفظ...'; }
 
     try {
         addSyncLog('جاري رفع البيانات إلى Google Drive...', 'info');
@@ -12708,8 +12770,8 @@ async function uploadToGoogleDrive() {
             const created = await res.json();
             if (!res.ok) throw new Error(created.error?.message || 'فشل إنشاء الملف');
             _cloudDriveFileId = created.id;
-            addSyncLog('تم رفع البيانات المشفرة بنجاح ✓', 'success');
-            if (typeof showToast === 'function') showToast('تم رفع البيانات المشفرة إلى Google Drive ✓', 'success');
+            addSyncLog('تم حفظ البيانات المشفرة بنجاح ✓', 'success');
+            if (typeof showToast === 'function') showToast('تم حفظ البيانات المشفرة إلى Google Drive ✓', 'success');
             return;
         }
 
@@ -12723,14 +12785,14 @@ async function uploadToGoogleDrive() {
         });
         if (!res.ok) {
             const err = await res.json();
-            throw new Error(err.error?.message || 'فشل الرفع');
+            throw new Error(err.error?.message || 'فشل الحفظ');
         }
-        addSyncLog('تم رفع البيانات المشفرة بنجاح ✓', 'success');
-        if (typeof showToast === 'function') showToast('تم رفع البيانات المشفرة إلى Google Drive ✓', 'success');
+        addSyncLog('تم حفظ البيانات المشفرة بنجاح ✓', 'success');
+        if (typeof showToast === 'function') showToast('تم حفظ البيانات المشفرة إلى Google Drive ✓', 'success');
 
     } catch (e) {
-        addSyncLog('فشل الرفع: ' + e.message, 'error');
-        if (typeof showToast === 'function') showToast('فشل الرفع: ' + e.message, 'error');
+        addSyncLog('فشل الحفظ: ' + e.message, 'error');
+        if (typeof showToast === 'function') showToast('فشل الحفظ: ' + e.message, 'error');
     } finally {
         if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg> رفع إلى Drive'; }
     }
@@ -12748,7 +12810,7 @@ async function downloadFromGoogleDrive() {
     if (downloadBtn) { downloadBtn.disabled = true; downloadBtn.innerHTML = '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="animation:spin 1s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg> جاري التحميل...'; }
 
     try {
-        addSyncLog('جاري تحميل البيانات من Google Drive...', 'info');
+        addSyncLog('جاري استرداد البيانات من Google Drive...', 'info');
         const fileId = await findOrCreateDriveFile();
         if (!fileId) {
             addSyncLog('لا يوجد ملف احتياطي في Drive حتى الآن', 'info');
@@ -12794,7 +12856,7 @@ async function downloadFromGoogleDrive() {
     }
 }
 
-// --- المزامنة التلقائية كل 5 دقائق ---
+// --- الحفظ التلقائي كل 5 دقائق ---
 function toggleAutoSync(enabled) {
     if (enabled) {
         if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
@@ -12835,19 +12897,19 @@ function startAutoSync() {
     _autoSyncTimer = setInterval(async () => {
         _autoSyncNextTime = Date.now() + AUTO_SYNC_INTERVAL_MS;
         if (!_cloudAccessToken || Date.now() >= _cloudTokenExpiry) {
-            addSyncLog('انتهت صلاحية الاتصال - توقفت المزامنة التلقائية', 'error');
+            addSyncLog('انتهت صلاحية الاتصال - توقفت الحفظ التلقائي', 'error');
             stopAutoSync();
             const toggle = document.getElementById('auto-sync-toggle');
             if (toggle) toggle.checked = false;
             updateCloudUI();
             return;
         }
-        addSyncLog('مزامنة تلقائية...', 'info');
+        addSyncLog('حفظ تلقائي...', 'info');
         await uploadToGoogleDrive();
     }, AUTO_SYNC_INTERVAL_MS);
 
-    addSyncLog('بدأت المزامنة التلقائية كل 5 دقائق', 'success');
-    if (typeof showToast === 'function') showToast('تم تفعيل المزامنة التلقائية كل 5 دقائق ✓', 'success');
+    addSyncLog('بدأت الحفظ التلقائي كل 5 دقائق', 'success');
+    if (typeof showToast === 'function') showToast('تم تفعيل الحفظ التلقائي كل 5 دقائق ✓', 'success');
 }
 
 function stopAutoSync() {
@@ -12856,7 +12918,7 @@ function stopAutoSync() {
     _autoSyncNextTime = null;
     const el = document.getElementById('auto-sync-next');
     if (el) el.textContent = 'غير مفعّل';
-    addSyncLog('توقفت المزامنة التلقائية', 'info');
+    addSyncLog('توقفت الحفظ التلقائي', 'info');
 }
 
 // إغلاق النافذة بالنقر على الخلفية
@@ -12864,7 +12926,7 @@ document.getElementById('cloud-sync-modal').addEventListener('click', function(e
     if (e.target === this) closeCloudSyncModal();
 });
 
-// ===== عرض صفحة المزامنة السحابية في منطقة العرض الرئيسية =====
+// ===== عرض صفحة الحفظ السحابي في منطقة العرض الرئيسية =====
 function renderCloudSyncPage() {
     const patientDisplayArea = document.getElementById('patient-display-area');
     if (!patientDisplayArea) return;
@@ -12882,7 +12944,7 @@ function renderCloudSyncPage() {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6" />
                     </svg>
                 </span>
-                المزامنة السحابية
+                الحفظ السحابي
             </h2>
             <span class="text-xs text-gray-400">Google Drive</span>
         </div>
@@ -12916,10 +12978,10 @@ function renderCloudSyncPage() {
             </div>
         </div>
 
-        <!-- قسم المزامنة اليدوية -->
+        <!-- قسم الحفظ اليدوي -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;">
-                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">مزامنة يدوية</span>
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">حفظ يدوي</span>
             </div>
             <div class="p-5">
                 <div class="flex gap-3 flex-wrap">
@@ -12935,15 +12997,15 @@ function renderCloudSyncPage() {
             </div>
         </div>
 
-        <!-- قسم المزامنة التلقائية -->
+        <!-- قسم الحفظ التلقائي -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;">
-                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">المزامنة التلقائية</span>
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">الحفظ التلقائي</span>
             </div>
             <div class="p-5">
                 <div class="auto-sync-toggle">
                     <div>
-                        <div style="font-weight:600;font-size:0.9rem;color:#374151;">مزامنة تلقائية كل 5 دقائق</div>
+                        <div style="font-weight:600;font-size:0.9rem;color:#374151;">حفظ تلقائي كل 5 دقائق</div>
                         <div id="auto-sync-next" style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">${_autoSyncTimer ? 'مفعّل' : 'غير مفعّل'}</div>
                     </div>
                     <label class="toggle-switch">
@@ -12954,14 +13016,14 @@ function renderCloudSyncPage() {
             </div>
         </div>
 
-        <!-- قسم سجل المزامنة -->
+        <!-- قسم سجل الحفظ -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div style="background:linear-gradient(135deg,#f0fafc 0%,#fff 100%);padding:14px 20px;border-bottom:1px solid #e6f4f7;display:flex;align-items:center;justify-content:space-between;">
-                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">سجل المزامنة</span>
+                <span style="font-size:0.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">سجل الحفظ</span>
                 <button onclick="clearSyncLog()" style="font-size:0.75rem;color:#9ca3af;background:none;border:none;cursor:pointer;font-family:Cairo,sans-serif;">مسح</button>
             </div>
             <div class="p-5">
-                <div id="cloud-sync-log" class="cloud-sync-log">لا توجد عمليات مزامنة حتى الآن</div>
+                <div id="cloud-sync-log" class="cloud-sync-log">لا توجد عمليات حفظ حتى الآن</div>
             </div>
         </div>
 
