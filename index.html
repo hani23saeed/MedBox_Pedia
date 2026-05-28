@@ -4327,8 +4327,22 @@
                     _cloudTokenExpiry = Date.now() + (response.expires_in * 1000);
                     if (typeof updateCloudUI === 'function') updateCloudUI();
                     if (typeof _autoSyncTimer !== 'undefined' && _autoSyncTimer) {
-                        // إعادة تفعيل الحفظ التلقائي إن كانت مفعّلة
                         if (typeof startAutoSync === 'function') startAutoSync();
+                    }
+                    // (إصلاح) تحميل آخر نسخة من Drive تلقائياً بعد تجديد التوكن
+                    // فقط إذا كان المستخدم مسجلاً أصلاً (جلسة موجودة)
+                    var _hasSess = false;
+                    try {
+                        var _s = sessionStorage.getItem('mbSession');
+                        if (_s) { var _so = JSON.parse(_s); _hasSess = !!(_so && _so.currentUser); }
+                    } catch(e) {}
+                    if (_hasSess || (typeof appData !== 'undefined' && appData.currentUser)) {
+                        if (typeof findOrCreateDriveFile === 'function' && typeof loadFromDrivePromptSilent === 'function') {
+                            var _gName = (_googleAuthUser && _googleAuthUser.name) ? _googleAuthUser.name : 'حساب Google';
+                            findOrCreateDriveFile().then(function(fid) {
+                                if (fid) loadFromDrivePromptSilent(_gName);
+                            }).catch(function() {});
+                        }
                     }
                 }
             });
@@ -4413,9 +4427,26 @@
                                 showCreateAdminForm();
                             });
                     } else {
-                        // يوجد حسابات: عرض خانة تسجيل الدخول كمستخدم
+                        // يوجد حسابات: تحميل آخر نسخة من Drive أولاً ثم إظهار خانة الدخول
                         updateGoogleUserDisplay();
-                        document.getElementById('user-login-section')?.classList.remove('hidden');
+                        var accountName2 = (_googleAuthUser && _googleAuthUser.name) ? _googleAuthUser.name : 'حساب Google';
+                        loginDropdownMenu.classList.add('hidden');
+                        document.getElementById('login-dropdown-backdrop')?.classList.add('hidden');
+                        // تحميل Drive بشكل صامت مع الإبقاء على جلسة المستخدم الحالية
+                        (typeof findOrCreateDriveFile === 'function' ? findOrCreateDriveFile() : Promise.resolve(null))
+                            .then(function(fileId) {
+                                if (fileId) {
+                                    if (typeof loadFromDrivePromptSilent === 'function') {
+                                        loadFromDrivePromptSilent(accountName2);
+                                    } else {
+                                        document.getElementById('user-login-section')?.classList.remove('hidden');
+                                    }
+                                } else {
+                                    document.getElementById('user-login-section')?.classList.remove('hidden');
+                                }
+                            }).catch(function() {
+                                document.getElementById('user-login-section')?.classList.remove('hidden');
+                            });
                     }
                 }).catch(() => {
                     _googleAuthUser = { email: '', name: 'مستخدم Google', picture: '' };
@@ -12332,10 +12363,17 @@ function clearSyncLog() {
 function updateCloudUI() {
     const isConnected = !!_cloudAccessToken && Date.now() < _cloudTokenExpiry;
 
-    // رسالة إعادة التحميل: إذا كان المستخدم متصلاً وكانت الصفحة قد أُعيد تحميلها
+    // تحميل تلقائي من Drive عند إعادة تحميل الصفحة (بدون سؤال)
     if (isConnected && window._checkReloadSyncOnConnect) {
         window._checkReloadSyncOnConnect = false;
-        setTimeout(() => { if (typeof showPageReloadSyncPrompt === 'function') showPageReloadSyncPrompt(); }, 500);
+        setTimeout(function() {
+            if (typeof findOrCreateDriveFile === 'function' && typeof loadFromDrivePromptSilent === 'function') {
+                var _gName = (_googleAuthUser && _googleAuthUser.name) ? _googleAuthUser.name : 'حساب Google';
+                findOrCreateDriveFile().then(function(fid) {
+                    if (fid) loadFromDrivePromptSilent(_gName);
+                }).catch(function() {});
+            }
+        }, 600);
     }
 
     const statusBadge = document.getElementById('cloud-connection-status');
