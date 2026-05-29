@@ -14223,60 +14223,93 @@ ${context}
 
         var prompt = _buildPrompt(patient, _currentReportType);
 
-        try {
-            var response = await fetch(
-                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            temperature: 0.3,
-                            topP: 0.9,
-                            maxOutputTokens: 4096
-                        }
-                    })
+        // جرّب النماذج بالترتيب حتى ينجح أحدها
+        var models = [
+            'gemini-2.0-flash',
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-pro'
+        ];
+
+        var lastError = null;
+        var succeeded = false;
+
+        for (var mi = 0; mi < models.length; mi++) {
+            var modelName = models[mi];
+            try {
+                var response = await fetch(
+                    'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: {
+                                temperature: 0.3,
+                                topP: 0.9,
+                                maxOutputTokens: 4096
+                            }
+                        })
+                    }
+                );
+
+                var data = await response.json();
+
+                if (!response.ok) {
+                    // احفظ الخطأ الحقيقي وجرّب النموذج التالي
+                    var rawMsg = (data.error && data.error.message) ? data.error.message : ('HTTP ' + response.status);
+                    lastError = rawMsg;
+                    // إذا كان الخطأ في المفتاح نفسه لا فائدة من تجربة نماذج أخرى
+                    if (response.status === 400 && rawMsg.includes('API key')) break;
+                    if (response.status === 403) break;
+                    continue;
                 }
-            );
 
-            var data = await response.json();
+                var text = '';
+                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    text = data.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('');
+                }
 
-            if (!response.ok) {
-                throw new Error(data.error ? data.error.message : 'خطأ في API الاستجابة: ' + response.status);
+                if (!text) { lastError = 'الاستجابة فارغة من النموذج ' + modelName; continue; }
+
+                // تحويل Markdown المتبقي إلى HTML نظيف
+                text = text
+                    .replace(/```html\n?/gi, '').replace(/```\n?/gi, '')
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+                _lastReportText = text;
+                var resultEl = document.getElementById('gemini-result-state');
+                resultEl.innerHTML = text;
+                _setGeminiState('result');
+                document.getElementById('gemini-copy-btn').style.display = 'inline-flex';
+                succeeded = true;
+                break;
+
+            } catch (fetchErr) {
+                lastError = fetchErr.message || String(fetchErr);
+                if (lastError.includes('Failed to fetch') || lastError.includes('NetworkError')) break;
             }
+        }
 
-            var text = '';
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                text = data.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('');
-            }
-
-            if (!text) throw new Error('لم يتم الحصول على استجابة من Gemini');
-
-            // تحويل Markdown المتبقي إلى HTML نظيف
-            text = text
-                .replace(/```html\n?/gi, '').replace(/```\n?/gi, '')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-            _lastReportText = text;
-            var resultEl = document.getElementById('gemini-result-state');
-            resultEl.innerHTML = text;
-            _setGeminiState('result');
-            document.getElementById('gemini-copy-btn').style.display = 'inline-flex';
-
-        } catch (err) {
+        if (!succeeded) {
             _setGeminiState('error');
-            var errMsg = err.message || String(err);
-            if (errMsg.includes('API_KEY') || errMsg.includes('api key') || errMsg.includes('API key')) {
-                errMsg = 'مفتاح API غير صالح أو منتهي الصلاحية. تأكد من صحة المفتاح وأن لديك صلاحية استخدام Gemini API.';
-            } else if (errMsg.includes('Failed to fetch') || errMsg.includes('network')) {
-                errMsg = 'خطأ في الاتصال بالشبكة. تأكد من اتصالك بالإنترنت.';
+            var errMsg = lastError || 'خطأ غير معروف';
+            // رسائل مساعدة واضحة
+            var hint = '';
+            if (errMsg.includes('API_KEY_INVALID') || errMsg.includes('API key not valid')) {
+                hint = '<br><b>السبب:</b> المفتاح غير صالح. تأكد من نسخه كاملاً من <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#4285F4">Google AI Studio</a>.';
             } else if (errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')) {
-                errMsg = 'تم استنزاف حصة API. انتظر قليلاً أو تحقق من حصتك في Google AI Studio.';
+                hint = '<br><b>السبب:</b> تم استنزاف الحصة المجانية لهذا المفتاح. جرّب مفتاحاً من حساب آخر.';
+            } else if (errMsg.includes('predicate failed') || errMsg.includes('safety_settings')) {
+                hint = '<br><b>السبب:</b> خطأ في إعدادات الأمان — تم إصلاحه تلقائياً، يرجى المحاولة مرة أخرى.';
+            } else if (errMsg.includes('Failed to fetch')) {
+                hint = '<br><b>السبب:</b> تعذّر الاتصال بـ Gemini. تأكد من اتصالك بالإنترنت.';
             }
-            document.getElementById('gemini-error-msg').innerHTML = errMsg +
-                '<br><br><button onclick="window._generateGeminiReport()" style="margin-top:8px;padding:7px 16px;background:#dc2626;color:#fff;border:none;border-radius:7px;font-family:Cairo,sans-serif;font-weight:700;cursor:pointer;">إعادة المحاولة</button>';
+            document.getElementById('gemini-error-msg').innerHTML =
+                '<div style="font-family:monospace;background:#fef2f2;padding:8px;border-radius:6px;font-size:0.78rem;word-break:break-all;margin-bottom:8px;">' + errMsg + '</div>' +
+                hint +
+                '<br><button onclick="window._generateGeminiReport()" style="margin-top:10px;padding:7px 16px;background:#dc2626;color:#fff;border:none;border-radius:7px;font-family:Cairo,sans-serif;font-weight:700;cursor:pointer;">إعادة المحاولة</button>';
         }
     };
 
