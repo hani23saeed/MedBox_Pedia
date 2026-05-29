@@ -14223,93 +14223,123 @@ ${context}
 
         var prompt = _buildPrompt(patient, _currentReportType);
 
-        // جرّب النماذج بالترتيب حتى ينجح أحدها
-        var models = [
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-1.5-pro'
-        ];
-
         var lastError = null;
         var succeeded = false;
 
-        for (var mi = 0; mi < models.length; mi++) {
-            var modelName = models[mi];
-            try {
-                var response = await fetch(
-                    'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: {
-                                temperature: 0.3,
-                                topP: 0.9,
-                                maxOutputTokens: 4096
-                            }
-                        })
-                    }
-                );
+        try {
+            // ── الخطوة 1: جلب قائمة النماذج المتاحة فعلياً من API ──
+            var listResp = await fetch(
+                'https://generativelanguage.googleapis.com/v1beta/models?key=' + apiKey
+            );
+            var listData = await listResp.json();
 
-                var data = await response.json();
-
-                if (!response.ok) {
-                    // احفظ الخطأ الحقيقي وجرّب النموذج التالي
-                    var rawMsg = (data.error && data.error.message) ? data.error.message : ('HTTP ' + response.status);
-                    lastError = rawMsg;
-                    // إذا كان الخطأ في المفتاح نفسه لا فائدة من تجربة نماذج أخرى
-                    if (response.status === 400 && rawMsg.includes('API key')) break;
-                    if (response.status === 403) break;
-                    continue;
-                }
-
-                var text = '';
-                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                    text = data.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('');
-                }
-
-                if (!text) { lastError = 'الاستجابة فارغة من النموذج ' + modelName; continue; }
-
-                // تحويل Markdown المتبقي إلى HTML نظيف
-                text = text
-                    .replace(/```html\n?/gi, '').replace(/```\n?/gi, '')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-                _lastReportText = text;
-                var resultEl = document.getElementById('gemini-result-state');
-                resultEl.innerHTML = text;
-                _setGeminiState('result');
-                document.getElementById('gemini-copy-btn').style.display = 'inline-flex';
-                succeeded = true;
-                break;
-
-            } catch (fetchErr) {
-                lastError = fetchErr.message || String(fetchErr);
-                if (lastError.includes('Failed to fetch') || lastError.includes('NetworkError')) break;
+            if (!listResp.ok) {
+                var keyErr = (listData.error && listData.error.message) ? listData.error.message : ('HTTP ' + listResp.status);
+                throw new Error('فشل التحقق من المفتاح: ' + keyErr);
             }
+
+            // ── الخطوة 2: تصفية النماذج التي تدعم generateContent وتبدأ بـ gemini ──
+            var allModels = (listData.models || [])
+                .filter(function(m) {
+                    return m.supportedGenerationMethods &&
+                           m.supportedGenerationMethods.includes('generateContent') &&
+                           m.name && m.name.includes('gemini');
+                })
+                .map(function(m) {
+                    // الاسم يكون مثل "models/gemini-2.0-flash" نأخذ الجزء بعد "models/"
+                    return m.name.replace('models/', '');
+                });
+
+            // ── الخطوة 3: ترتيب النماذج بتفضيل flash أولاً لسرعتها ──
+            allModels.sort(function(a, b) {
+                var aFlash = a.includes('flash') ? 0 : 1;
+                var bFlash = b.includes('flash') ? 0 : 1;
+                if (aFlash !== bFlash) return aFlash - bFlash;
+                // الأحدث أولاً
+                return b.localeCompare(a);
+            });
+
+            if (allModels.length === 0) {
+                throw new Error('لا توجد نماذج Gemini متاحة لهذا المفتاح.');
+            }
+
+            // ── الخطوة 4: جرّب النماذج بالترتيب ──
+            for (var mi = 0; mi < allModels.length; mi++) {
+                var modelName = allModels[mi];
+                // تخطّ نماذج embedding أو vision فقط
+                if (modelName.includes('embedding') || modelName.includes('aqa')) continue;
+
+                try {
+                    var response = await fetch(
+                        'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }],
+                                generationConfig: {
+                                    temperature: 0.3,
+                                    topP: 0.9,
+                                    maxOutputTokens: 4096
+                                }
+                            })
+                        }
+                    );
+
+                    var data = await response.json();
+
+                    if (!response.ok) {
+                        lastError = '[' + modelName + '] ' + ((data.error && data.error.message) ? data.error.message : 'HTTP ' + response.status);
+                        continue;
+                    }
+
+                    var text = '';
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                        text = data.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('');
+                    }
+
+                    if (!text) { lastError = '[' + modelName + '] استجابة فارغة'; continue; }
+
+                    // تحويل Markdown إلى HTML
+                    text = text
+                        .replace(/```html\n?/gi, '').replace(/```\n?/gi, '')
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+                    _lastReportText = text;
+                    document.getElementById('gemini-result-state').innerHTML =
+                        '<div style="font-size:0.72rem;color:#9ca3af;margin-bottom:12px;padding:4px 8px;background:#f9fafb;border-radius:6px;display:inline-block;">✅ النموذج المستخدم: ' + modelName + '</div>' + text;
+                    _setGeminiState('result');
+                    document.getElementById('gemini-copy-btn').style.display = 'inline-flex';
+                    succeeded = true;
+                    break;
+
+                } catch (fetchErr) {
+                    lastError = '[' + modelName + '] ' + (fetchErr.message || String(fetchErr));
+                }
+            }
+
+        } catch (outerErr) {
+            lastError = outerErr.message || String(outerErr);
         }
 
         if (!succeeded) {
             _setGeminiState('error');
             var errMsg = lastError || 'خطأ غير معروف';
-            // رسائل مساعدة واضحة
             var hint = '';
             if (errMsg.includes('API_KEY_INVALID') || errMsg.includes('API key not valid')) {
-                hint = '<br><b>السبب:</b> المفتاح غير صالح. تأكد من نسخه كاملاً من <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#4285F4">Google AI Studio</a>.';
+                hint = '<br><b>الحل:</b> المفتاح غير صالح. انسخه كاملاً من <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#4285F4">Google AI Studio</a>.';
             } else if (errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')) {
-                hint = '<br><b>السبب:</b> تم استنزاف الحصة المجانية لهذا المفتاح. جرّب مفتاحاً من حساب آخر.';
-            } else if (errMsg.includes('predicate failed') || errMsg.includes('safety_settings')) {
-                hint = '<br><b>السبب:</b> خطأ في إعدادات الأمان — تم إصلاحه تلقائياً، يرجى المحاولة مرة أخرى.';
-            } else if (errMsg.includes('Failed to fetch')) {
-                hint = '<br><b>السبب:</b> تعذّر الاتصال بـ Gemini. تأكد من اتصالك بالإنترنت.';
+                hint = '<br><b>الحل:</b> استُنزفت الحصة المجانية. جرّب مفتاحاً من حساب آخر.';
+            } else if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError')) {
+                hint = '<br><b>الحل:</b> تعذّر الاتصال بـ Gemini. تأكد من الإنترنت.';
+            } else if (errMsg.includes('فشل التحقق')) {
+                hint = '<br><b>الحل:</b> تأكد من صحة المفتاح وأن Gemini API مفعّل في حسابك.';
             }
             document.getElementById('gemini-error-msg').innerHTML =
-                '<div style="font-family:monospace;background:#fef2f2;padding:8px;border-radius:6px;font-size:0.78rem;word-break:break-all;margin-bottom:8px;">' + errMsg + '</div>' +
+                '<div style="font-family:monospace;background:#fff;border:1px solid #fca5a5;padding:8px 10px;border-radius:6px;font-size:0.76rem;word-break:break-all;margin-bottom:8px;color:#7f1d1d;">' + errMsg + '</div>' +
                 hint +
-                '<br><button onclick="window._generateGeminiReport()" style="margin-top:10px;padding:7px 16px;background:#dc2626;color:#fff;border:none;border-radius:7px;font-family:Cairo,sans-serif;font-weight:700;cursor:pointer;">إعادة المحاولة</button>';
+                '<br><button onclick="window._generateGeminiReport()" style="margin-top:10px;padding:7px 18px;background:#dc2626;color:#fff;border:none;border-radius:7px;font-family:Cairo,sans-serif;font-weight:700;cursor:pointer;">إعادة المحاولة</button>';
         }
     };
 
