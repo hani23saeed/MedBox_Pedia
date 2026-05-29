@@ -411,6 +411,117 @@
         .toggle-switch input:checked + .toggle-slider { background: #0790AC; }
         .toggle-switch input:checked + .toggle-slider:before { transform: translateX(-22px); }
 
+        /* ===== زر الطباعة متعدد المهام ===== */
+        #multi-print-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #0790AC 0%, #056a80 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(7,144,172,0.35);
+            transition: all 0.2s;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        #multi-print-btn:hover {
+            background: linear-gradient(135deg, #056a80 0%, #044d5e 100%);
+            box-shadow: 0 5px 18px rgba(7,144,172,0.45);
+            transform: translateY(-1px);
+        }
+        #multi-print-btn:active {
+            transform: translateY(0);
+        }
+        #multi-print-btn svg {
+            flex-shrink: 0;
+        }
+
+        /* قائمة الطباعة المنسدلة */
+        #print-menu-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            min-width: 230px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e6f4f7;
+            z-index: 99999;
+            overflow: hidden;
+            animation: printMenuIn 0.2s ease;
+        }
+        #print-menu-dropdown.open {
+            display: block;
+        }
+        @keyframes printMenuIn {
+            from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        #print-menu-dropdown .print-menu-header {
+            padding: 10px 16px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #f3f4f6;
+            background: #fafafa;
+        }
+        .print-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: right;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 1px solid #f9fafb;
+        }
+        .print-menu-item:last-child { border-bottom: none; }
+        .print-menu-item:hover { background: #f0fafc; color: #0790AC; }
+        .print-menu-item:hover .print-menu-icon { background: #0790AC; color: #fff; }
+        .print-menu-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: #e6f4f7;
+            color: #0790AC;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s;
+            font-size: 1rem;
+        }
+        .print-menu-item-desc {
+            font-size: 0.73rem;
+            color: #9ca3af;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+        #print-menu-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99998;
+        }
+        #print-menu-backdrop.open { display: block; }
+
         /* تصميم QR Code في القائمة والعرض */
         .qr-btn-list:hover { opacity: 0.7; }
         #qr-scan-modal .top-bar-icon-btn { 
@@ -6439,15 +6550,16 @@
                                 style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a73e8 0%,#8430ce 50%,#e94235 80%,#fbbc05 100%);color:#fff;font-family:'Cairo',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.2s;letter-spacing:0.02em;"
                                 onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 18px rgba(66,133,244,0.45)'"
                                 onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(66,133,244,0.3)'">
-                                <svg width="18" height="18" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M96 12C50.4 12 12 50.4 12 96s38.4 84 84 84 84-38.4 84-84S141.6 12 96 12z" fill="none"/>
-                                    <path d="M96 20C54.6 20 21 53.6 21 95c0 20.8 8.4 39.6 22 53.2V137c0-3.3 2.7-6 6-6h94c3.3 0 6 2.7 6 6v11.2C162.6 134.6 171 115.8 171 95 171 53.6 137.4 20 96 20z" fill="white" opacity="0.15"/>
-                                    <path d="M142 68L96 28 50 68l19.5 51.5L96 172l26.5-52.5L142 68z" fill="none"/>
-                                    <path d="M96 32 L54 66 L70 112 L96 160 L122 112 L138 66 Z" fill="white" opacity="0.9"/>
-                                    <path d="M96 32 L96 160" stroke="rgba(26,115,232,0.6)" stroke-width="3"/>
-                                    <path d="M54 66 L138 66" stroke="rgba(234,67,53,0.6)" stroke-width="3"/>
-                                    <path d="M70 112 L122 112" stroke="rgba(251,188,5,0.6)" stroke-width="3"/>
-                                    <circle cx="96" cy="96" r="12" fill="white" opacity="0.95"/>
+                                <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <radialGradient id="gstar1" cx="30%" cy="30%" r="80%">
+                                            <stop offset="0%" stop-color="#FF4136"/>
+                                            <stop offset="33%" stop-color="#FFDC00"/>
+                                            <stop offset="66%" stop-color="#2ECC40"/>
+                                            <stop offset="100%" stop-color="#0074D9"/>
+                                        </radialGradient>
+                                    </defs>
+                                    <path d="M50 2 C50 2 56 38 72 50 C56 62 50 98 50 98 C50 98 44 62 28 50 C44 38 50 2 50 2 Z" fill="url(#gstar1)"/>
                                 </svg>
                                 تقرير Gemini
                             </button>
@@ -6638,11 +6750,57 @@
         patientDisplayArea.innerHTML = `
             <div class="bg-white rounded-lg shadow-md">
                 <div class="p-4 border-b border-gray-200">
-                    <div class="flex items-center gap-3">
-                        <div id="visit-qr-${patient.id}" style="cursor:pointer;flex-shrink:0;" title="QR Code للمريض - اضغط للتكبير"></div>
-                        <div>
-                            <h2 class="text-2xl font-bold text-[--color-primary]">${patient.name_ar}</h2>
-                            <p class="text-sm text-gray-600">تاريخ المراجعة: ${visit.date}</p>
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <div id="visit-qr-${patient.id}" style="cursor:pointer;flex-shrink:0;" title="QR Code للمريض - اضغط للتكبير"></div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-[--color-primary]">${patient.name_ar}</h2>
+                                <p class="text-sm text-gray-600">تاريخ المراجعة: ${visit.date}</p>
+                            </div>
+                        </div>
+                        <!-- زر الطباعة متعدد المهام -->
+                        <div style="position:relative;">
+                            <button id="multi-print-btn" onclick="window._togglePrintMenu(event)" title="خيارات الطباعة">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/>
+                                </svg>
+                                طباعة
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="14" height="14" style="opacity:0.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                                </svg>
+                            </button>
+                            <!-- القائمة المنسدلة -->
+                            <div id="print-menu-dropdown">
+                                <div class="print-menu-header">اختر ما تريد طباعته</div>
+                                <button class="print-menu-item" onclick="window._printMenuAction('prescription')">
+                                    <span class="print-menu-icon">💊</span>
+                                    <div>
+                                        <div>طباعة الوصفة الطبية</div>
+                                        <div class="print-menu-item-desc">قائمة الأدوية والجرعات</div>
+                                    </div>
+                                </button>
+                                <button class="print-menu-item" onclick="window._printMenuAction('lab')">
+                                    <span class="print-menu-icon">🧪</span>
+                                    <div>
+                                        <div>طباعة طلب تحاليل</div>
+                                        <div class="print-menu-item-desc">طلب الإجراءات المخبرية</div>
+                                    </div>
+                                </button>
+                                <button class="print-menu-item" onclick="window._printMenuAction('exchange')">
+                                    <span class="print-menu-icon">🥗</span>
+                                    <div>
+                                        <div>طباعة جدول الحصص الغذائية</div>
+                                        <div class="print-menu-item-desc">جدول قوائم التبادل الغذائي</div>
+                                    </div>
+                                </button>
+                                <button class="print-menu-item" onclick="window._printMenuAction('diet')">
+                                    <span class="print-menu-icon">📋</span>
+                                    <div>
+                                        <div>طباعة البرنامج الغذائي الشامل</div>
+                                        <div class="print-menu-item-desc">التقرير الغذائي الكامل</div>
+                                    </div>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -9219,7 +9377,17 @@
                             style="display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a73e8 0%,#8430ce 50%,#e94235 80%,#fbbc05 100%);color:#fff;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.2s;white-space:nowrap;"
                             onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 18px rgba(66,133,244,0.45)'"
                             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(66,133,244,0.3)'">
-                            <svg width="16" height="16" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M96 32 L54 66 L70 112 L96 160 L122 112 L138 66 Z" fill="white" opacity="0.9"/><path d="M96 32 L96 160" stroke="rgba(26,115,232,0.6)" stroke-width="3"/><path d="M54 66 L138 66" stroke="rgba(234,67,53,0.6)" stroke-width="3"/><path d="M70 112 L122 112" stroke="rgba(251,188,5,0.6)" stroke-width="3"/><circle cx="96" cy="96" r="12" fill="white" opacity="0.95"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <radialGradient id="gstar2" cx="30%" cy="30%" r="80%">
+                                        <stop offset="0%" stop-color="#FF4136"/>
+                                        <stop offset="33%" stop-color="#FFDC00"/>
+                                        <stop offset="66%" stop-color="#2ECC40"/>
+                                        <stop offset="100%" stop-color="#0074D9"/>
+                                    </radialGradient>
+                                </defs>
+                                <path d="M50 2 C50 2 56 38 72 50 C56 62 50 98 50 98 C50 98 44 62 28 50 C44 38 50 2 50 2 Z" fill="url(#gstar2)"/>
+                            </svg>
                             تقرير Gemini
                         </button>
                     </div>
@@ -9364,7 +9532,17 @@
                             style="display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a73e8 0%,#8430ce 50%,#e94235 80%,#fbbc05 100%);color:#fff;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.2s;white-space:nowrap;"
                             onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 18px rgba(66,133,244,0.45)'"
                             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(66,133,244,0.3)'">
-                            <svg width="16" height="16" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M96 32 L54 66 L70 112 L96 160 L122 112 L138 66 Z" fill="white" opacity="0.9"/><path d="M96 32 L96 160" stroke="rgba(26,115,232,0.6)" stroke-width="3"/><path d="M54 66 L138 66" stroke="rgba(234,67,53,0.6)" stroke-width="3"/><path d="M70 112 L122 112" stroke="rgba(251,188,5,0.6)" stroke-width="3"/><circle cx="96" cy="96" r="12" fill="white" opacity="0.95"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <radialGradient id="gstar3" cx="30%" cy="30%" r="80%">
+                                        <stop offset="0%" stop-color="#FF4136"/>
+                                        <stop offset="33%" stop-color="#FFDC00"/>
+                                        <stop offset="66%" stop-color="#2ECC40"/>
+                                        <stop offset="100%" stop-color="#0074D9"/>
+                                    </radialGradient>
+                                </defs>
+                                <path d="M50 2 C50 2 56 38 72 50 C56 62 50 98 50 98 C50 98 44 62 28 50 C44 38 50 2 50 2 Z" fill="url(#gstar3)"/>
+                            </svg>
                             تقرير Gemini
                         </button>
                     </div>
@@ -13939,9 +14117,11 @@ if ('serviceWorker' in navigator) {
         <!-- Footer -->
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-top:1px solid #e5e7eb;background:#fafafa;flex-shrink:0;gap:10px;flex-wrap:wrap;">
             <div style="font-size:0.75rem;color:#9ca3af;">⚠️ هذا التقرير مساعد للقرار السريري وليس بديلاً عن التشخيص الطبي المتخصص</div>
-            <div style="display:flex;gap:8px;flex-shrink:0;">
-                <button id="gemini-copy-btn" onclick="window._copyGeminiReport()" style="display:none;padding:8px 16px;background:#fff;color:#0790AC;border:1.5px solid #0790AC;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#e6f4f7'" onmouseout="this.style.background='#fff'">📋 نسخ</button>
-                <button onclick="window._generateGeminiReport()" id="gemini-generate-btn" style="padding:8px 20px;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 100%);color:#fff;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.15s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">✨ توليد التقرير</button>
+            <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+                <button id="gemini-copy-btn" onclick="window._copyGeminiReport()" style="display:none;padding:8px 16px;background:#fff;color:#0790AC;border:1.5px solid #0790AC;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#e6f4f7'" onmouseout="this.style.background='#fff'">&#128203; نسخ</button>
+                <button id="gemini-print-btn" onclick="window._printGeminiReport()" style="display:none;padding:8px 16px;background:#fff;color:#374151;border:1.5px solid #d1d5db;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#fff'">&#128424; طباعة</button>
+                <button id="gemini-whatsapp-btn" onclick="window._sendGeminiReportWhatsApp()" style="display:none;padding:8px 16px;background:#fff;color:#16a34a;border:1.5px solid #16a34a;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#fff'"><svg style="display:inline;vertical-align:middle;margin-left:4px;" width="15" height="15" viewBox="0 0 24 24" fill="#16a34a" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.405A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.96 7.96 0 01-4.076-1.117l-.292-.174-3.03.855.862-3.124-.19-.308A7.96 7.96 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z"/></svg> واتساب</button>
+                <button onclick="window._generateGeminiReport()" id="gemini-generate-btn" style="padding:8px 20px;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 100%);color:#fff;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.15s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">&#10024; توليد التقرير</button>
                 <button onclick="window._closeGeminiModal()" style="padding:8px 16px;background:#fff;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;">إغلاق</button>
             </div>
         </div>
@@ -14001,6 +14181,8 @@ if ('serviceWorker' in navigator) {
         _setGeminiState('idle');
         _setReportType('full', false);
         document.getElementById('gemini-copy-btn').style.display = 'none';
+        document.getElementById('gemini-print-btn').style.display = 'none';
+        document.getElementById('gemini-whatsapp-btn').style.display = 'none';
         _lastReportText = '';
 
         document.getElementById('gemini-ai-modal').style.display = 'flex';
@@ -14226,6 +14408,8 @@ ${context}
 
         _setGeminiState('loading');
         document.getElementById('gemini-copy-btn').style.display = 'none';
+        document.getElementById('gemini-print-btn').style.display = 'none';
+        document.getElementById('gemini-whatsapp-btn').style.display = 'none';
         _lastReportText = '';
 
         var prompt = _buildPrompt(patient, _currentReportType);
@@ -14318,6 +14502,8 @@ ${context}
                         '<div style="font-size:0.72rem;color:#9ca3af;margin-bottom:12px;padding:4px 8px;background:#f9fafb;border-radius:6px;display:inline-block;">✅ النموذج المستخدم: ' + modelName + '</div>' + text;
                     _setGeminiState('result');
                     document.getElementById('gemini-copy-btn').style.display = 'inline-flex';
+                    document.getElementById('gemini-print-btn').style.display = 'inline-flex';
+                    document.getElementById('gemini-whatsapp-btn').style.display = 'inline-flex';
                     succeeded = true;
                     break;
 
@@ -14372,8 +14558,181 @@ ${context}
         }
     };
 
+    // ---- طباعة التقرير ----
+    window._printGeminiReport = function() {
+        var el = document.getElementById('gemini-result-state');
+        if (!el) return;
+        var patientName = (document.getElementById('gemini-patient-name-header') || {}).textContent || '';
+        var content = el.innerHTML || '';
+        if (!content) return;
+        var printWin = window.open('', '_blank', 'width=800,height=700');
+        if (!printWin) {
+            if (typeof showToast === 'function') showToast('يرجى السماح بالنوافذ المنبثقة للطباعة', 'error');
+            return;
+        }
+        printWin.document.write(
+            '<!DOCTYPE html><html dir="rtl" lang="ar"><head>' +
+            '<meta charset="UTF-8">' +
+            '<title>تقرير Gemini AI - ' + patientName + '</title>' +
+            '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">' +
+            '<style>' +
+            'body{font-family:Cairo,sans-serif;direction:rtl;padding:30px;color:#1f2937;font-size:14px;line-height:1.8;}' +
+            'h1{color:#0790AC;font-size:1.3rem;border-bottom:2px solid #0790AC;padding-bottom:8px;margin-bottom:16px;}' +
+            'h2,h3{color:#374151;}' +
+            'strong{color:#111827;}' +
+            '.section-block{background:#f9fafb;border-right:4px solid #0790AC;padding:12px 16px;margin:12px 0;border-radius:6px;}' +
+            '.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;}' +
+            '.badge-ok{background:#dcfce7;color:#15803d;}' +
+            '.badge-warn{background:#fef3c7;color:#b45309;}' +
+            '.badge-danger{background:#fee2e2;color:#dc2626;}' +
+            '.alert-box{padding:10px 14px;border-radius:8px;margin:10px 0;}' +
+            '.alert-box.ok{background:#dcfce7;color:#15803d;}' +
+            '.alert-box.warn{background:#fef3c7;color:#b45309;}' +
+            '.alert-box.danger{background:#fee2e2;color:#dc2626;}' +
+            'table{width:100%;border-collapse:collapse;margin:10px 0;}' +
+            'th{background:#0790AC;color:#fff;padding:7px 10px;text-align:right;}' +
+            'td{padding:6px 10px;border-bottom:1px solid #e5e7eb;}' +
+            'tr:nth-child(even) td{background:#f9fafb;}' +
+            '.print-footer{margin-top:30px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:0.75rem;color:#9ca3af;text-align:center;}' +
+            '@media print{body{padding:15px;} .print-footer{position:fixed;bottom:0;width:100%;}}' +
+            '</style></head><body>' +
+            '<h1>&#129302; تقرير الذكاء الاصطناعي - ' + patientName + '</h1>' +
+            content +
+            '<div class="print-footer">تم إنشاء هذا التقرير بواسطة Gemini AI عبر MedBox-Pedia | ' + new Date().toLocaleDateString('ar-SA') + '<br>هذا التقرير مساعد للقرار السريري وليس بديلاً عن التشخيص الطبي المتخصص</div>' +
+            '</body></html>'
+        );
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(function() { printWin.print(); }, 600);
+    };
+
+    // ---- إرسال التقرير عبر واتساب ----
+    window._sendGeminiReportWhatsApp = function() {
+        var el = document.getElementById('gemini-result-state');
+        if (!el) return;
+        var text = el.innerText || el.textContent || '';
+        if (!text) return;
+        var patientName = (document.getElementById('gemini-patient-name-header') || {}).textContent || '';
+        var header = '📋 *تقرير Gemini AI*\n';
+        if (patientName) header += '👤 المريض: ' + patientName + '\n';
+        header += '📅 ' + new Date().toLocaleDateString('ar-SA') + '\n';
+        header += '─────────────────\n\n';
+        var footer = '\n\n─────────────────\n⚕️ _هذا التقرير مساعد للقرار السريري وليس بديلاً عن التشخيص الطبي المتخصص_\n_تم إنشاؤه عبر MedBox-Pedia_';
+        var fullText = header + text + footer;
+        // تقليص النص إذا تجاوز حد الواتساب (4096 حرف)
+        if (fullText.length > 4096) {
+            fullText = fullText.substring(0, 4050) + '...\n\n[تم اختصار التقرير]' + footer;
+        }
+        var url = 'https://wa.me/?text=' + encodeURIComponent(fullText);
+        window.open(url, '_blank');
+    };
+
     // ---- تعريض الدوال للنافذة ----
     window._setReportType = window._setReportType || function(){};
+
+})();
+</script>
+
+<script>
+// ===== زر الطباعة متعدد المهام =====
+(function() {
+
+    // فتح / إغلاق القائمة المنسدلة
+    window._togglePrintMenu = function(e) {
+        e.stopPropagation();
+        var menu     = document.getElementById('print-menu-dropdown');
+        var backdrop = document.getElementById('print-menu-backdrop');
+        if (!menu) return;
+        var isOpen = menu.classList.contains('open');
+        if (isOpen) {
+            _closePrintMenu();
+        } else {
+            menu.classList.add('open');
+            if (backdrop) backdrop.classList.add('open');
+        }
+    };
+
+    function _closePrintMenu() {
+        var menu     = document.getElementById('print-menu-dropdown');
+        var backdrop = document.getElementById('print-menu-backdrop');
+        if (menu)     menu.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('open');
+    }
+
+    // إغلاق عند النقر خارج القائمة
+    document.addEventListener('click', function(e) {
+        var menu = document.getElementById('print-menu-dropdown');
+        if (menu && menu.classList.contains('open')) {
+            var btn = document.getElementById('multi-print-btn');
+            if (btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+                _closePrintMenu();
+            }
+        }
+    });
+
+    // تنفيذ إجراء الطباعة المختار
+    window._printMenuAction = function(type) {
+        _closePrintMenu();
+
+        switch(type) {
+
+            case 'prescription':
+                // طباعة الوصفة الطبية
+                if (typeof printPrescriptionFromVisit === 'function' && window.currentViewPatient && window.currentViewVisit) {
+                    printPrescriptionFromVisit(window.currentViewPatient, window.currentViewVisit);
+                } else {
+                    // تشغيل الزر الموجود مسبقاً إن وجد
+                    var btn = document.getElementById('view-print-prescription-btn');
+                    if (btn) { btn.click(); }
+                    else if (typeof showToast === 'function') {
+                        showToast('لا توجد وصفة طبية لهذه الزيارة', 'error');
+                    }
+                }
+                break;
+
+            case 'lab':
+                // فتح نافذة طلب التحاليل
+                if (typeof window._openLabRequestFromView === 'function') {
+                    window._openLabRequestFromView();
+                } else {
+                    var labBtn = document.getElementById('open-lab-request-btn');
+                    if (labBtn) labBtn.click();
+                    else if (typeof showToast === 'function') {
+                        showToast('نافذة طلب التحاليل غير متاحة', 'error');
+                    }
+                }
+                break;
+
+            case 'exchange':
+                // طباعة جدول الحصص الغذائية فقط
+                if (typeof printDietProgram === 'function' && window.currentViewPatient && window.currentViewVisit) {
+                    printDietProgram(window.currentViewPatient, window.currentViewVisit);
+                } else {
+                    var dietBtn = document.getElementById('print-diet-btn');
+                    if (dietBtn) { dietBtn.click(); }
+                    else if (typeof showToast === 'function') {
+                        showToast('قم بفتح تبويب البرنامج الغذائي أولاً', 'info');
+                    }
+                }
+                break;
+
+            case 'diet':
+                // طباعة البرنامج الغذائي الشامل (نفس دالة printDietProgram)
+                if (typeof printDietProgram === 'function' && window.currentViewPatient && window.currentViewVisit) {
+                    printDietProgram(window.currentViewPatient, window.currentViewVisit);
+                } else {
+                    var dietBtn2 = document.getElementById('print-diet-btn');
+                    if (dietBtn2) { dietBtn2.click(); }
+                    else if (typeof showToast === 'function') {
+                        showToast('قم بفتح تبويب البرنامج الغذائي أولاً', 'info');
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+    };
 
 })();
 </script>
