@@ -9202,9 +9202,19 @@
         if (totalVisits < 2) {
             return `
                 <div id="view-tab-6" class="patient-view-content hidden">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div id="cmp-qr-${patient.id}" style="cursor:pointer;flex-shrink:0;border-radius:8px;overflow:hidden;border:2px solid #e6f4f7;" title="QR Code للمريض - اضغط للتكبير"></div>
-                        <h3 class="text-xl font-bold text-[#0790AC]">📈 متابعة التحاليل عبر الزيارات</h3>
+                    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <div id="cmp-qr-${patient.id}" style="cursor:pointer;flex-shrink:0;border-radius:8px;overflow:hidden;border:2px solid #e6f4f7;" title="QR Code للمريض - اضغط للتكبير"></div>
+                            <h3 class="text-xl font-bold text-[#0790AC]">📈 متابعة التحاليل عبر الزيارات</h3>
+                        </div>
+                        <button onclick="window._openGeminiAIReport('${patient.id}')"
+                            title="تحليل ذكي بالذكاء الاصطناعي — Gemini"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:10px;border:none;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 50%,#F4B400 75%,#DB4437 100%);color:#fff;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.2s;white-space:nowrap;"
+                            onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 18px rgba(66,133,244,0.45)'"
+                            onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(66,133,244,0.3)'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z" fill="white" opacity="0.9"/></svg>
+                            تقرير AI
+                        </button>
                     </div>
                     <div class="text-center py-16 text-gray-400">
                         <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
@@ -9336,10 +9346,20 @@
                             <p class="text-sm text-gray-500 mt-1">مقارنة ${totalVisits} زيارات مسجلة — الرسوم تعرض تطور القيم مع الزمن</p>
                         </div>
                     </div>
-                    <div class="flex gap-3 text-xs">
-                        <span class="flex items-center gap-1"><span style="color:#ef4444">▲</span> ارتفاع</span>
-                        <span class="flex items-center gap-1"><span style="color:#16a34a">▼</span> انخفاض</span>
-                        <span class="flex items-center gap-1"><span style="color:#6b7280">━</span> ثابت</span>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <div class="flex gap-3 text-xs">
+                            <span class="flex items-center gap-1"><span style="color:#ef4444">▲</span> ارتفاع</span>
+                            <span class="flex items-center gap-1"><span style="color:#16a34a">▼</span> انخفاض</span>
+                            <span class="flex items-center gap-1"><span style="color:#6b7280">━</span> ثابت</span>
+                        </div>
+                        <button onclick="window._openGeminiAIReport('${patient.id}')"
+                            title="تحليل ذكي شامل بالذكاء الاصطناعي — Gemini"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:10px;border:none;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 50%,#F4B400 75%,#DB4437 100%);color:#fff;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.2s;white-space:nowrap;"
+                            onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 18px rgba(66,133,244,0.45)'"
+                            onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(66,133,244,0.3)'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z" fill="white" opacity="0.9"/></svg>
+                            تقرير AI
+                        </button>
                     </div>
                 </div>
 
