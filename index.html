@@ -1638,10 +1638,7 @@
                                 <div>
                                     <div><span id="digital-clock">--:--:--</span><span id="digital-ampm"></span></div>
                                     <div class="date-line"><span class="lbl">الميلادي:</span><span id="dash-greg-date">--</span></div>
-                                    <div id="dash-clinic-info" style="margin-top:6px;padding:6px 10px;background:linear-gradient(135deg,rgba(7,144,172,0.09) 0%,rgba(7,144,172,0.03) 100%);border-radius:9px;border:1px solid rgba(7,144,172,0.15);">
-                                        <div id="dash-clinic-name" style="font-size:0.78rem;font-weight:800;color:#0790AC;line-height:1.4;"></div>
-                                        <div id="dash-clinic-specialty-name" style="font-size:0.72rem;color:#374151;line-height:1.4;margin-top:1px;"></div>
-                                    </div>
+                                    <div class="date-line"><span class="lbl">الهجري:</span><span id="dash-hijri-date">--</span></div>
                                 </div>
                             </div>
                         </div>
@@ -2209,6 +2206,38 @@
                                     <span id="lab_rbc_status" class="lab-status-indicator"></span>
                                 </div>
                             </div>
+                            <!-- MCV -->
+                            <div>
+                                <label for="lab_mcv" class="block text-sm font-medium text-gray-700">MCV</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_mcv" name="lab_mcv" data-lab="mcv" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_mcv_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- MCH -->
+                            <div>
+                                <label for="lab_mch" class="block text-sm font-medium text-gray-700">MCH</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_mch" name="lab_mch" data-lab="mch" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_mch_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- MCHC -->
+                            <div>
+                                <label for="lab_mchc" class="block text-sm font-medium text-gray-700">MCHC</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_mchc" name="lab_mchc" data-lab="mchc" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_mchc_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- RDW -->
+                            <div>
+                                <label for="lab_rdw" class="block text-sm font-medium text-gray-700">RDW</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_rdw" name="lab_rdw" data-lab="rdw" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_rdw_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
                             <!-- HB -->
                             <div>
                                 <label for="lab_hb" class="block text-sm font-medium text-gray-700">HB</label>
@@ -2494,13 +2523,120 @@
                         </div>
                     </div>
 
+                    <!-- خمائر القلب -->
+                    <div class="lab-section">
+                        <h3 class="lab-section-title">خمائر القلب (Cardiac Enzymes)</h3>
+                        <div class="lab-grid">
+                            <!-- Troponin -->
+                            <div>
+                                <label for="lab_troponin" class="block text-sm font-medium text-gray-700">Troponin</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_troponin" name="lab_troponin" data-lab="troponin" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_troponin_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- CK -->
+                            <div>
+                                <label for="lab_ck" class="block text-sm font-medium text-gray-700">CK</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_ck" name="lab_ck" data-lab="ck" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_ck_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- CK-MB -->
+                            <div>
+                                <label for="lab_ckmb" class="block text-sm font-medium text-gray-700">CK-MB</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_ckmb" name="lab_ckmb" data-lab="ckmb" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_ckmb_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- Myoglobin -->
+                            <div>
+                                <label for="lab_myoglobin" class="block text-sm font-medium text-gray-700">Myoglobin</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_myoglobin" name="lab_myoglobin" data-lab="myoglobin" class="lab-input lab-field-input" step="any">
+                                    <span id="lab_myoglobin_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- C. تحليل البول والراسب -->
                     <div class="lab-section">
                         <h3 class="lab-section-title">C. تحليل البول والراسب</h3>
-                        <div>
-                            <label for="lab_urine_analysis" class="block text-sm font-medium text-gray-700">نتائج تحليل البول والراسب</label>
-                            <textarea id="lab_urine_analysis" name="lab_urine_analysis" rows="4" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2"></textarea>
+                        <div class="lab-grid">
+                            <!-- الكثافة -->
+                            <div>
+                                <label for="lab_urine_density" class="block text-sm font-medium text-gray-700">الكثافة (Density)</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_urine_density" name="lab_urine_density" data-lab="urine_density" class="lab-input lab-field-input" step="any" placeholder="1.000">
+                                    <span id="lab_urine_density_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- جراثيم -->
+                            <div>
+                                <label for="lab_urine_bacteria" class="block text-sm font-medium text-gray-700">جراثيم (Bacteria)</label>
+                                <div class="lab-input-group">
+                                    <select id="lab_urine_bacteria" name="lab_urine_bacteria" class="lab-input" style="flex:1;">
+                                        <option value="">—</option>
+                                        <option value="سلبي">سلبي (Negative)</option>
+                                        <option value="ايجابي خفيف">إيجابي خفيف (+)</option>
+                                        <option value="ايجابي متوسط">إيجابي متوسط (++)</option>
+                                        <option value="ايجابي شديد">إيجابي شديد (+++)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- بروتين -->
+                            <div>
+                                <label for="lab_urine_protein" class="block text-sm font-medium text-gray-700">بروتين (Protein)</label>
+                                <div class="lab-input-group">
+                                    <select id="lab_urine_protein" name="lab_urine_protein" class="lab-input" style="flex:1;">
+                                        <option value="">—</option>
+                                        <option value="سلبي">سلبي (Negative)</option>
+                                        <option value="ايجابي خفيف">إيجابي خفيف (+)</option>
+                                        <option value="ايجابي متوسط">إيجابي متوسط (++)</option>
+                                        <option value="ايجابي شديد">إيجابي شديد (+++)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- كريات حمراء -->
+                            <div>
+                                <label for="lab_urine_rbc" class="block text-sm font-medium text-gray-700">كريات حمراء (RBC/HPF)</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_urine_rbc" name="lab_urine_rbc" data-lab="urine_rbc" class="lab-input lab-field-input" step="any" min="0">
+                                    <span id="lab_urine_rbc_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- كريات بيضاء -->
+                            <div>
+                                <label for="lab_urine_wbc" class="block text-sm font-medium text-gray-700">كريات بيضاء (WBC/HPF)</label>
+                                <div class="lab-input-group">
+                                    <input type="number" id="lab_urine_wbc" name="lab_urine_wbc" data-lab="urine_wbc" class="lab-input lab-field-input" step="any" min="0">
+                                    <span id="lab_urine_wbc_status" class="lab-status-indicator"></span>
+                                </div>
+                            </div>
+                            <!-- أوكزالات -->
+                            <div>
+                                <label for="lab_urine_oxalate" class="block text-sm font-medium text-gray-700">أوكزالات (Oxalate)</label>
+                                <div class="lab-input-group">
+                                    <select id="lab_urine_oxalate" name="lab_urine_oxalate" class="lab-input" style="flex:1;">
+                                        <option value="">—</option>
+                                        <option value="سلبي">سلبي (Negative)</option>
+                                        <option value="قليل">قليل (+)</option>
+                                        <option value="متوسط">متوسط (++)</option>
+                                        <option value="كثير">كثير (+++)</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+                        <!-- ملاحظات إضافية -->
+                        <div style="margin-top:10px;">
+                            <label for="lab_urine_notes" class="block text-sm font-medium text-gray-700">ملاحظات إضافية</label>
+                            <textarea id="lab_urine_notes" name="lab_urine_notes" rows="2" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2" placeholder="أي ملاحظات إضافية على تحليل البول..."></textarea>
+                        </div>
+                        <!-- الحقل المخفي للتوافقية مع البيانات القديمة -->
+                        <input type="hidden" id="lab_urine_analysis" name="lab_urine_analysis">
                     </div>
                     
                     <!-- (جديد B.d) D. الإجراءات التشخيصية -->
@@ -2804,6 +2940,20 @@
                             <!-- سيتم ملؤها بـ JS -->
                         </div>
                     </div>
+                    <!-- خمائر القلب -->
+                    <div class="lab-section">
+                        <h3 class="lab-section-title">خمائر القلب (Cardiac Enzymes)</h3>
+                        <div id="rates-labs-cardiac" class="rates-grid">
+                            <!-- سيتم ملؤها بـ JS -->
+                        </div>
+                    </div>
+                    <!-- تحليل البول -->
+                    <div class="lab-section">
+                        <h3 class="lab-section-title">C. تحليل البول والراسب</h3>
+                        <div id="rates-labs-urine" class="rates-grid">
+                            <!-- سيتم ملؤها بـ JS -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- القائمة 2: العلامات الحيوية -->
@@ -2881,6 +3031,10 @@
             <div class="lab-req-section-title">🩸 A. التحاليل الدموية (Hematology)</div>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="WBC"> <span class="text-sm text-gray-800">WBC — تعداد كريات الدم البيضاء</span></label>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="RBC"> <span class="text-sm text-gray-800">RBC — تعداد كريات الدم الحمراء</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="MCV"> <span class="text-sm text-gray-800">MCV — متوسط حجم الكرية الحمراء</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="MCH"> <span class="text-sm text-gray-800">MCH — متوسط هيموغلوبين الكرية</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="MCHC"> <span class="text-sm text-gray-800">MCHC — متوسط تركيز هيموغلوبين الكرية</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="RDW"> <span class="text-sm text-gray-800">RDW — توزيع حجم كريات الدم الحمراء</span></label>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="HB (Hemoglobin)"> <span class="text-sm text-gray-800">HB — الهيموغلوبين</span></label>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="HT (Hematocrit)"> <span class="text-sm text-gray-800">HT — الهيماتوكريت</span></label>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="Platelets"> <span class="text-sm text-gray-800">Platelets — الصفيحات الدموية</span></label>
@@ -2926,9 +3080,22 @@
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="Testosterone"> <span class="text-sm text-gray-800">Testosterone — هرمون التستوستيرون</span></label>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="PTH"> <span class="text-sm text-gray-800">PTH — هرمون الغدة جارات الدرقية</span></label>
 
+            <!-- خمائر القلب -->
+            <div class="lab-req-section-title">❤️ خمائر القلب (Cardiac Enzymes)</div>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="Troponin"> <span class="text-sm text-gray-800">Troponin — التروبونين</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="CK (Creatine Kinase)"> <span class="text-sm text-gray-800">CK — كرياتين كيناز</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="CK-MB"> <span class="text-sm text-gray-800">CK-MB — كرياتين كيناز MB</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="Myoglobin"> <span class="text-sm text-gray-800">Myoglobin — الميوغلوبين</span></label>
+
             <!-- C. تحليل البول -->
             <div class="lab-req-section-title">🔬 C. تحليل البول والراسب</div>
             <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="تحليل البول الكامل والراسب (Urine Analysis & Sediment)"> <span class="text-sm text-gray-800">تحليل البول الكامل والراسب</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="كثافة البول (Urine Density)"> <span class="text-sm text-gray-800">كثافة البول — Urine Density</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="جراثيم البول (Urine Bacteria)"> <span class="text-sm text-gray-800">جراثيم البول — Urine Bacteria</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="بروتين البول (Urine Protein)"> <span class="text-sm text-gray-800">بروتين البول — Urine Protein</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="كريات حمراء في البول (Urine RBC/HPF)"> <span class="text-sm text-gray-800">كريات حمراء في البول — RBC/HPF</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="كريات بيضاء في البول (Urine WBC/HPF)"> <span class="text-sm text-gray-800">كريات بيضاء في البول — WBC/HPF</span></label>
+            <label class="lab-req-item"><input type="checkbox" class="lab-req-checkbox" value="أوكزالات البول (Urine Oxalate)"> <span class="text-sm text-gray-800">أوكزالات البول — Urine Oxalate</span></label>
 
             <!-- D. الإجراءات التشخيصية -->
             <div class="lab-req-section-title">🩻 D. الإجراءات التشخيصية (Diagnostic Procedures)</div>
@@ -3222,6 +3389,20 @@
         lh: { low: 1.7, high: 8.6 }, // (mIU/mL) - Male
         testo: { low: 280, high: 1100 }, // (ng/dL) - Male
         pth: { low: 10, high: 65 }, // (pg/mL)
+        // الحقول الجديدة - تحاليل دموية
+        mcv: { low: 80, high: 100 }, // (fL)
+        mch: { low: 27, high: 33 }, // (pg)
+        mchc: { low: 32, high: 36 }, // (g/dL)
+        rdw: { low: 11.5, high: 14.5 }, // (%)
+        // خمائر القلب
+        troponin: { low: 0, high: 0.04 }, // (ng/mL) - Troponin I
+        ck: { low: 30, high: 200 }, // (U/L)
+        ckmb: { low: 0, high: 25 }, // (U/L)
+        myoglobin: { low: 0, high: 90 }, // (ng/mL)
+        // تحليل البول
+        urine_density: { low: 1.001, high: 1.030 },
+        urine_rbc: { low: 0, high: 2 }, // (RBC/HPF)
+        urine_wbc: { low: 0, high: 5 }, // (WBC/HPF)
     };
 
     // (جديد C.o) القيم الطبيعية لـ Inbody (تحتاج مراجعة علمية دقيقة)
@@ -4934,6 +5115,10 @@
         document.getElementById('rates-labs-hematology').innerHTML = `
             ${createRangeInput('wbc', 'WBC', ranges)}
             ${createRangeInput('rbc', 'RBC', ranges)}
+            ${createRangeInput('mcv', 'MCV', ranges)}
+            ${createRangeInput('mch', 'MCH', ranges)}
+            ${createRangeInput('mchc', 'MCHC', ranges)}
+            ${createRangeInput('rdw', 'RDW', ranges)}
             ${createRangeInput('hb', 'HB', ranges)}
             ${createRangeInput('ht', 'HT', ranges)}
             ${createRangeInput('platelets', 'Platelets', ranges)}
@@ -4980,6 +5165,17 @@
             ${createRangeInput('lh', 'LH', ranges)}
             ${createRangeInput('testo', 'Testosterone', ranges)}
             ${createRangeInput('pth', 'PTH', ranges)}
+        `;
+        document.getElementById('rates-labs-cardiac').innerHTML = `
+            ${createRangeInput('troponin', 'Troponin', ranges)}
+            ${createRangeInput('ck', 'CK', ranges)}
+            ${createRangeInput('ckmb', 'CK-MB', ranges)}
+            ${createRangeInput('myoglobin', 'Myoglobin', ranges)}
+        `;
+        document.getElementById('rates-labs-urine').innerHTML = `
+            ${createRangeInput('urine_density', 'الكثافة (Density)', ranges)}
+            ${createRangeInput('urine_rbc', 'كريات حمراء (RBC/HPF)', ranges)}
+            ${createRangeInput('urine_wbc', 'كريات بيضاء (WBC/HPF)', ranges)}
         `;
         
         // القائمة 2: العلامات الحيوية
@@ -5227,6 +5423,11 @@
                 }
             }
         }
+        // تحميل ملاحظات البول
+        if (labs['urine_notes']) {
+            var urineNotesEl = document.getElementById('lab_urine_notes');
+            if (urineNotesEl) urineNotesEl.value = labs['urine_notes'];
+        }
         
         // (جديد B.d) تحميل الإجراءات التشخيصية
         const diags = visit.diagnostics || {};
@@ -5424,6 +5625,14 @@
                 labs[input.name.substring(4)] = input.value;
             }
         });
+        // تجميع حقول select في تحليل البول
+        ['lab_urine_bacteria','lab_urine_protein','lab_urine_oxalate'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && el.value) labs[id.substring(4)] = el.value;
+        });
+        // ملاحظات البول
+        var urineNotes = document.getElementById('lab_urine_notes');
+        if (urineNotes && urineNotes.value) labs['urine_notes'] = urineNotes.value;
         
         // (جديد B.d) تجميع بيانات الإجراءات التشخيصية
         const diagnostics = {};
@@ -8164,6 +8373,10 @@
                         ${renderField('N%', l.wbc_n)}
                         ${renderField('L%', l.wbc_l)}
                         ${renderLabField('RBC', l.rbc, 'rbc', normalRanges)}
+                        ${l.mcv ? renderLabField('MCV', l.mcv, 'mcv', normalRanges) : ''}
+                        ${l.mch ? renderLabField('MCH', l.mch, 'mch', normalRanges) : ''}
+                        ${l.mchc ? renderLabField('MCHC', l.mchc, 'mchc', normalRanges) : ''}
+                        ${l.rdw ? renderLabField('RDW', l.rdw, 'rdw', normalRanges) : ''}
                         ${renderLabField('HB', l.hb, 'hb', normalRanges)}
                         ${renderLabField('HT', l.ht, 'ht', normalRanges)}
                         ${renderLabField('Platelets', l.platelets, 'platelets', normalRanges)}
@@ -8231,11 +8444,32 @@
                         ${renderLabField('PTH', l.pth, 'pth', normalRanges)}
                     </div>
                 </div>
+
+                <!-- خمائر القلب -->
+                ${(l.troponin || l.ck || l.ckmb || l.myoglobin) ? `
+                <div class="lab-section">
+                    <h3 class="lab-section-title">خمائر القلب (Cardiac Enzymes)</h3>
+                    <div class="lab-grid">
+                        ${l.troponin ? renderLabField('Troponin', l.troponin, 'troponin', normalRanges) : ''}
+                        ${l.ck ? renderLabField('CK', l.ck, 'ck', normalRanges) : ''}
+                        ${l.ckmb ? renderLabField('CK-MB', l.ckmb, 'ckmb', normalRanges) : ''}
+                        ${l.myoglobin ? renderLabField('Myoglobin', l.myoglobin, 'myoglobin', normalRanges) : ''}
+                    </div>
+                </div>` : ''}
                 
                 <!-- C. تحليل البول والراسب -->
                 <div class="lab-section">
                     <h3 class="lab-section-title">C. تحليل البول والراسب</h3>
-                    ${renderTextarea('نتائج تحليل البول والراسب', l.urine_analysis)}
+                    <div class="lab-grid">
+                        ${l.urine_density ? renderLabField('الكثافة', l.urine_density, 'urine_density', normalRanges) : ''}
+                        ${l.urine_bacteria ? renderField('جراثيم', l.urine_bacteria) : ''}
+                        ${l.urine_protein ? renderField('بروتين', l.urine_protein) : ''}
+                        ${l.urine_rbc ? renderLabField('كريات حمراء (RBC/HPF)', l.urine_rbc, 'urine_rbc', normalRanges) : ''}
+                        ${l.urine_wbc ? renderLabField('كريات بيضاء (WBC/HPF)', l.urine_wbc, 'urine_wbc', normalRanges) : ''}
+                        ${l.urine_oxalate ? renderField('أوكزالات', l.urine_oxalate) : ''}
+                    </div>
+                    ${l.urine_notes ? renderTextarea('ملاحظات إضافية', l.urine_notes) : ''}
+                    ${l.urine_analysis ? renderTextarea('ملاحظات قديمة', l.urine_analysis) : ''}
                 </div>
                 
                 <!-- (جديد B.d) D. الإجراءات التشخيصية -->
