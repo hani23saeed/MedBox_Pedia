@@ -6453,10 +6453,23 @@
 
                     <!-- المخططات البيانية -->
                     <div class="lg:col-span-2">
-                        <h3 class="font-bold text-gray-700 mb-3 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-[#0790AC]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
-                            متابعة التحاليل عبر الزيارات
-                            ${totalVisits < 2 ? '<span class="text-xs text-gray-400 font-normal">(يلزم زيارتان على الأقل)</span>' : ''}
+                        <h3 class="font-bold text-gray-700 mb-3 flex items-center justify-between gap-2 flex-wrap">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-[#0790AC]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                                متابعة التحاليل عبر الزيارات
+                                ${totalVisits < 2 ? '<span class="text-xs text-gray-400 font-normal">(يلزم زيارتان على الأقل)</span>' : ''}
+                            </span>
+                            <button onclick="window._openGeminiAIReport('${patient.id}')"
+                                id="gemini-ai-btn-${patient.id}"
+                                title="تحليل ذكي شامل بالذكاء الاصطناعي (Gemini)"
+                                style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 50%,#F4B400 75%,#DB4437 100%);color:#fff;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.2s;letter-spacing:0.02em;"
+                                onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 18px rgba(66,133,244,0.45)'"
+                                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(66,133,244,0.3)'">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z" fill="white" opacity="0.9"/>
+                                </svg>
+                                تقرير AI
+                            </button>
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pl-1">
                             ${chartsHTML}
@@ -13828,6 +13841,454 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.warn('SW registration failed:', err));
   });
 }
+</script>
+
+<!-- ===== نافذة تقرير الذكاء الاصطناعي (Gemini) ===== -->
+<div id="gemini-ai-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;animation:fadeInModal 0.2s ease;font-family:'Cairo',sans-serif;direction:rtl;">
+    <div id="gemini-ai-box" style="background:#fff;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,0.35);width:96vw;max-width:860px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:slideUpModal 0.25s ease;">
+        
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:2px solid #e6f4f7;background:linear-gradient(135deg,#f0f8ff 0%,#fff 100%);flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 50%,#F4B400 75%,#DB4437 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z" fill="white"/></svg>
+                </div>
+                <div>
+                    <div style="font-size:1.05rem;font-weight:700;color:#0790AC;">تقرير ذكاء اصطناعي — Gemini</div>
+                    <div id="gemini-patient-name-header" style="font-size:0.82rem;color:#6b7280;margin-top:1px;"></div>
+                </div>
+            </div>
+            <button onclick="window._closeGeminiModal()" style="width:34px;height:34px;border-radius:8px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;color:#6b7280;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280'">✕</button>
+        </div>
+
+        <!-- API Key Input Section -->
+        <div id="gemini-apikey-section" style="padding:16px 24px;background:#fafbfc;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <label style="font-size:0.82rem;font-weight:700;color:#374151;white-space:nowrap;flex-shrink:0;">🔑 Gemini API Key:</label>
+                <input id="gemini-api-key-input" type="password" placeholder="أدخل مفتاح Gemini API الخاص بك"
+                    style="flex:1;min-width:220px;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;outline:none;transition:border-color 0.15s;"
+                    onfocus="this.style.borderColor='#4285F4'" onblur="this.style.borderColor='#d1d5db'">
+                <button onclick="window._saveGeminiApiKey()" style="padding:8px 14px;background:#4285F4;color:#fff;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='#2b6ed9'" onmouseout="this.style.background='#4285F4'">حفظ المفتاح</button>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.76rem;color:#4285F4;text-decoration:none;white-space:nowrap;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">احصل على مفتاح مجاني ↗</a>
+            </div>
+            <div id="gemini-key-status" style="font-size:0.76rem;margin-top:6px;color:#6b7280;"></div>
+        </div>
+
+        <!-- Report Type Selector -->
+        <div style="padding:14px 24px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:0.82rem;font-weight:700;color:#374151;white-space:nowrap;">نوع التقرير:</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="window._setReportType('full')" id="rtype-full" style="padding:6px 14px;border-radius:8px;border:1.5px solid #0790AC;background:#0790AC;color:#fff;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s;">📋 تقرير شامل</button>
+                <button onclick="window._setReportType('labs')" id="rtype-labs" style="padding:6px 14px;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s;">🧪 تحاليل مقارنة</button>
+                <button onclick="window._setReportType('vitals')" id="rtype-vitals" style="padding:6px 14px;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s;">💓 علامات حيوية</button>
+                <button onclick="window._setReportType('nutrition')" id="rtype-nutrition" style="padding:6px 14px;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s;">🥗 تغذية ووزن</button>
+                <button onclick="window._setReportType('meds')" id="rtype-meds" style="padding:6px 14px;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s;">💊 أدوية وتشخيص</button>
+            </div>
+        </div>
+
+        <!-- Content Body -->
+        <div id="gemini-ai-body" style="flex:1;overflow-y:auto;padding:24px;">
+            <!-- Idle State -->
+            <div id="gemini-idle-state" style="text-align:center;padding:40px 20px;color:#9ca3af;">
+                <div style="font-size:3rem;margin-bottom:12px;">🤖</div>
+                <div style="font-size:1rem;font-weight:700;color:#374151;margin-bottom:6px;">جاهز لتحليل بيانات المريض</div>
+                <div style="font-size:0.85rem;color:#6b7280;">اختر نوع التقرير ثم اضغط "توليد التقرير" للحصول على تحليل سريري مدعوم بالذكاء الاصطناعي</div>
+            </div>
+            <!-- Loading State -->
+            <div id="gemini-loading-state" style="display:none;text-align:center;padding:60px 20px;">
+                <div style="width:52px;height:52px;border-radius:50%;border:4px solid #e5e7eb;border-top:4px solid #4285F4;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
+                <div style="font-size:0.95rem;font-weight:700;color:#374151;margin-bottom:6px;">يعمل Gemini على تحليل البيانات...</div>
+                <div style="font-size:0.82rem;color:#6b7280;">قد يستغرق ذلك بضع ثوانٍ</div>
+            </div>
+            <!-- Result State -->
+            <div id="gemini-result-state" style="display:none;"></div>
+            <!-- Error State -->
+            <div id="gemini-error-state" style="display:none;background:#fef2f2;border-radius:12px;padding:20px;border:1.5px solid #fca5a5;">
+                <div style="font-size:0.95rem;font-weight:700;color:#dc2626;margin-bottom:6px;">⚠️ حدث خطأ</div>
+                <div id="gemini-error-msg" style="font-size:0.85rem;color:#7f1d1d;"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-top:1px solid #e5e7eb;background:#fafafa;flex-shrink:0;gap:10px;flex-wrap:wrap;">
+            <div style="font-size:0.75rem;color:#9ca3af;">⚠️ هذا التقرير مساعد للقرار السريري وليس بديلاً عن التشخيص الطبي المتخصص</div>
+            <div style="display:flex;gap:8px;flex-shrink:0;">
+                <button id="gemini-copy-btn" onclick="window._copyGeminiReport()" style="display:none;padding:8px 16px;background:#fff;color:#0790AC;border:1.5px solid #0790AC;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#e6f4f7'" onmouseout="this.style.background='#fff'">📋 نسخ</button>
+                <button onclick="window._generateGeminiReport()" id="gemini-generate-btn" style="padding:8px 20px;background:linear-gradient(135deg,#4285F4 0%,#0F9D58 100%);color:#fff;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(66,133,244,0.3);transition:all 0.15s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">✨ توليد التقرير</button>
+                <button onclick="window._closeGeminiModal()" style="padding:8px 16px;background:#fff;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:8px;font-family:'Cairo',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== أنماط تقرير Gemini ===== */
+#gemini-result-state h2 { font-size:1.05rem; font-weight:700; color:#0790AC; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid #e6f4f7; display:flex; align-items:center; gap:6px; }
+#gemini-result-state h2:first-child { margin-top:0; }
+#gemini-result-state h3 { font-size:0.95rem; font-weight:700; color:#374151; margin:14px 0 7px; }
+#gemini-result-state p { font-size:0.88rem; color:#374151; line-height:1.8; margin-bottom:8px; }
+#gemini-result-state ul { padding-right:18px; margin:6px 0 10px; }
+#gemini-result-state li { font-size:0.86rem; color:#374151; line-height:1.75; margin-bottom:4px; list-style:disc; }
+#gemini-result-state .stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin:14px 0; }
+#gemini-result-state .stat-card { background:#f0f8ff; border-radius:10px; padding:12px; border:1px solid #bee3f8; text-align:center; }
+#gemini-result-state .stat-card .val { font-size:1.4rem; font-weight:800; color:#0790AC; }
+#gemini-result-state .stat-card .lbl { font-size:0.73rem; color:#6b7280; margin-top:2px; }
+#gemini-result-state .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.76rem; font-weight:700; margin:2px 3px; }
+#gemini-result-state .badge-ok { background:#dcfce7; color:#15803d; }
+#gemini-result-state .badge-warn { background:#fef9c3; color:#a16207; }
+#gemini-result-state .badge-danger { background:#fee2e2; color:#dc2626; }
+#gemini-result-state .badge-info { background:#e6f4f7; color:#0790AC; }
+#gemini-result-state .alert-box { border-radius:10px; padding:12px 16px; margin:10px 0; border-right:4px solid; font-size:0.86rem; }
+#gemini-result-state .alert-box.ok { background:#f0fdf4; border-color:#22c55e; color:#14532d; }
+#gemini-result-state .alert-box.warn { background:#fffbeb; border-color:#f59e0b; color:#78350f; }
+#gemini-result-state .alert-box.danger { background:#fef2f2; border-color:#ef4444; color:#7f1d1d; }
+#gemini-result-state .section-block { background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:16px 18px; margin-bottom:14px; }
+#gemini-result-state table { width:100%; border-collapse:collapse; margin:10px 0; font-size:0.82rem; }
+#gemini-result-state table th { background:#e6f4f7; color:#0790AC; padding:7px 10px; text-align:right; font-weight:700; border:1px solid #d1d5db; }
+#gemini-result-state table td { padding:6px 10px; border:1px solid #e5e7eb; vertical-align:top; }
+#gemini-result-state table tr:nth-child(even) td { background:#f9fafb; }
+</style>
+
+<script>
+// ===== منطق تقرير Gemini AI =====
+(function() {
+    var _currentPatientId = null;
+    var _currentReportType = 'full';
+    var _lastReportText = '';
+
+    // ---- فتح النافذة ----
+    window._openGeminiAIReport = function(patientId) {
+        _currentPatientId = patientId;
+        _currentReportType = 'full';
+
+        // تحميل مفتاح API المحفوظ
+        var savedKey = localStorage.getItem('_gemini_api_key') || '';
+        document.getElementById('gemini-api-key-input').value = savedKey;
+        document.getElementById('gemini-key-status').textContent = savedKey ? '✅ المفتاح محفوظ' : '';
+
+        // اسم المريض في رأس النافذة
+        var patient = _getPatientById(patientId);
+        document.getElementById('gemini-patient-name-header').textContent = patient ? patient.name_ar : '';
+
+        // إعادة ضبط الحالة
+        _setGeminiState('idle');
+        _setReportType('full', false);
+        document.getElementById('gemini-copy-btn').style.display = 'none';
+        _lastReportText = '';
+
+        document.getElementById('gemini-ai-modal').style.display = 'flex';
+    };
+
+    // ---- إغلاق النافذة ----
+    window._closeGeminiModal = function() {
+        document.getElementById('gemini-ai-modal').style.display = 'none';
+    };
+    document.getElementById('gemini-ai-modal').addEventListener('click', function(e) {
+        if (e.target === this) window._closeGeminiModal();
+    });
+
+    // ---- حفظ مفتاح API ----
+    window._saveGeminiApiKey = function() {
+        var key = document.getElementById('gemini-api-key-input').value.trim();
+        if (!key) { document.getElementById('gemini-key-status').textContent = '⚠️ يرجى إدخال المفتاح أولاً'; return; }
+        localStorage.setItem('_gemini_api_key', key);
+        document.getElementById('gemini-key-status').textContent = '✅ تم حفظ المفتاح بنجاح';
+    };
+
+    // ---- تحديد نوع التقرير ----
+    window._setReportType = function(type, _save) {
+        _currentReportType = type;
+        var types = ['full', 'labs', 'vitals', 'nutrition', 'meds'];
+        types.forEach(function(t) {
+            var btn = document.getElementById('rtype-' + t);
+            if (!btn) return;
+            if (t === type) {
+                btn.style.background = '#0790AC';
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#0790AC';
+            } else {
+                btn.style.background = '#fff';
+                btn.style.color = '#374151';
+                btn.style.borderColor = '#d1d5db';
+            }
+        });
+    };
+
+    // ---- تغيير حالة عرض النافذة ----
+    function _setGeminiState(state) {
+        document.getElementById('gemini-idle-state').style.display = state === 'idle' ? 'block' : 'none';
+        document.getElementById('gemini-loading-state').style.display = state === 'loading' ? 'block' : 'none';
+        document.getElementById('gemini-result-state').style.display = state === 'result' ? 'block' : 'none';
+        document.getElementById('gemini-error-state').style.display = state === 'error' ? 'block' : 'none';
+    }
+
+    // ---- الحصول على بيانات المريض ----
+    function _getPatientById(id) {
+        var d = window._appData || (typeof appData !== 'undefined' ? appData : null);
+        if (!d || !d.patients) return null;
+        return d.patients.find(function(p) { return p.id === id; }) || null;
+    }
+
+    // ---- بناء البيانات للإرسال ----
+    function _buildPatientContext(patient, reportType) {
+        var visits = patient.visits || [];
+        var totalVisits = visits.length;
+
+        // إحصاءات عامة
+        var ages = visits.map(function(v) { return v.personal && v.personal.age ? parseInt(v.personal.age) : null; }).filter(Boolean);
+        var weights = visits.map(function(v) { return v.vitals && v.vitals.weight ? parseFloat(v.vitals.weight) : null; }).filter(Boolean);
+        var heights = visits.map(function(v) { return v.vitals && v.vitals.height ? parseFloat(v.vitals.height) : null; }).filter(Boolean);
+        var bmis = visits.map(function(v) { return v.inbody && v.inbody.bmi ? parseFloat(v.inbody.bmi) : null; }).filter(Boolean);
+
+        var ctx = '## معلومات المريض الأساسية\n';
+        ctx += '- الاسم: ' + patient.name_ar + (patient.name_en ? ' (' + patient.name_en + ')' : '') + '\n';
+        ctx += '- الرقم الوطني: ' + (patient.national_id || '—') + '\n';
+        ctx += '- إجمالي الزيارات المسجلة: ' + totalVisits + '\n';
+        if (ages.length) ctx += '- العمر (آخر زيارة): ' + ages[ages.length-1] + ' سنة\n';
+        if (weights.length) ctx += '- الوزن (آخر زيارة): ' + weights[weights.length-1] + ' kg\n';
+        if (heights.length) ctx += '- الطول (آخر زيارة): ' + heights[heights.length-1] + ' cm\n';
+        if (bmis.length) ctx += '- BMI (آخر زيارة): ' + bmis[bmis.length-1] + '\n';
+
+        // بيانات أول زيارة (جنس، حالة اجتماعية، إلخ)
+        if (visits.length > 0) {
+            var firstVisit = visits[0];
+            var p = firstVisit.personal || {};
+            if (p.gender) ctx += '- الجنس: ' + (p.gender === 'male' ? 'ذكر' : 'أنثى') + '\n';
+            if (p.marital_status) ctx += '- الحالة الاجتماعية: ' + p.marital_status + '\n';
+            if (p.smoking) ctx += '- التدخين: نعم' + (p.cigarettes_per_day ? ' (' + p.cigarettes_per_day + ' سيجارة/يوم)' : '') + '\n';
+        }
+
+        ctx += '\n';
+
+        // --- زيارة بزيارة ---
+        visits.forEach(function(visit, idx) {
+            ctx += '---\n## الزيارة ' + (idx+1) + ' — تاريخ: ' + (visit.date || '?') + '\n';
+
+            // التشخيص والأدوية
+            if (reportType === 'full' || reportType === 'meds') {
+                if (visit.diagnosis) ctx += '### التشخيص\n' + visit.diagnosis + '\n';
+                if (visit.chief_complaint) ctx += '### الشكوى الرئيسية\n' + visit.chief_complaint + '\n';
+                if (visit.treatment_plan) ctx += '### خطة العلاج\n' + visit.treatment_plan + '\n';
+                if (visit.medications && visit.medications.length > 0) {
+                    ctx += '### الأدوية\n';
+                    visit.medications.forEach(function(m) {
+                        ctx += '- ' + m.name + (m.dose ? ' | ' + m.dose : '') + (m.frequency ? ' | ' + m.frequency : '') + (m.duration ? ' | ' + m.duration : '') + '\n';
+                    });
+                }
+            }
+
+            // العلامات الحيوية
+            if (reportType === 'full' || reportType === 'vitals') {
+                if (visit.vitals) {
+                    var v = visit.vitals;
+                    var vStr = '';
+                    if (v.bp_sys && v.bp_dias) vStr += 'BP: ' + v.bp_sys + '/' + v.bp_dias + ' | ';
+                    if (v.pulse) vStr += 'Pulse: ' + v.pulse + ' | ';
+                    if (v.temp) vStr += 'Temp: ' + v.temp + '°C | ';
+                    if (v.spo2) vStr += 'SpO2: ' + v.spo2 + '% | ';
+                    if (v.resp) vStr += 'Resp: ' + v.resp + '/min | ';
+                    if (v.weight) vStr += 'Wt: ' + v.weight + 'kg | ';
+                    if (v.height) vStr += 'Ht: ' + v.height + 'cm';
+                    if (vStr) ctx += '### العلامات الحيوية\n' + vStr.replace(/\s\|\s$/, '') + '\n';
+                }
+            }
+
+            // مؤشرات InBody / التغذية
+            if (reportType === 'full' || reportType === 'nutrition') {
+                if (visit.inbody) {
+                    var ib = visit.inbody;
+                    var ibStr = '';
+                    var ibKeys = ['bmi','tbf','tbw','sm','vfi','bmc','bmr','ideal_weight','fat_mass','muscle_mass'];
+                    ibKeys.forEach(function(k) { if (ib[k]) ibStr += k.toUpperCase() + ': ' + ib[k] + ' | '; });
+                    if (ibStr) ctx += '### InBody / التغذية\n' + ibStr.replace(/\s\|\s$/, '') + '\n';
+                }
+                if (visit.dietary_notes) ctx += '### ملاحظات غذائية\n' + visit.dietary_notes + '\n';
+                if (visit.caloric_target) ctx += '### الهدف السعراتي\n' + visit.caloric_target + ' kcal\n';
+            }
+
+            // التحاليل المخبرية
+            if (reportType === 'full' || reportType === 'labs') {
+                if (visit.labs) {
+                    var labs = visit.labs;
+                    var labStr = '';
+                    var labKeys = Object.keys(labs);
+                    labKeys.forEach(function(k) {
+                        if (labs[k] !== null && labs[k] !== undefined && labs[k] !== '') {
+                            labStr += k.toUpperCase() + ': ' + labs[k] + ' | ';
+                        }
+                    });
+                    if (labStr) ctx += '### التحاليل المخبرية\n' + labStr.replace(/\s\|\s$/, '') + '\n';
+                }
+            }
+        });
+
+        return ctx;
+    }
+
+    // ---- بناء الـ Prompt ----
+    function _buildPrompt(patient, reportType) {
+        var context = _buildPatientContext(patient, reportType);
+        var reportTypeLabels = {
+            'full': 'تقرير سريري شامل',
+            'labs': 'تحليل التحاليل المخبرية المقارنة',
+            'vitals': 'تحليل العلامات الحيوية',
+            'nutrition': 'تقرير التغذية والوزن',
+            'meds': 'مراجعة الأدوية والتشخيص'
+        };
+
+        var typeInstruction = {
+            'full': 'أعطني تقريراً سريرياً شاملاً يغطي جميع جوانب البيانات المتاحة.',
+            'labs': 'ركّز على التحاليل المخبرية: تحليل القيم لكل زيارة، مقارنة الاتجاهات عبر الزيارات، تحديد القيم الشاذة، ونسب التحسن أو التراجع.',
+            'vitals': 'ركّز على العلامات الحيوية: تحليل ضغط الدم والنبض والحرارة والأوكسجين عبر الزيارات، وتحديد أي اتجاهات مقلقة.',
+            'nutrition': 'ركّز على التغذية والوزن: تطور الوزن وBMI والتركيب الجسمي (InBody) عبر الزيارات، وتقييم الحالة التغذوية.',
+            'meds': 'ركّز على الأدوية والتشخيص: مراجعة الأدوية المقررة، التشخيصات عبر الزيارات، والتغييرات في خطة العلاج.'
+        };
+
+        var prompt = `أنت طبيب متخصص ومحلل بيانات سريرية. بناءً على البيانات التالية لمريض، قدّم ${reportTypeLabels[reportType]}.
+
+${typeInstruction[reportType]}
+
+**تعليمات التقرير:**
+1. ابدأ بملخص تنفيذي مختصر (3-4 جمل)
+2. قدّم إحصاءات رقمية ونسب مئوية حيثما أمكن (مثل: تحسن X بنسبة Y%)
+3. حلّل الاتجاهات عبر الزيارات المتعددة إذا توفرت
+4. حدّد نقاط القوة والمخاوف السريرية
+5. اقترح توصيات عملية تدعم القرار السريري
+6. استخدم ترميز HTML البسيط في الإخراج: 
+   - <h2> للعناوين الرئيسية
+   - <h3> للعناوين الفرعية
+   - <p> للفقرات
+   - <ul><li> للقوائم
+   - <div class="stat-grid"><div class="stat-card"><div class="val">X</div><div class="lbl">Y</div></div></div> للإحصاءات
+   - <span class="badge badge-ok">جيد</span> أو badge-warn أو badge-danger للحالات
+   - <div class="alert-box ok/warn/danger">نص</div> للتنبيهات
+   - <div class="section-block"> لكل قسم
+   - <table><tr><th></th><td></td></tr></table> للمقارنات الجدولية
+7. أجب باللغة العربية الطبية الواضحة
+8. لا تذكر "Gemini" أو "AI" في التقرير
+
+**بيانات المريض:**
+${context}
+
+قدّم التقرير الآن:`;
+
+        return prompt;
+    }
+
+    // ---- توليد التقرير ----
+    window._generateGeminiReport = async function() {
+        var apiKey = (document.getElementById('gemini-api-key-input').value || '').trim()
+                     || (localStorage.getItem('_gemini_api_key') || '');
+        if (!apiKey) {
+            document.getElementById('gemini-key-status').textContent = '⚠️ يرجى إدخال مفتاح API أولاً';
+            document.getElementById('gemini-api-key-input').focus();
+            return;
+        }
+
+        var patient = _getPatientById(_currentPatientId);
+        if (!patient) {
+            _setGeminiState('error');
+            document.getElementById('gemini-error-msg').textContent = 'لم يتم العثور على بيانات المريض';
+            return;
+        }
+        if (!patient.visits || patient.visits.length === 0) {
+            _setGeminiState('error');
+            document.getElementById('gemini-error-msg').textContent = 'لا توجد زيارات مسجلة لهذا المريض';
+            return;
+        }
+
+        _setGeminiState('loading');
+        document.getElementById('gemini-copy-btn').style.display = 'none';
+        _lastReportText = '';
+
+        var prompt = _buildPrompt(patient, _currentReportType);
+
+        try {
+            var response = await fetch(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            temperature: 0.3,
+                            topP: 0.9,
+                            maxOutputTokens: 4096
+                        },
+                        safetySettings: [
+                            { category: 'HARM_CATEGORY_MEDICAL', threshold: 'BLOCK_NONE' }
+                        ]
+                    })
+                }
+            );
+
+            var data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error ? data.error.message : 'خطأ في API الاستجابة: ' + response.status);
+            }
+
+            var text = '';
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                text = data.candidates[0].content.parts.map(function(p) { return p.text || ''; }).join('');
+            }
+
+            if (!text) throw new Error('لم يتم الحصول على استجابة من Gemini');
+
+            // تحويل Markdown المتبقي إلى HTML نظيف
+            text = text
+                .replace(/```html\n?/gi, '').replace(/```\n?/gi, '')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+            _lastReportText = text;
+            var resultEl = document.getElementById('gemini-result-state');
+            resultEl.innerHTML = text;
+            _setGeminiState('result');
+            document.getElementById('gemini-copy-btn').style.display = 'inline-flex';
+
+        } catch (err) {
+            _setGeminiState('error');
+            var errMsg = err.message || String(err);
+            if (errMsg.includes('API_KEY') || errMsg.includes('api key') || errMsg.includes('API key')) {
+                errMsg = 'مفتاح API غير صالح أو منتهي الصلاحية. تأكد من صحة المفتاح وأن لديك صلاحية استخدام Gemini API.';
+            } else if (errMsg.includes('Failed to fetch') || errMsg.includes('network')) {
+                errMsg = 'خطأ في الاتصال بالشبكة. تأكد من اتصالك بالإنترنت.';
+            } else if (errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')) {
+                errMsg = 'تم استنزاف حصة API. انتظر قليلاً أو تحقق من حصتك في Google AI Studio.';
+            }
+            document.getElementById('gemini-error-msg').innerHTML = errMsg +
+                '<br><br><button onclick="window._generateGeminiReport()" style="margin-top:8px;padding:7px 16px;background:#dc2626;color:#fff;border:none;border-radius:7px;font-family:Cairo,sans-serif;font-weight:700;cursor:pointer;">إعادة المحاولة</button>';
+        }
+    };
+
+    // ---- نسخ التقرير ----
+    window._copyGeminiReport = function() {
+        var el = document.getElementById('gemini-result-state');
+        if (!el) return;
+        var text = el.innerText || el.textContent || '';
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                if (typeof showToast === 'function') showToast('تم نسخ التقرير', 'success');
+            });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (typeof showToast === 'function') showToast('تم نسخ التقرير', 'success');
+        }
+    };
+
+    // ---- تعريض الدوال للنافذة ----
+    window._setReportType = window._setReportType || function(){};
+
+})();
 </script>
 
 </html>
